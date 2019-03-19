@@ -73,7 +73,9 @@ public class Main {
         String mailAddress = scanner.nextLine();
         System.out.print("Sisestage soovitud salasõna: ");
         String password = scanner.nextLine();
-        int verificationCode = (int)Math.random()*100;
+        //genereeritakse suvaline täisarv
+        int verificationCode = (int)Math.floor(Math.random()*100000+1);
+        //saadetakse kood sisestatud meilile
         SendMail verificationmail = new SendMail();
         verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account", "Your verification code is: " + verificationCode + ".");
         System.out.print("Sisestage sisestatud meiliaadressile saadetud verification code: ");
