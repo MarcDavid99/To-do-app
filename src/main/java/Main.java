@@ -73,8 +73,24 @@ public class Main {
         String mailAddress = scanner.nextLine();
         System.out.print("Sisestage soovitud salasõna: ");
         String password = scanner.nextLine();
-        User newUser = new User(firstName, lastName, username, mailAddress, password);
-        System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
+        int verificationCode = (int)Math.random()*100;
+        SendMail verificationmail = new SendMail();
+        verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account", "Your verification code is: " + verificationCode + ".");
+        System.out.print("Sisestage sisestatud meiliaadressile saadetud verification code: ");
+        try{
+            int inputCode = Integer.parseInt(scanner.nextLine());
+            if(inputCode == verificationCode){
+                User newUser = new User(firstName, lastName, username, mailAddress, password);
+                System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
+            }
+            else{
+                System.out.println("Sisestatud kood ei ole õige, palun proovige uuesti registreerida.");
+            }
+
+        }
+        catch (NumberFormatException e){
+            System.out.println("Sisestasite koodi valesti.");
+        }
 
         socketOut.writeInt(1);
         //tuleb loodud User gsoniga serverile saata
