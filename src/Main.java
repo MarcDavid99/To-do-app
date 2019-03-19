@@ -8,28 +8,26 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        //Main-i ehk clienti töö võiks toimuda while tsükli, sees, et ta saaks tegutseda, kuni enam ei soovi
 
         while (true) {
-            System.out.print("Kui soovite registreerida kasutajat, kirjutage 1, kui teil on kasutaja olemas, kirjutage 2");
-            Scanner scanner = new Scanner(System.in);
-            String initialCommand = scanner.nextLine();
-
             try (Socket socket = new Socket("localhost", 1337);
                  DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                  DataInputStream input = new DataInputStream(socket.getInputStream())) {
 
+
+                System.out.print("Kui soovite registreerida kasutajat, kirjutage 1, kui teil on kasutaja olemas, kirjutage 2");
+                Scanner scanner = new Scanner(System.in);
+                String initialCommand = scanner.nextLine();
+
                 if (initialCommand.equals("1")) {
                     //Kasutaja loomise meetod
-                    userCreation(scanner);
+                    userCreation(out, scanner);
                 }
                 else if (initialCommand.equals("2")) {
                     //Kasutaja tuvastamise meetod
-                    userVerification(scanner);
+                    userVerification(out, scanner);
 
 
-                    //Seda oleks võimalik mingi String[] järjendi või ArrayList<String>-ga ja for-loopiga teha
-                    //kui käske peaks tekkima väga palju
                     String[] possibleCommands = {"11", "12", "13", "14"};
                     System.out.println("Erinevad võimalused: " + "\r\n" +
                             "11 - lisa ülesanne" + "\r\n" +
@@ -43,14 +41,14 @@ public class Main {
                     //Tegemist on korrektse käsuga
                     if (Arrays.asList(possibleCommands).contains(command)) {
                         try {
-                            commandToServer(command);
+                            commandToServer(out, command);
                         }
                         catch (IOException e) {
                             System.out.println("Tekkis viga serverile käsu saatmisel");
                         }
 
                     }
-                    //Vigane sisestus kasutaja olemasolul käsu valimisel
+                    //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                     else {
                         System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
                     }
@@ -64,22 +62,37 @@ public class Main {
         }
     }
 
-    public static void userCreation(Scanner scanner) {
+    private static void userCreation(DataOutputStream socketOut, Scanner scanner) throws IOException {
+        System.out.print("Sisestage oma eesnimi: ");
+        String firstName = scanner.nextLine();
+        System.out.print("Sisestage oma perenimi: ");
+        String lastName = scanner.nextLine();
         System.out.print("Sisestage soovitud kasutajanimi: ");
         String username = scanner.nextLine();
         System.out.print("Sisestage soovitud meiliaadress: ");
         String mailAddress = scanner.nextLine();
         System.out.print("Sisestage soovitud salasõna: ");
         String password = scanner.nextLine();
-        User newUser = new User(username, mailAddress, password);
+        User newUser = new User(firstName, lastName, username, mailAddress, password);
         System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
+
+        socketOut.writeInt(1);
+        //tuleb loodud User gsoniga serverile saata
     }
 
 
-    public static void userVerification(Scanner scanner) {
+    private static void userVerification(DataOutputStream socketOut, Scanner scanner) throws IOException {
         System.out.print("Sisestage oma kasutajanimi: ");
         String existingUsername = scanner.nextLine();
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
+
+        socketOut.writeInt(2);
+    }
+
+    private static void commandToServer(DataOutputStream socketOut, String command) throws IOException {
+
+        int commandAsInt = Integer.parseInt(command);
+        socketOut.writeInt(commandAsInt);
     }
 }

@@ -3,11 +3,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ServerThread {
+public class ServerThread implements Runnable{
 
     private final Socket socket;
 
     public ServerThread(Socket socket) {
+
         this.socket = socket;
     }
 
@@ -27,5 +28,9 @@ public class ServerThread {
     private static void detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
 
         int requestType = socketIn.readInt();
+    }
+
+    private static void sendInfoToClient(DataOutputStream socketOut) throws IOException {
+
     }
 }
