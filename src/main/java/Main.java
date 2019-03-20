@@ -27,33 +27,32 @@ public class Main {
                 }
                 else if (initialCommand.equals("2")) {
                     //Kasutaja tuvastamise meetod
-                    userVerification(out, scanner);
+                    if (userVerification(out, input, scanner)){
+                        String[] possibleCommands = {"11", "12", "13", "14"};
+                        System.out.println("Erinevad võimalused: " + "\r\n" +
+                                "11 - lisa ülesanne" + "\r\n" +
+                                "12 - vaata ülesannet" + "\r\n" +
+                                "13 - muuda ülesannet" + "\r\n" +
+                                "14 - märgi ülesanne lõpetatuks" + "\r\n");
 
-                    String[] possibleCommands = {"11", "12", "13", "14"};
-                    System.out.println("Erinevad võimalused: " + "\r\n" +
-                            "11 - lisa ülesanne" + "\r\n" +
-                            "12 - vaata ülesannet" + "\r\n" +
-                            "13 - muuda ülesannet" + "\r\n" +
-                            "14 - märgi ülesanne lõpetatuks" + "\r\n");
+                        System.out.print("Valige sobiv tegevus: ");
+                        String command = scanner.nextLine();
 
-                    System.out.print("Valige sobiv tegevus: ");
-                    String command = scanner.nextLine();
+                        //Tegemist on korrektse käsuga
+                        if (Arrays.asList(possibleCommands).contains(command)) {
+                            try {
+                                commandToServer(out, command);
+                            }
+                            catch (IOException e) {
+                                System.out.println("Tekkis viga serverile käsu saatmisel");
+                            }
 
-                    //Tegemist on korrektse käsuga
-                    if (Arrays.asList(possibleCommands).contains(command)) {
-                        try {
-                            commandToServer(out, command);
                         }
-                        catch (IOException e) {
-                            System.out.println("Tekkis viga serverile käsu saatmisel");
+                        //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
+                        else {
+                            System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
                         }
-
                     }
-                    //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
-                    else {
-                        System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
-                    }
-
                 }
                 //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
                 else {
@@ -111,13 +110,34 @@ public class Main {
     }
 
 
-    private static void userVerification(DataOutputStream socketOut, Scanner scanner) throws IOException {
+    private static boolean userVerification(DataOutputStream socketOut, DataInputStream input, Scanner scanner) throws IOException {
         System.out.print("Sisestage oma kasutajanimi: ");
         String existingUsername = scanner.nextLine();
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
 
-        socketOut.writeInt(2);
+        socketOut.writeInt(92);
+        socketOut.writeUTF(existingUsername);
+        socketOut.writeUTF(existingPassword);
+
+        //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
+        int type = input.readInt();
+        if(type == 93){
+            System.out.println("Olete sisselogitud.");
+            return true;
+        }
+        if(type == 94){
+            System.out.println("Sisestatud parool on vale. Proovige uuesti.");
+            return false;
+        }
+        if(type == 95){
+            System.out.println("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
+            return false;
+        }
+        return false;
+        //vb sellest typeist piisakski, et nt kui parool vale siis mingi kindel type
+        //kui kõik korras siis kindel, kui kasutaja sellise
+        //nimega puudub siis ka mingi kindel message type
     }
 
     private static void commandToServer(DataOutputStream socketOut, String command) throws IOException {
@@ -127,9 +147,6 @@ public class Main {
     }
 
     private static boolean isequiredPassword(String password){
-        if(password.length() >= 8){
-            return true;
-        }
-       return false;
+        return password.length() >= 8;
     }
 }

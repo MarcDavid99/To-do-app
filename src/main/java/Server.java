@@ -7,7 +7,7 @@ import java.util.List;
 public class Server {
 
     //List kõigist kasutajatest
-    List<User> registeredUsers = new ArrayList<>();
+    final static List<User> registeredUsers = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         try (ServerSocket ss = new ServerSocket(1337)) {
@@ -19,7 +19,7 @@ public class Server {
         }
     }
 
-    public List<User> getRegisteredUsers() {
+    public static List<User> getRegisteredUsers() {
         return registeredUsers;
     }
 }
