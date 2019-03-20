@@ -1,13 +1,13 @@
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Server {
 
     //List kõigist kasutajatest
-    ArrayList<User> users = new ArrayList<>();
-
+    List<User> registeredUsers = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         try (ServerSocket ss = new ServerSocket(1337)) {
@@ -17,5 +17,9 @@ public class Server {
                 thread.start();
             }
         }
+    }
+
+    public List<User> getRegisteredUsers() {
+        return registeredUsers;
     }
 }

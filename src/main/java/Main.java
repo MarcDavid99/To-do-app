@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,7 +28,6 @@ public class Main {
                 else if (initialCommand.equals("2")) {
                     //Kasutaja tuvastamise meetod
                     userVerification(out, scanner);
-
 
                     String[] possibleCommands = {"11", "12", "13", "14"};
                     System.out.println("Erinevad võimalused: " + "\r\n" +
@@ -86,8 +87,10 @@ public class Main {
                         User newUser = new User(firstName, lastName, username, mailAddress, password);
                         System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
 
-                        socketOut.writeInt(1);
-                        //tuleb loodud User gsoniga serverile saata
+                        socketOut.writeInt(91);
+                        Gson gsonUser = new Gson();
+                        String jsonUser = gsonUser.toJson(newUser);
+                        socketOut.writeUTF(jsonUser);
                     }
                     else{
                         System.out.println("Sisestatud kood ei ole õige, palun proovige uuesti registreerida.");
