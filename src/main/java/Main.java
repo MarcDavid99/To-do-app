@@ -15,7 +15,7 @@ public class Main {
                  DataInputStream input = new DataInputStream(socket.getInputStream())) {
 
 
-                System.out.print("Kui soovite registreerida kasutajat, kirjutage 1, kui teil on kasutaja olemas, kirjutage 2");
+                System.out.print("Kui soovite registreerida kasutajat, kirjutage 1, kui teil on kasutaja olemas, kirjutage 2: ");
                 Scanner scanner = new Scanner(System.in);
                 String initialCommand = scanner.nextLine();
 
@@ -73,29 +73,38 @@ public class Main {
         String mailAddress = scanner.nextLine();
         System.out.print("Sisestage soovitud salasõna: ");
         String password = scanner.nextLine();
-        //genereeritakse suvaline täisarv
-        int verificationCode = (int)Math.floor(Math.random()*100000+1);
-        //saadetakse kood sisestatud meilile
-        SendMail verificationmail = new SendMail();
-        verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account", "Your verification code is: " + verificationCode + ".");
-        System.out.print("Sisestage sisestatud meiliaadressile saadetud verification code: ");
-        try{
-            int inputCode = Integer.parseInt(scanner.nextLine());
-            if(inputCode == verificationCode){
-                User newUser = new User(firstName, lastName, username, mailAddress, password);
-                System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
+        if(isequiredPassword(password)){
+            //genereeritakse suvaline täisarv
+            int verificationCode = (int)Math.floor(Math.random()*100000+1);
+            //saadetakse kood sisestatud meilile
+            SendMail verificationmail = new SendMail();
+            if(verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account", "Your verification code is: " + verificationCode + ".")){
+                System.out.print("Sisestage sisestatud meiliaadressile saadetud verification code: ");
+                try{
+                    int inputCode = Integer.parseInt(scanner.nextLine());
+                    if(inputCode == verificationCode){
+                        User newUser = new User(firstName, lastName, username, mailAddress, password);
+                        System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
+
+                        socketOut.writeInt(1);
+                        //tuleb loodud User gsoniga serverile saata
+                    }
+                    else{
+                        System.out.println("Sisestatud kood ei ole õige, palun proovige uuesti registreerida.");
+                    }
+
+                }
+                catch (NumberFormatException e){
+                    System.out.println("Sisestasite koodi valesti.");
+                }
             }
             else{
-                System.out.println("Sisestatud kood ei ole õige, palun proovige uuesti registreerida.");
+                System.out.println("Sisestatud meiliaadressile meili saatmine ebaõnnestus, palun proovige uuesti registreerida.");
             }
-
         }
-        catch (NumberFormatException e){
-            System.out.println("Sisestasite koodi valesti.");
+        else{
+            System.out.println("Salasõna peab olema vähemalt 8 tähemärki pikk. Palun proovige uuesti registreerida.");
         }
-
-        socketOut.writeInt(1);
-        //tuleb loodud User gsoniga serverile saata
     }
 
 
@@ -112,5 +121,12 @@ public class Main {
 
         int commandAsInt = Integer.parseInt(command);
         socketOut.writeInt(commandAsInt);
+    }
+
+    private static boolean isequiredPassword(String password){
+        if(password.length() >= 8){
+            return true;
+        }
+       return false;
     }
 }

@@ -12,7 +12,7 @@ import javax.mail.internet.MimeMessage;
 // got the code from: https://www.mkyong.com/java/javamail-api-sending-email-via-gmail-smtp-example/
 public class SendMail {
 
-    public static void sendMail(String recieverEmail, String subject, String mailBody){
+    public boolean sendMail(String recieverEmail, String subject, String mailBody){
         final String username = "todolistreminderOOP@gmail.com";
         final String password = "todolistOOP";
 
@@ -40,10 +40,10 @@ public class SendMail {
 
             Transport.send(message);
 
-            System.out.println("Done");
+            return true;
 
         } catch (MessagingException e) {
-            throw new RuntimeException(e);
+            return false;
         }
     }
 }
