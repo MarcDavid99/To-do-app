@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 
+import javax.xml.crypto.Data;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -81,6 +82,28 @@ public class ServerThread implements Runnable{
     }
 
     private static void sendInfoToClient(DataOutputStream socketOut) throws IOException {
+        // üldmeetod clientile (ehk Main-ile) tagasi info saatmiseks
+        // võiks delegeerida töö väiksematele spetsiifilistele meetoditele
+        // saadab spetsiifilistele meetoditele mingi käsu
+    }
+
+    private static void sendConfirmationMessage(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+
+    }
+
+    private static void editTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        // mingi taski muutmise meetod
+    }
+
+    private static void displayTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        // mingi taski näitamise meetod kliendi palvel
+    }
+
+    private static void completeTask(DataInputStream socketIn, DataOutputStream socketout) throws IOException {
+        // mingi taski lõpetamise meetod
+    }
+
+    private static void taskReminder(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
 
     }
 }
