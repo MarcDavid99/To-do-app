@@ -8,12 +8,11 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ServerThread implements Runnable{
+public class ServerThread implements Runnable {
 
     private final Socket socket;
 
     public ServerThread(Socket socket) {
-
         this.socket = socket;
     }
 
@@ -31,34 +30,32 @@ public class ServerThread implements Runnable{
                     break;
                 }
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private static boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-                int requestType = socketIn.readInt();
-                //Taskidega seotud käsud võiks alata 11-st
-                //Kasutajaga seotud käsud võiks alata 91-st
-                //91 on kasutaja loomine
-                if (requestType == 91) {
-                    System.out.println("saven uue useri");
-                    saveNewUser(socketIn);
-
-                }
-                if (requestType == 92){
-                    verifyClient(socketIn, socketOut);
-                }
-                if (requestType == 93) {
-                    System.out.println("username");
-                    checkForUsernameInList(socketIn, socketOut);
-                }
-                if (requestType == 3) {
-                    closeTodoList(socketIn, socketOut);
-                    return true;
-                }
-                return false;
+        int requestType = socketIn.readInt();
+        //Taskidega seotud käsud võiks alata 11-st
+        //Kasutajaga seotud käsud võiks alata 91-st
+        //91 on kasutaja loomine
+        if (requestType == 91) {
+            System.out.println("saven uue useri");
+            saveNewUser(socketIn);
+        }
+        if (requestType == 92) {
+            verifyClient(socketIn, socketOut);
+        }
+        if (requestType == 93) {
+            System.out.println("username");
+            checkForUsernameInList(socketIn, socketOut);
+        }
+        if (requestType == 3) {
+            closeTodoList(socketIn, socketOut);
+            return true;
+        }
+        return false;
     }
 
     private static boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
@@ -67,14 +64,10 @@ public class ServerThread implements Runnable{
     }
 
     private static void saveNewUser(DataInputStream socketIn) throws IOException {
-
         String json = socketIn.readUTF();
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
         Server.getRegisteredUsers().add(newUser);
-        /*
-        tuleb välja mõelda mingi viis kuidas salvestada usereid, sest nii ei saa
-         */
     }
 
     private static void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
@@ -82,24 +75,23 @@ public class ServerThread implements Runnable{
         String password = socketIn.readUTF();
         List<User> registeredUsers = Server.getRegisteredUsers();
         boolean responseSent = false;
-        for(User user : registeredUsers){
-            if (user.getUsername().equals(username)){
-                if(user.getPassword().equals(password)){
+        for (User user : registeredUsers) {
+            if (user.getUsername().equals(username)) {
+                if (user.getPassword().equals(password)) {
                     socketOut.writeInt(93); //kui sisselogimine õnnestub
                     responseSent = true;
-                }
-                else{
+                } else {
                     socketOut.writeInt(94); //kui parool on vale
                     responseSent = true;
                 }
             }
         }
-        if(!responseSent){
+        if (!responseSent) {
             socketOut.writeInt(95); //kui kasutajanime ei leidu kasutajate hulgas
         }
     }
 
-    private static void checkForUsernameInList (DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private static void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
         boolean usernameAlreadyExists = false;
         List<User> registeredUsers = Server.getRegisteredUsers();
