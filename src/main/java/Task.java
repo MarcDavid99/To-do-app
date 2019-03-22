@@ -8,7 +8,7 @@ public class Task {
     private boolean isFinished;
     final private List<Task> linkedTasks;
     final private List<String> comments;
-    private Deadline taskDeadline;
+    private Deadline taskDeadline = new Deadline();
 
     public Task(User taskOwner, String taskDescription, int taskID) {
         this.taskOwner = taskOwner;

@@ -78,11 +78,14 @@ public class Main {
             int verificationCode = (int)Math.floor(Math.random()*100000+1);
             //saadetakse kood sisestatud meilile
             SendMail verificationmail = new SendMail();
-            if(verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account", "Your verification code is: " + verificationCode + ".")){
+            if(verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account",
+                    "Hello!" + "\r\n" + "\r\n" + "Your verification code is: " + verificationCode + "." + "\r\n" + "\r\n" +
+                    "Thank you for using our to-do app!")){
                 System.out.print("Sisestage sisestatud meiliaadressile saadetud verification code: ");
                 try{
                     int inputCode = Integer.parseInt(scanner.nextLine());
                     if(inputCode == verificationCode){
+                        //siin võiks enne useri loomist passwordi ära hashida
                         User newUser = new User(firstName, lastName, username, mailAddress, password);
                         System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
 
@@ -115,6 +118,7 @@ public class Main {
         String existingUsername = scanner.nextLine();
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
+        //siin peaks ära hashima passwordi, et serverile saadetaks hashitud password
 
         socketOut.writeInt(92);
         socketOut.writeUTF(existingUsername);
