@@ -1,12 +1,45 @@
-public class Deadline extends Task{
-    //peaks tegema ka deadline klassi, kus siis meetodid deadlinei settimiseks, gettimiseks jne
-    //mingi by default deadline võiks ka olla iga ülesande lisamisel ja siis äkki mingi meetod mis ütleks
-    //kas taski deadline on möödas
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 
-    public Deadline(User taskOwner, String taskDescription, int taskID) {
-        super(taskOwner, taskDescription, taskID);
+public class Deadline{
+
+    //Kasutatud lingid: https://stackoverflow.com/questions/27005861/calculate-days-between-two-dates-in-java-8
+    //http://tutorials.jenkov.com/java-date-time/localdate.html
+    //https://www.javatpoint.com/java-localdate
+
+    private LocalDate deadlineDate;
+
+
+    public void setDeadline(int deadlineAmount){
+        //deadlineAmount = deadline päevade arv
+        LocalDate dateOnCreation = LocalDate.now();
+        deadlineDate = dateOnCreation.plusDays(deadlineAmount);
     }
 
+    public LocalDate getDeadlineDate() {
+        return deadlineDate;
+    }
+
+    public boolean isPastDeadline(){
+        LocalDate dateToCheck = LocalDate.now();
+        if (dateToCheck.isEqual(deadlineDate)){
+            System.out.println("Same day as deadline!");
+            return false;
+        }else if (dateToCheck.isAfter(deadlineDate)){
+            System.out.println("Past deadline");
+            return true; //on üle deadline
+        }else{
+            System.out.println("You have " + DAYS.between(LocalDate.now(),deadlineDate) + " Until deadline");
+            return false;
+        }
+    }
+
+    public String dateToString(){
+        //Teeb selle Date'i loetavaks inimeste jaoks.
+        return deadlineDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
 
 }

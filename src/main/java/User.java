@@ -20,6 +20,8 @@ public class User {
         this.toDoList = new ArrayList<>();
     }
 
+
+
     public String getFirstName() {
         return firstName;
     }
@@ -52,7 +54,4 @@ public class User {
         toDoList.add(task);
     }
 
-    public void setDeadline(int deadline){
-
-    }
 }

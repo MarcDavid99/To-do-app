@@ -5,11 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
 
+
     public static void main(String[] args) throws Exception {
+
 
         while (true) {
             try (Socket socket = new Socket("localhost", 1337);
@@ -22,6 +25,7 @@ public class Main {
                 String initialCommand = scanner.nextLine();
 
                 if (initialCommand.equals("1")) {
+
                     //Kasutaja loomise meetod
                     userCreation(out, scanner);
                 }
@@ -63,6 +67,7 @@ public class Main {
     }
 
     private static void userCreation(DataOutputStream socketOut, Scanner scanner) throws IOException {
+
         System.out.print("Sisestage oma eesnimi: ");
         String firstName = scanner.nextLine();
         System.out.print("Sisestage oma perenimi: ");
@@ -87,6 +92,7 @@ public class Main {
                     if(inputCode == verificationCode){
                         //siin võiks enne useri loomist passwordi ära hashida
                         User newUser = new User(firstName, lastName, username, mailAddress, password);
+
                         System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
 
                         socketOut.writeInt(91);
@@ -110,6 +116,11 @@ public class Main {
         else{
             System.out.println("Salasõna peab olema vähemalt 8 tähemärki pikk. Palun proovige uuesti registreerida.");
         }
+
+    }
+
+    private static void addToMainUserList(List<User> list){
+
     }
 
 

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Task {
@@ -10,6 +11,7 @@ public class Task {
     final private List<String> comments;
     private Deadline taskDeadline = new Deadline();
 
+
     public Task(User taskOwner, String taskDescription, int taskID) {
         this.taskOwner = taskOwner;
         this.taskDescription = taskDescription;
@@ -18,10 +20,13 @@ public class Task {
         this.linkedTasks = new ArrayList<>();
         //kui alles taski loome, siis ilmselt see pole kohe algul finished
         this.isFinished = false;
+        this.taskDeadline.setDeadline(1); //Taski creatimisel on automaatselt deadlinei dateks järgmine päev
     }
 
-    public void setDeadline(Deadline deadline) {
-        this.taskDeadline = deadline;
+
+
+    public void setDeadline(int deadlineAmountInDays) {
+        this.taskDeadline.setDeadline(deadlineAmountInDays);
     }
 
     public void setTaskFinished(){
