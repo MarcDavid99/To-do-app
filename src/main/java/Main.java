@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 
+import java.io.Console;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -67,6 +68,19 @@ public class Main {
     }
 
     private static void userCreation(DataOutputStream socketOut, Scanner scanner) throws IOException {
+
+        /*Console console = System.console();
+
+        if(console != null){
+            String firstName = console.readLine("Sisestage oma eesnimi: ");
+            String lastName = console.readLine("Sisestage oma perenimi: ");
+            String username = console.readLine("Sisestage soovitud kasutajanimi: ");
+            String mailAddress = console.readLine("Sisestage soovitud meiliaadress: ");
+            char[] pswd = console.readPassword("Sisestage soovitud salasõna: ");
+            String password = new String(pswd);
+
+        }*/
+
 
         System.out.print("Sisestage oma eesnimi: ");
         String firstName = scanner.nextLine();
