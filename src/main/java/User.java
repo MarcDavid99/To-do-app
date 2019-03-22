@@ -51,4 +51,8 @@ public class User {
     public void addTask(Task task){
         toDoList.add(task);
     }
+
+    public void setDeadline(int deadline){
+
+    }
 }
