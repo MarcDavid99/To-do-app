@@ -32,26 +32,23 @@ public class Main {
                 } else if (initialCommand.equals("2")) {
                     //Kasutaja tuvastamise meetod
                     if (userVerification(out, input, scanner)) {
-                        String[] possibleCommands = {"11", "12", "13", "14"};
-                        System.out.println("Erinevad võimalused: " + "\r\n" +
-                                "11 - lisa ülesanne" + "\r\n" +
-                                "12 - vaata ülesannet" + "\r\n" +
-                                "13 - muuda ülesannet" + "\r\n" +
-                                "14 - märgi ülesanne lõpetatuks");
+                        while (true) {
+                            String[] possibleCommands = {"11", "12", "13", "14"};
+                            System.out.println("Erinevad võimalused: " + "\r\n" +
+                                    "11 - lisa ülesanne" + "\r\n" +
+                                    "12 - vaata ülesannet" + "\r\n" +
+                                    "13 - muuda ülesannet" + "\r\n" +
+                                    "14 - märgi ülesanne lõpetatuks");
 
-                        System.out.print("Valige sobiv tegevus: ");
-                        String command = scanner.nextLine();
-                        //Tegemist on korrektse käsuga
-                        if (Arrays.asList(possibleCommands).contains(command)) {
-                            try {
+                            System.out.print("Valige sobiv tegevus: ");
+                            String command = scanner.nextLine();
+                            if (Arrays.asList(possibleCommands).contains(command)) {
                                 commandToServer(out, command);
-                            } catch (IOException e) {
-                                System.out.println("Tekkis viga serverile käsu saatmisel");
                             }
-                        }
-                        //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
-                        else {
-                            System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
+                            //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
+                            else {
+                                System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
+                            }
                         }
                     }
                 } else if (initialCommand.equals("3")) {

@@ -41,14 +41,12 @@ public class ServerThread implements Runnable {
         //Kasutajaga seotud käsud võiks alata 91-st
         //91 on kasutaja loomine
         if (requestType == 91) {
-            System.out.println("saven uue useri");
             saveNewUser(socketIn);
         }
         if (requestType == 92) {
             verifyClient(socketIn, socketOut);
         }
         if (requestType == 93) {
-            System.out.println("username");
             checkForUsernameInList(socketIn, socketOut);
         }
         if (requestType == 3) {
