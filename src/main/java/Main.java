@@ -33,17 +33,22 @@ public class Main {
                     //Kasutaja tuvastamise meetod
                     if (userVerification(out, input, scanner)) {
                         while (true) {
-                            String[] possibleCommands = {"11", "12", "13", "14"};
+                            String[] possibleCommands = {"11", "12", "13", "14","15"};
                             System.out.println("Erinevad võimalused: " + "\r\n" +
                                     "11 - lisa ülesanne" + "\r\n" +
                                     "12 - vaata ülesannet" + "\r\n" +
                                     "13 - muuda ülesannet" + "\r\n" +
-                                    "14 - märgi ülesanne lõpetatuks");
+                                    "14 - märgi ülesanne lõpetatuks" + "\r\n" +
+                                    "15 - sulge programm");
 
                             System.out.print("Valige sobiv tegevus: ");
                             String command = scanner.nextLine();
                             if (Arrays.asList(possibleCommands).contains(command)) {
                                 commandToServer(out, command);
+                                if(input.readBoolean()){
+                                    System.out.println("Programm sulgub");
+                                    return;
+                                }
                             }
                             //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                             else {
@@ -132,7 +137,7 @@ public class Main {
                         int inputCode = Integer.parseInt(scanner.nextLine());
                         if (inputCode == verificationCode) {
                             //siin võiks enne useri loomist passwordi ära hashida
-                            User newUser = new User(firstName, lastName, username, mailAddress, password);
+                            User newUser = new User(firstName, lastName, username, mailAddress, password.hashCode());
 
                             System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
                             System.out.println();
@@ -179,11 +184,13 @@ public class Main {
         String existingUsername = scanner.nextLine();
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
-        //siin peaks ära hashima passwordi, et serverile saadetaks hashitud password
+
+
+        int hashedPassword = existingPassword.hashCode();
 
         socketOut.writeInt(92);
         socketOut.writeUTF(existingUsername);
-        socketOut.writeUTF(existingPassword);
+        socketOut.writeInt(hashedPassword);
 
         //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
         int type = input.readInt();

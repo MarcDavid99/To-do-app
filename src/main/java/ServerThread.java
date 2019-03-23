@@ -1,6 +1,4 @@
 import com.google.gson.Gson;
-
-import javax.xml.crypto.Data;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -21,7 +19,7 @@ public class ServerThread implements Runnable {
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("Uue kliendi jaoks luuakse uus thread");
-            boolean closeProgramme = false;
+            boolean closeProgramme;
             while (true) {
                 System.out.println("ServerThread teeb tööd");
                 closeProgramme = detectClientRequest(input, out);
@@ -49,7 +47,7 @@ public class ServerThread implements Runnable {
         if (requestType == 93) {
             checkForUsernameInList(socketIn, socketOut);
         }
-        if (requestType == 3) {
+        if (requestType == 3 || requestType == 15) {
             closeTodoList(socketIn, socketOut);
             return true;
         }
@@ -70,12 +68,12 @@ public class ServerThread implements Runnable {
 
     private static void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
-        String password = socketIn.readUTF();
+        int hashedPassword = socketIn.readInt();
         List<User> registeredUsers = Server.getRegisteredUsers();
         boolean responseSent = false;
         for (User user : registeredUsers) {
             if (user.getUsername().equals(username)) {
-                if (user.getPassword().equals(password)) {
+                if (user.getHashedPassword() == hashedPassword) {
                     socketOut.writeInt(93); //kui sisselogimine õnnestub
                     responseSent = true;
                 } else {

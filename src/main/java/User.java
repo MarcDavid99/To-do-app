@@ -8,15 +8,15 @@ public class User {
     final private String lastName;
     final private String username;
     final private String mailAdress;
-    private String password;
+    private int hashedPassword;
     private List<Task> toDoList;
 
-    public User(String firstName, String lastName, String username, String mailAdress, String password) {
+    public User(String firstName, String lastName, String username, String mailAdress, int hashedPassword) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.mailAdress = mailAdress;
-        this.password = password;
+        this.hashedPassword = hashedPassword;
         this.toDoList = new ArrayList<>();
     }
 
@@ -38,12 +38,12 @@ public class User {
         return username;
     }
 
-    public String getPassword() {
-        return password;
+    public int getHashedPassword() {
+        return hashedPassword;
     }
 
-    public void setNewPassword(String password){
-        this.password = password;
+    public void setNewPassword(String newPassword){
+        this.hashedPassword = newPassword.hashCode();
     }
 
     public List<Task> getToDoList() {

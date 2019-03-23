@@ -20,7 +20,7 @@ public class Task {
         this.linkedTasks = new ArrayList<>();
         //kui alles taski loome, siis ilmselt see pole kohe algul finished
         this.isFinished = false;
-        this.taskDeadline.setDeadline(1); //Taski creatimisel on automaatselt deadlinei dateks järgmine päev
+        this.taskDeadline.setDeadline(7); //Taski creatimisel on automaatselt deadlinei dateks järgmine nädal
     }
 
 
