@@ -172,6 +172,7 @@ public class Main {
     }
 
     private static boolean checkIfUsernameExists(DataInputStream socketIn, DataOutputStream socketOut, String username) throws IOException {
+
         socketOut.writeInt(93);
         socketOut.writeUTF(username);
         boolean usernameAlreadyExists = socketIn.readBoolean();

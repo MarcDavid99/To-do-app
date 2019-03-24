@@ -11,6 +11,7 @@ public class User {
     private int hashedPassword;
     private List<Task> toDoList;
 
+    //Creating a new user
     public User(String firstName, String lastName, String username, String mailAdress, int hashedPassword) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -20,6 +21,15 @@ public class User {
         this.toDoList = new ArrayList<>();
     }
 
+    //Reading an existing user from .txt file
+    public User(String firstName, String lastName, String username, String mailAdress, int hashedPassword, List<Task> toDoList) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.mailAdress = mailAdress;
+        this.hashedPassword = hashedPassword;
+        this.toDoList = toDoList;
+    }
 
 
     public String getFirstName() {
