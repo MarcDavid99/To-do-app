@@ -1,12 +1,11 @@
 import com.google.gson.Gson;
 
-import javax.xml.crypto.Data;
-import java.io.Console;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -33,7 +32,7 @@ public class Main {
                     //Kasutaja tuvastamise meetod
                     if (userVerification(out, input, scanner)) {
                         while (true) {
-                            String[] possibleCommands = {"11", "12", "13", "14","15"};
+                            String[] possibleCommands = {"11", "12", "13", "14", "15"};
                             System.out.println("Erinevad võimalused: " + "\r\n" +
                                     "11 - lisa ülesanne" + "\r\n" +
                                     "12 - vaata ülesannet" + "\r\n" +
@@ -45,7 +44,9 @@ public class Main {
                             String command = scanner.nextLine();
                             if (Arrays.asList(possibleCommands).contains(command)) {
                                 commandToServer(out, command);
-                                if(input.readBoolean()){
+                                int messageTypeFromServer = input.readInt();
+                                processCommand(input, out, messageTypeFromServer);
+                                if (input.readBoolean()) {
                                     System.out.println("Programm sulgub");
                                     return;
                                 }
@@ -66,6 +67,46 @@ public class Main {
                 //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
                 else {
                     System.out.println("Sisestage korrektne käsk (1 või 2)");
+                }
+            }
+        }
+    }
+
+    private static void processCommand(DataInputStream input, DataOutputStream out, int messageTypeFromServer) throws IOException {
+        Scanner scanner = new Scanner(System.in);
+        if (messageTypeFromServer == 14) {
+            //message removemine
+            String message = input.readUTF();
+            System.out.println(message);
+        }
+        else if (messageTypeFromServer == 12) {
+            //task listi kuvamine kasutajale
+            int tasksAmount = input.readInt();
+            for (int i = 0; i < tasksAmount; i++) {
+                System.out.println(input.readUTF());
+            }
+        }
+        else if (messageTypeFromServer == 13) {
+            //annab valiku, kuidas soovid messaget muuta
+            for (int i = 0; i < 2; i++) {
+                System.out.println(input.readUTF());
+            }
+            System.out.println("vali, mida soovid teha: ");
+            System.out.print("Valige sobiv tegevus: ");
+            String command = scanner.nextLine();
+            if (command == "15") {
+                System.out.println("Sisestage kommentaar: ");
+                String comment = scanner.nextLine();
+                out.writeInt(15);
+                out.writeUTF(comment);
+            }
+            else if (command == "16") {
+                System.out.println(input.readUTF());
+                try {
+                    int days = scanner.nextInt();
+                    out.writeInt(days);
+                } catch (InputMismatchException e) {
+                    System.out.println("Te ei sisestanud päevade arvu korrektselt.");
                 }
             }
         }
@@ -172,8 +213,7 @@ public class Main {
     }
 
     private static boolean checkIfUsernameExists(DataInputStream socketIn, DataOutputStream socketOut, String username) throws IOException {
-
-        socketOut.writeInt(93);
+        socketOut.writeInt(95);
         socketOut.writeUTF(username);
         boolean usernameAlreadyExists = socketIn.readBoolean();
         return usernameAlreadyExists;
@@ -186,7 +226,6 @@ public class Main {
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
 
-
         int hashedPassword = existingPassword.hashCode();
 
         socketOut.writeInt(92);
@@ -195,23 +234,19 @@ public class Main {
 
         //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
         int type = input.readInt();
+        //93 tähendab, et sisselogimine õnnestus
         if (type == 93) {
-            System.out.println();
-            System.out.println("Olete sisselogitud.");
+            String message = input.readUTF();
+            System.out.println(message);
             return true;
         }
+        //94 tähendab, et ilmnes probleem sisselogimisel
         if (type == 94) {
-            System.out.println("Sisestatud parool on vale. Proovige uuesti.");
-            return false;
-        }
-        if (type == 95) {
-            System.out.println("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
+            String message = input.readUTF();
+            System.out.println(message);
             return false;
         }
         return false;
-        //vb sellest typeist piisakski, et nt kui parool vale siis mingi kindel type
-        //kui kõik korras siis kindel, kui kasutaja sellise
-        //nimega puudub siis ka mingi kindel message type
     }
 
     private static void commandToServer(DataOutputStream socketOut, String command) throws IOException {
