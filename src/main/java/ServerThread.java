@@ -10,7 +10,7 @@ public class ServerThread implements Runnable {
     private final Socket socket;
     //siia tuleks salvestada kuidagi hetkene user, kuid probleem on selles, et salvestamine
     //toimuks static meetodis ja siis peaks field ka olema static, kuid ei saa teha seda staticuks
-    private User currentUser = new User();
+    private User currentUser;
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -54,7 +54,7 @@ public class ServerThread implements Runnable {
     Viimane muutuja on task-list
     Task-listi taskid on eraldatud :: sümbolitega
      */
-    private static void readExistingUsersFromFile() throws IOException {
+    private void readExistingUsersFromFile() throws IOException {
         //Path pathToFile = Paths.get("users.txt");
         //List<String> lines = Files.readAllLines(pathToFile);
         List<String> lines = new ArrayList<>();
@@ -101,7 +101,7 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private static void writeExistingUsersToFile() throws IOException {
+    private void writeExistingUsersToFile() throws IOException {
         FileWriter fileWriter = new FileWriter("users.txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
         for (User user : Server.getRegisteredUsers()) {
@@ -121,7 +121,7 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private static boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         int requestType = socketIn.readInt();
         //Taskidega seotud käsud võiks alata 11-st
         //Kasutajaga seotud käsud võiks alata 91-st
@@ -135,15 +135,20 @@ public class ServerThread implements Runnable {
         if (requestType == 95) {
             checkForUsernameInList(socketIn, socketOut);
         }
+        if(requestType == 11){
+            addTask(socketIn, socketOut);
+        }
         if(requestType == 12){
-
             //vaata ülesandeid
+            displayTasks(socketIn, socketOut);
         }
         if(requestType==13){
             //muuda ülesandeid
+            editTask(socketIn, socketOut);
         }
         if(requestType==14){
             //märgi ülesanne lõpetatuks
+            completeTask(socketIn, socketOut);
         }
 
         if (requestType == 3 || requestType == 15) {
@@ -153,19 +158,20 @@ public class ServerThread implements Runnable {
         return false;
     }
 
-    private static boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+
+    private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         socketOut.writeBoolean(true);
         return true;
     }
 
-    private static void saveNewUser(DataInputStream socketIn) throws IOException {
+    private void saveNewUser(DataInputStream socketIn) throws IOException {
         String json = socketIn.readUTF();
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
         Server.getRegisteredUsers().add(newUser);
     }
 
-    private static void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
         int hashedPassword = socketIn.readInt();
         List<User> registeredUsers = Server.getRegisteredUsers();
@@ -173,6 +179,7 @@ public class ServerThread implements Runnable {
         for (User user : registeredUsers) {
             if (user.getUsername().equals(username)) {
                 if (user.getHashedPassword() == hashedPassword) {
+                    currentUser = user;
                     socketOut.writeInt(93); //kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
                     responseSent = true;
@@ -190,7 +197,7 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private static void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
         boolean usernameAlreadyExists = false;
         List<User> registeredUsers = Server.getRegisteredUsers();
@@ -202,64 +209,82 @@ public class ServerThread implements Runnable {
         socketOut.writeBoolean(usernameAlreadyExists);
     }
 
-    private static void sendInfoToClient(DataOutputStream socketOut) throws IOException {
+    private void sendInfoToClient(DataOutputStream socketOut) throws IOException {
         // üldmeetod clientile (ehk Main-ile) tagasi info saatmiseks
         // võiks delegeerida töö väiksematele spetsiifilistele meetoditele
         // saadab spetsiifilistele meetoditele mingi käsu
     }
 
-    private static void sendConfirmationMessage(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void sendConfirmationMessage(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
 
     }
 
-    private static void editTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void editTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         // mingi taski muutmise meetod
         //user võiks saada valida, mitmenda taski ta muuta soovib e. teame taski indeksit
         //saab valida kuidas ta kirjeldust muuta soovib ka
         List<Task> todoList = currentUser.getToDoList();
-        int indeks = socketIn.readInt();
         socketOut.writeInt(13);
+        socketOut.writeUTF("Sisestage taski järjekorranumber, mida te muuta soovite: ");
+        int indeks = socketIn.readInt();
         socketOut.writeUTF("Mida soovite antud taskiga teha: ");
-        socketOut.writeUTF("15 - Soovin lisada kommentaari.");
-        socketOut.writeUTF("16 - Soovin deadline'i muuta. ");
+        socketOut.writeUTF("16 - Soovin lisada kommentaari.");
+        socketOut.writeUTF("17 - Soovin deadline'i muuta. ");
         int requestType = socketIn.readInt();
-        if(requestType == 15){
+        if(requestType == 16){
             String comment = socketIn.readUTF();
             todoList.get(indeks-1).addComments(comment);
-            writeMessage(socketOut, 15, "Kommentaar lisatud.");
+            writeMessage(socketOut, 16, "Kommentaar lisatud.");
+            socketOut.writeBoolean(false);
         }
-        if(requestType == 16){
-            socketOut.writeInt(16);
+        if(requestType == 17){
+            socketOut.writeInt(17);
             socketOut.writeUTF("Sisestage päevade arv, mille võrra soovite deadline'i edasi lükata: ");
             int days = socketIn.readInt();
             todoList.get(indeks-1).setDeadline(days);
+            socketOut.writeBoolean(false);
         }
     }
 
+    private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+        List<Task> todoList = currentUser.getToDoList();
+        socketOut.writeInt(11);
+        socketOut.writeUTF("Sisestage taski kirjeldus: ");
+        String taskDescription = socketIn.readUTF();
+        // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
+        int taskID = 0;
+        currentUser.addTask(new Task(currentUser, taskDescription, taskID));
+        socketOut.writeUTF("Task loodud.");
+        socketOut.writeBoolean(false);
 
-    private static void displayTasks(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    }
+
+    private void displayTasks(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
         socketOut.writeInt(12);
         socketOut.writeInt(todoList.size());
         for (Task task : todoList) {
             socketOut.writeUTF(task.getTaskDescription());
         }
+        socketOut.writeBoolean(false);
     }
 
-    private static void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         // mingi taski lõpetamise meetod
         //user võiks saada valida, mitmenda taski ta listist lõpetada soovib e. teame taski indeksit
+        writeMessage(socketOut, 14, "Kirjutage selle taski järjekorranumber, mida soovite eemaldada: ");
         int indeks = socketIn.readInt();
         List<Task> todoList = currentUser.getToDoList();
         todoList.get(indeks-1).setTaskFinished();
         todoList.remove(indeks-1);
-        writeMessage(socketOut, 14, "Task edukalt eemaldatud");
+        socketOut.writeUTF("Task edukalt eemaldatud");
+        socketOut.writeBoolean(false);
     }
 
-    private static void taskReminder(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void taskReminder(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
     }
 
-    private static void writeMessage(DataOutputStream socketOut, int messageType, String message) throws IOException {
+    private void writeMessage(DataOutputStream socketOut, int messageType, String message) throws IOException {
         socketOut.writeInt(messageType);
         socketOut.writeUTF(message);
     }

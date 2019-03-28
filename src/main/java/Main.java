@@ -76,6 +76,9 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         if (messageTypeFromServer == 14) {
             //message removemine
+            System.out.println(input.readUTF());
+            int taskIndex = scanner.nextInt();
+            out.writeInt(taskIndex);
             String message = input.readUTF();
             System.out.println(message);
         }
@@ -87,28 +90,37 @@ public class Main {
             }
         }
         else if (messageTypeFromServer == 13) {
+            System.out.println(input.readUTF());
+            int taskIndex = scanner.nextInt();
+            out.writeInt(taskIndex);
             //annab valiku, kuidas soovid messaget muuta
             for (int i = 0; i < 2; i++) {
                 System.out.println(input.readUTF());
             }
-            System.out.println("vali, mida soovid teha: ");
             System.out.print("Valige sobiv tegevus: ");
             String command = scanner.nextLine();
-            if (command == "15") {
+            if (command == "16") {
                 System.out.println("Sisestage kommentaar: ");
                 String comment = scanner.nextLine();
-                out.writeInt(15);
                 out.writeUTF(comment);
+                System.out.println(input.readUTF());
             }
-            else if (command == "16") {
+            else if (command == "17") {
                 System.out.println(input.readUTF());
                 try {
                     int days = scanner.nextInt();
                     out.writeInt(days);
+                    System.out.println(input.readUTF());
                 } catch (InputMismatchException e) {
                     System.out.println("Te ei sisestanud päevade arvu korrektselt.");
                 }
             }
+        }
+        else if(messageTypeFromServer == 11){
+            System.out.println(input.readUTF());
+            String taskDescription = scanner.nextLine();
+            out.writeUTF(taskDescription);
+            System.out.println(input.readUTF());
         }
     }
 
