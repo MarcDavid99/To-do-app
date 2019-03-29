@@ -13,7 +13,6 @@ public class Deadline{
     private LocalDate deadlineDate;
 
 
-
     public void setDeadline(int deadlineAmount){
         //deadlineAmount = deadline päevade arv
         LocalDate dateOnCreation = LocalDate.now();

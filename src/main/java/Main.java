@@ -17,6 +17,7 @@ public class Main {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream());
              DataInputStream input = new DataInputStream(socket.getInputStream())) {
 
+            label:
             while (true) {
                 System.out.print("Kui soovite registreerida kasutajat, kirjutage 1" + "\r\n" +
                         "Kui teil on kasutaja olemas, kirjutage 2" + "\r\n" +
@@ -25,48 +26,52 @@ public class Main {
                 Scanner scanner = new Scanner(System.in);
                 String initialCommand = scanner.nextLine();
 
-                if (initialCommand.equals("1")) {
-                    //Kasutaja loomise meetod
-                    userCreation(input, out, scanner);
-                } else if (initialCommand.equals("2")) {
-                    //Kasutaja tuvastamise meetod
-                    if (userVerification(out, input, scanner)) {
-                        while (true) {
-                            String[] possibleCommands = {"11", "12", "13", "14", "15"};
-                            System.out.println("Erinevad võimalused: " + "\r\n" +
-                                    "11 - lisa ülesanne" + "\r\n" +
-                                    "12 - vaata ülesannet" + "\r\n" +
-                                    "13 - muuda ülesannet" + "\r\n" +
-                                    "14 - märgi ülesanne lõpetatuks" + "\r\n" +
-                                    "15 - sulge programm");
+                switch (initialCommand) {
+                    case "1":
+                        //Kasutaja loomise meetod
+                        userCreation(input, out, scanner);
+                        break;
+                    case "2":
+                        //Kasutaja tuvastamise meetod
+                        if (userVerification(out, input, scanner)) {
+                            while (true) {
+                                String[] possibleCommands = {"11", "12", "13", "14", "15"};
+                                System.out.println("Erinevad võimalused: " + "\r\n" +
+                                        "11 - lisa ülesanne" + "\r\n" +
+                                        "12 - vaata ülesannet" + "\r\n" +
+                                        "13 - muuda ülesannet" + "\r\n" +
+                                        "14 - märgi ülesanne lõpetatuks" + "\r\n" +
+                                        "15 - sulge programm");
 
-                            System.out.print("Valige sobiv tegevus: ");
-                            String command = scanner.nextLine();
-                            if (Arrays.asList(possibleCommands).contains(command)) {
-                                commandToServer(out, command);
-                                int messageTypeFromServer = input.readInt();
-                                processCommand(input, out, messageTypeFromServer);
-                                if (input.readBoolean()) {
-                                    System.out.println("Programm sulgub");
-                                    return;
+                                System.out.print("Valige sobiv tegevus: ");
+                                String command = scanner.nextLine();
+                                if (Arrays.asList(possibleCommands).contains(command)) {
+                                    commandToServer(out, command);
+                                    int messageTypeFromServer = input.readInt();
+                                    processCommand(input, out, messageTypeFromServer);
+                                    if (input.readBoolean()) {
+                                        System.out.println("Programm sulgub");
+                                        return;
+                                    }
+                                }
+                                //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
+                                else {
+                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
                                 }
                             }
-                            //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
-                            else {
-                                System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
-                            }
                         }
-                    }
-                } else if (initialCommand.equals("3")) {
-                    out.writeInt(3);
-                    if (input.readBoolean()) {
-                        System.out.println("Programm sulgub!");
                         break;
-                    }
-                }
-                //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
-                else {
-                    System.out.println("Sisestage korrektne käsk (1 või 2)");
+                    case "3":
+                        out.writeInt(3);
+                        if (input.readBoolean()) {
+                            System.out.println("Programm sulgub!");
+                            break label;
+                        }
+                        break;
+                    //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
+                    default:
+                        System.out.println("Sisestage korrektne käsk (1,2 või 3)");
+                        break;
                 }
             }
         }
@@ -81,15 +86,13 @@ public class Main {
             out.writeInt(taskIndex);
             String message = input.readUTF();
             System.out.println(message);
-        }
-        else if (messageTypeFromServer == 12) {
+        } else if (messageTypeFromServer == 12) {
             //task listi kuvamine kasutajale
             int tasksAmount = input.readInt();
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
-        }
-        else if (messageTypeFromServer == 13) {
+        } else if (messageTypeFromServer == 13) {
             System.out.println(input.readUTF());
             int taskIndex = scanner.nextInt();
             out.writeInt(taskIndex);
@@ -99,13 +102,12 @@ public class Main {
             }
             System.out.print("Valige sobiv tegevus: ");
             String command = scanner.nextLine();
-            if (command == "16") {
+            if (command.equals("16")) {
                 System.out.println("Sisestage kommentaar: ");
                 String comment = scanner.nextLine();
                 out.writeUTF(comment);
                 System.out.println(input.readUTF());
-            }
-            else if (command == "17") {
+            } else if (command.equals("17")) {
                 System.out.println(input.readUTF());
                 try {
                     int days = scanner.nextInt();
@@ -115,8 +117,7 @@ public class Main {
                     System.out.println("Te ei sisestanud päevade arvu korrektselt.");
                 }
             }
-        }
-        else if(messageTypeFromServer == 11){
+        } else if (messageTypeFromServer == 11) {
             System.out.println(input.readUTF());
             String taskDescription = scanner.nextLine();
             out.writeUTF(taskDescription);
@@ -177,7 +178,7 @@ public class Main {
             mailAddress = scanner.nextLine();
             System.out.print("Sisestage soovitud salasõna: ");
             password = scanner.nextLine();
-            if (isequiredPassword(password)) {
+            if (isRequiredPassword(password)) {
                 //genereeritakse suvaline täisarv
                 int verificationCode = (int) Math.floor(Math.random() * 100000 + 1);
                 //saadetakse kood sisestatud meilile
@@ -189,8 +190,8 @@ public class Main {
                     try {
                         int inputCode = Integer.parseInt(scanner.nextLine());
                         if (inputCode == verificationCode) {
-                            //siin võiks enne useri loomist passwordi ära hashida
-                            User newUser = new User(firstName, lastName, username, mailAddress, password.hashCode());
+
+                            User newUser = new User(firstName, lastName, username, mailAddress, password);
 
                             System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
                             System.out.println();
@@ -227,8 +228,7 @@ public class Main {
     private static boolean checkIfUsernameExists(DataInputStream socketIn, DataOutputStream socketOut, String username) throws IOException {
         socketOut.writeInt(95);
         socketOut.writeUTF(username);
-        boolean usernameAlreadyExists = socketIn.readBoolean();
-        return usernameAlreadyExists;
+        return socketIn.readBoolean();
     }
 
 
@@ -238,11 +238,10 @@ public class Main {
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
 
-        int hashedPassword = existingPassword.hashCode();
 
         socketOut.writeInt(92);
         socketOut.writeUTF(existingUsername);
-        socketOut.writeInt(hashedPassword);
+        socketOut.writeUTF(existingPassword);
 
         //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
         int type = input.readInt();
@@ -266,7 +265,7 @@ public class Main {
         socketOut.writeInt(commandAsInt);
     }
 
-    private static boolean isequiredPassword(String password) {
+    private static boolean isRequiredPassword(String password) {
         return password.length() >= 8;
     }
 }

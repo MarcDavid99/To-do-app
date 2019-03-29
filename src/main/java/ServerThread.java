@@ -1,6 +1,11 @@
 import com.google.gson.Gson;
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
+
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -11,6 +16,7 @@ public class ServerThread implements Runnable {
     //siia tuleks salvestada kuidagi hetkene user, kuid probleem on selles, et salvestamine
     //toimuks static meetodis ja siis peaks field ka olema static, kuid ei saa teha seda staticuks
     private User currentUser;
+    Argon2 argon2 = Argon2Factory.create();
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -72,23 +78,24 @@ public class ServerThread implements Runnable {
                 String lastName = lineSplit[1];
                 String username = lineSplit[2];
                 String mailAddress = lineSplit[3];
-                int hashedPassword = Integer.parseInt(lineSplit[4]);
+                String password = lineSplit[4];
 
-                String allTasks = lineSplit[5];
+
+                String allTasks = lineSplit[6];
                 List<Task> toDoList = new ArrayList<>();
                 String[] jsonTasks = allTasks.split("::");
                 Gson gson = new Gson();
                 for (String json : jsonTasks) {
                     //Kuna faili viimase taski lõppu kirjutatakse ::, võib potentsiaalselt
                     //tekkida olukord, kus ta arvab, et :: on ka task
-                    json.replaceAll("::", "");
+                    json = json.replaceAll("::", "");
                     if (!json.equals("")) {
                         Task newTask = gson.fromJson(json, Task.class);
                         toDoList.add(newTask);
                     }
                 }
 
-                User newUser = new User(firstName, lastName, username, mailAddress, hashedPassword, toDoList);
+                User newUser = new User(firstName, lastName, username, mailAddress, password, toDoList);
                 Server.getRegisteredUsers().add(newUser);
 
                 //Niisama abiks üleval ja all oleva koodi jaoks
@@ -104,13 +111,22 @@ public class ServerThread implements Runnable {
     private void writeExistingUsersToFile() throws IOException {
         FileWriter fileWriter = new FileWriter("users.txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
+
+
+
         for (User user : Server.getRegisteredUsers()) {
+            char[] passwordInCharArr = user.getPassword().toCharArray();
+
+            String hashedPass = argon2.hash(10,65536,1,passwordInCharArr);
+
+
             printWriter.print(
                     user.getFirstName() + ";;" +
                             user.getLastName() + ";;" +
                             user.getUsername() + ";;" +
                             user.getMailAdress() + ";;" +
-                            user.getHashedPassword() + ";;"
+                            user.getPassword() + ";;" +
+                            hashedPass
             );
 
             for (Task task : user.getToDoList()) {
@@ -121,7 +137,7 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         int requestType = socketIn.readInt();
         //Taskidega seotud käsud võiks alata 11-st
         //Kasutajaga seotud käsud võiks alata 91-st
@@ -171,14 +187,16 @@ public class ServerThread implements Runnable {
         Server.getRegisteredUsers().add(newUser);
     }
 
-    private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         String username = socketIn.readUTF();
-        int hashedPassword = socketIn.readInt();
+        String password = socketIn.readUTF();
         List<User> registeredUsers = Server.getRegisteredUsers();
         boolean responseSent = false;
+
+
         for (User user : registeredUsers) {
             if (user.getUsername().equals(username)) {
-                if (user.getHashedPassword() == hashedPassword) {
+                if (argon2.verify(readHashedPasswordFromFile(user.getUsername()), password)) { //Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
                     currentUser = user;
                     socketOut.writeInt(93); //kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
@@ -195,6 +213,21 @@ public class ServerThread implements Runnable {
             socketOut.writeInt(94); //94 tähendab, et sisselogimine ei õnnestunud
             socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
         }
+    }
+
+    private String readHashedPasswordFromFile(String username) throws Exception{
+        List<String> fileContent = Files.readAllLines(Path.of("users.txt"));
+        if (fileContent.size() == 1){ //kui fail on tühi
+            return argon2.hash(10,65536,1,Server.getRegisteredUsers().get(0).getPassword().toCharArray());
+        }
+        for (String user :
+                fileContent) {
+            if (user.contains(username)){
+                return user.split(";;")[5];
+            }
+        }
+        return null;
+
     }
 
     private void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
