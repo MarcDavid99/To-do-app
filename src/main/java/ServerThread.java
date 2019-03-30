@@ -160,9 +160,11 @@ public class ServerThread implements Runnable {
         String password = socketIn.readUTF();
         boolean responseSent = false;
 
+
+
         for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
-                if (argon2.verify(readHashedPasswordFromFile(user.getUsername()), password)) { //Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
+                if (argon2.verify(user.getPassword(), password)) { //Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
                     currentUser = user;
                     socketOut.writeInt(doConfirmLogin); //kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
@@ -194,7 +196,6 @@ public class ServerThread implements Runnable {
             }
         }
         return null;
-
     }
 
     private void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {

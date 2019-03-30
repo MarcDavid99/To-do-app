@@ -53,6 +53,7 @@ public class User {
     }
 
     public void setNewPassword(String newPassword){
+        //peab täiendama
         this.password = newPassword;
     }
 

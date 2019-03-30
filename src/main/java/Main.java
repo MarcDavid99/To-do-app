@@ -1,4 +1,6 @@
 import com.google.gson.Gson;
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,6 +18,7 @@ public class Main {
     public static final int doEditTask = 13;
     public static final int doCompleteTask = 14;
     public static final int doCloseTodoList1 = 3;
+    public static final int doCheckForUsername = 95;
 
     // Neid hetkel pole vaja, aga äkki tulevikus on
     /*
@@ -28,7 +31,8 @@ public class Main {
     public static final int doVerifyClient = 92;
     public static final int doConfirmLogin = 93;
     public static final int doNotConfirmLogin = 94;
-    public static final int doCheckForUsername = 95;
+
+    private static Argon2 argon2 = Argon2Factory.create();
 
     public static void main(String[] args) throws Exception {
 
@@ -210,7 +214,9 @@ public class Main {
                         int inputCode = Integer.parseInt(scanner.nextLine());
                         if (inputCode == verificationCode) {
 
-                            User newUser = new User(firstName, lastName, username, mailAddress, password);
+                            String hashedPassword = argon2.hash(10,65536,1,password);
+
+                            User newUser = new User(firstName, lastName, username, mailAddress, hashedPassword);
 
                             System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
                             System.out.println();
