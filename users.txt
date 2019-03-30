@@ -1,3 +1,1 @@
-{"firstName":"siim","lastName":"tanel","username":"siimtanel","mailAdress":"siim.tanel@gmail.com","password":"kaelkirjak","toDoList":[]}
-{"firstName":"gdgda","lastName":"dfgdfg","username":"fdgatrgdfad","mailAdress":"siim.tanel@gmail.com","password":"kaelkirjak3","toDoList":[]}
-{"firstName":"Marc","lastName":"David","username":"marcdavid","mailAdress":"marcdavid99@gmail.com","password":"$argon2i$v\u003d19$m\u003d65536,t\u003d10,p\u003d1$f0sLF5r8ut09JK4VY4WyJg$7UoVnyP9bV0rlX/6ruWyyzMcuhXPl6yjyCGfs2Kk79o","toDoList":[]}
+{"firstName":"siim","lastName":"tanel","username":"siimtanel","mailAdress":"siim.tanel@gmail.com","password":"$argon2i$v\u003d19$m\u003d65536,t\u003d10,p\u003d1$I9pG+s9ZMjjQohrr9exUog$1dKfFXvDdEp7N8fz6WRyoWRbisE7Q5ggEK3zFTvq2BA","toDoList":[]}

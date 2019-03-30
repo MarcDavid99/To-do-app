@@ -120,7 +120,7 @@ public class Main {
             int taskIndex = scanner.nextInt();
             out.writeInt(taskIndex);
             //annab valiku, kuidas soovid messaget muuta
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 3; i++) {
                 System.out.println(input.readUTF());
             }
             System.out.print("Valige sobiv tegevus: ");
@@ -130,7 +130,8 @@ public class Main {
                 String comment = scanner.nextLine();
                 out.writeUTF(comment);
                 System.out.println(input.readUTF());
-            } else if (command.equals("17")) {
+            }
+            else if (command.equals("17")) {
                 System.out.println(input.readUTF());
                 try {
                     int days = scanner.nextInt();

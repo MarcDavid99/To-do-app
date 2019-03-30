@@ -153,6 +153,7 @@ public class ServerThread implements Runnable {
         User newUser = gson.fromJson(json, User.class);
         //Server.getRegisteredUsers().add(newUser);
         allUsers.add(newUser);
+        writeExistingUsersToFile();
     }
 
     private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
@@ -272,6 +273,7 @@ public class ServerThread implements Runnable {
     private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         // mingi taski lõpetamise meetod
         //user võiks saada valida, mitmenda taski ta listist lõpetada soovib e. teame taski indeksit
+        socketOut.writeInt(doCompleteTask);
         writeMessage(socketOut, doCompleteTask, "Kirjutage selle taski järjekorranumber, mida soovite eemaldada: ");
         int indeks = socketIn.readInt();
         List<Task> todoList = currentUser.getToDoList();
