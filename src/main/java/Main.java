@@ -11,6 +11,25 @@ import java.util.Scanner;
 
 public class Main {
 
+    public static final int doAddTask = 11;
+    public static final int doDisplayTasks = 12;
+    public static final int doEditTask = 13;
+    public static final int doCompleteTask = 14;
+    public static final int doCloseTodoList1 = 3;
+
+    // Neid hetkel pole vaja, aga äkki tulevikus on
+    /*
+    public static final int doCloseTodoList2 = 15;
+    public static final int doAddComment = 16;
+    public static final int doPushDeadline = 17;
+    */
+
+    public static final int doSaveNewUser = 91;
+    public static final int doVerifyClient = 92;
+    public static final int doConfirmLogin = 93;
+    public static final int doNotConfirmLogin = 94;
+    public static final int doCheckForUsername = 95;
+
     public static void main(String[] args) throws Exception {
 
         try (Socket socket = new Socket("localhost", 1337);
@@ -62,7 +81,7 @@ public class Main {
                         }
                         break;
                     case "3":
-                        out.writeInt(3);
+                        out.writeInt(doCloseTodoList1);
                         if (input.readBoolean()) {
                             System.out.println("Programm sulgub!");
                             break label;
@@ -79,20 +98,20 @@ public class Main {
 
     private static void processCommand(DataInputStream input, DataOutputStream out, int messageTypeFromServer) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        if (messageTypeFromServer == 14) {
+        if (messageTypeFromServer == doCompleteTask) {
             //message removemine
             System.out.println(input.readUTF());
             int taskIndex = scanner.nextInt();
             out.writeInt(taskIndex);
             String message = input.readUTF();
             System.out.println(message);
-        } else if (messageTypeFromServer == 12) {
+        } else if (messageTypeFromServer == doDisplayTasks) {
             //task listi kuvamine kasutajale
             int tasksAmount = input.readInt();
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
-        } else if (messageTypeFromServer == 13) {
+        } else if (messageTypeFromServer == doEditTask) {
             System.out.println(input.readUTF());
             int taskIndex = scanner.nextInt();
             out.writeInt(taskIndex);
@@ -117,7 +136,7 @@ public class Main {
                     System.out.println("Te ei sisestanud päevade arvu korrektselt.");
                 }
             }
-        } else if (messageTypeFromServer == 11) {
+        } else if (messageTypeFromServer == doAddTask) {
             System.out.println(input.readUTF());
             String taskDescription = scanner.nextLine();
             out.writeUTF(taskDescription);
@@ -196,7 +215,7 @@ public class Main {
                             System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
                             System.out.println();
 
-                            socketOut.writeInt(91);
+                            socketOut.writeInt(doSaveNewUser);
                             Gson gsonUser = new Gson();
                             String jsonUser = gsonUser.toJson(newUser);
                             socketOut.writeUTF(jsonUser);
@@ -226,7 +245,7 @@ public class Main {
     }
 
     private static boolean checkIfUsernameExists(DataInputStream socketIn, DataOutputStream socketOut, String username) throws IOException {
-        socketOut.writeInt(95);
+        socketOut.writeInt(doCheckForUsername);
         socketOut.writeUTF(username);
         return socketIn.readBoolean();
     }
@@ -239,20 +258,20 @@ public class Main {
         String existingPassword = scanner.nextLine();
 
 
-        socketOut.writeInt(92);
+        socketOut.writeInt(doVerifyClient);
         socketOut.writeUTF(existingUsername);
         socketOut.writeUTF(existingPassword);
 
         //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
         int type = input.readInt();
         //93 tähendab, et sisselogimine õnnestus
-        if (type == 93) {
+        if (type == doConfirmLogin) {
             String message = input.readUTF();
             System.out.println(message);
             return true;
         }
         //94 tähendab, et ilmnes probleem sisselogimisel
-        if (type == 94) {
+        if (type == doNotConfirmLogin) {
             String message = input.readUTF();
             System.out.println(message);
             return false;
