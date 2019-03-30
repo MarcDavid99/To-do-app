@@ -7,8 +7,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class ServerThread implements Runnable {
 
@@ -32,7 +32,9 @@ public class ServerThread implements Runnable {
     //siia tuleks salvestada kuidagi hetkene user, kuid probleem on selles, et salvestamine
     //toimuks static meetodis ja siis peaks field ka olema static, kuid ei saa teha seda staticuks
     private User currentUser;
-    Argon2 argon2 = Argon2Factory.create();
+    private Argon2 argon2 = Argon2Factory.create();
+
+    private List<User> allUsers = new ArrayList<>();
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -44,11 +46,7 @@ public class ServerThread implements Runnable {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("Uue kliendi jaoks luuakse uus thread");
 
-            //Peaks kõik eksisteerivad User-id failist lugema enne alustamist
-            /*
-            Välja kommenteeritud sest siin bug
-             */
-            //readExistingUsersFromFile();
+            readExistingUsersFromFile();
 
             boolean closeProgramme;
             while (true) {
@@ -56,12 +54,9 @@ public class ServerThread implements Runnable {
                 closeProgramme = detectClientRequest(input, out);
                 if (closeProgramme) {
 
-                    //Peaks kõik eksisteerivad User-id faili kirjutama enne sulgumist
-                    /*
-                    Välja kommenteeritud sest siin bug
-                    */
-                    //writeExistingUsersToFile();
+                    writeExistingUsersToFile();
 
+                    System.out.println(allUsers);
                     System.out.println("ServerThread lõpetab töö!" + "\r\n");
                     break;
                 }
@@ -71,86 +66,42 @@ public class ServerThread implements Runnable {
         }
     }
 
-    /*
-    Failis olgu üksikud muutujad eraldatud ;; sümbolitega
-    Viimane muutuja on task-list
-    Task-listi taskid on eraldatud :: sümbolitega
-     */
     private void readExistingUsersFromFile() throws IOException {
-        //Path pathToFile = Paths.get("users.txt");
-        //List<String> lines = Files.readAllLines(pathToFile);
-        List<String> lines = new ArrayList<>();
-        File file = new File("users.txt");
-        Scanner scanner = new Scanner(file);
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            lines.add(line);
-        }
-        System.out.println(lines);
-        for (String line : lines) {
-            if (!line.equals("")) {
-                String[] lineSplit = line.split(";;");
-                String firstName = lineSplit[0];
-                String lastName = lineSplit[1];
-                String username = lineSplit[2];
-                String mailAddress = lineSplit[3];
-                String password = lineSplit[4];
+        try {
+            Path pathToFile = Path.of("users.txt");
+            List<String> users = Files.readAllLines(pathToFile);
 
-
-                String allTasks = lineSplit[6];
-                List<Task> toDoList = new ArrayList<>();
-                String[] jsonTasks = allTasks.split("::");
+            for (String user : users) {
+                String json = user;
+                System.out.println(json);
                 Gson gson = new Gson();
-                for (String json : jsonTasks) {
-                    //Kuna faili viimase taski lõppu kirjutatakse ::, võib potentsiaalselt
-                    //tekkida olukord, kus ta arvab, et :: on ka task
-                    json = json.replaceAll("::", "");
-                    if (!json.equals("")) {
-                        Task newTask = gson.fromJson(json, Task.class);
-                        toDoList.add(newTask);
-                    }
-                }
-
-                User newUser = new User(firstName, lastName, username, mailAddress, password, toDoList);
-                Server.getRegisteredUsers().add(newUser);
-
-                //Niisama abiks üleval ja all oleva koodi jaoks
-                //Gson gsonUser = new Gson();
-                //String jsonUser = gsonUser.toJson(newUser);
-                //String json = socketIn.readUTF();
-                //Gson gson = new Gson();
-                //User newUser = gson.fromJson(json, User.class);
+                User newUser = gson.fromJson(json, User.class);
+                allUsers.add(newUser);
             }
         }
+        catch (Exception e) {
+        }
+
+        //Niisama abiks üleval ja all oleva koodi jaoks
+        //Gson gsonUser = new Gson();
+        //String jsonUser = gsonUser.toJson(newUser);
+
+        //String json = socketIn.readUTF();
+        //Gson gson = new Gson();
+        //User newUser = gson.fromJson(json, User.class);
     }
 
     private void writeExistingUsersToFile() throws IOException {
         FileWriter fileWriter = new FileWriter("users.txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
 
-
-
-        for (User user : Server.getRegisteredUsers()) {
-            char[] passwordInCharArr = user.getPassword().toCharArray();
-
-            String hashedPass = argon2.hash(10,65536,1,passwordInCharArr);
-
-
-            printWriter.print(
-                    user.getFirstName() + ";;" +
-                            user.getLastName() + ";;" +
-                            user.getUsername() + ";;" +
-                            user.getMailAdress() + ";;" +
-                            user.getPassword() + ";;" +
-                            hashedPass
-            );
-
-            for (Task task : user.getToDoList()) {
-                Gson gson = new Gson();
-                String jsonTask = gson.toJson(task);
-                printWriter.print(jsonTask + "::");
-            }
+        for (User registeredUser : allUsers) {
+            Gson gson = new Gson();
+            String jsonUser = gson.toJson(registeredUser);
+            printWriter.println(jsonUser);
         }
+        printWriter.close();
+        fileWriter.close();
     }
 
     private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
@@ -200,17 +151,16 @@ public class ServerThread implements Runnable {
         String json = socketIn.readUTF();
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
-        Server.getRegisteredUsers().add(newUser);
+        //Server.getRegisteredUsers().add(newUser);
+        allUsers.add(newUser);
     }
 
     private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         String username = socketIn.readUTF();
         String password = socketIn.readUTF();
-        List<User> registeredUsers = Server.getRegisteredUsers();
         boolean responseSent = false;
 
-
-        for (User user : registeredUsers) {
+        for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
                 if (argon2.verify(readHashedPasswordFromFile(user.getUsername()), password)) { //Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
                     currentUser = user;
@@ -231,10 +181,11 @@ public class ServerThread implements Runnable {
         }
     }
 
+    //Vajab parandusi
     private String readHashedPasswordFromFile(String username) throws Exception{
         List<String> fileContent = Files.readAllLines(Path.of("users.txt"));
         if (fileContent.size() == 1){ //kui fail on tühi
-            return argon2.hash(10,65536,1,Server.getRegisteredUsers().get(0).getPassword().toCharArray());
+            return argon2.hash(10,65536,1,allUsers.get(0).getPassword().toCharArray());
         }
         for (String user :
                 fileContent) {
@@ -249,8 +200,7 @@ public class ServerThread implements Runnable {
     private void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
         boolean usernameAlreadyExists = false;
-        List<User> registeredUsers = Server.getRegisteredUsers();
-        for (User user : registeredUsers) {
+        for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
                 usernameAlreadyExists = true;
             }
