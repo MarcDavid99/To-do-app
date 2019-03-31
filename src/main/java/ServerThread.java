@@ -7,30 +7,15 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ServerThread implements Runnable {
 
-    public static final int doAddTask = 11;
-    public static final int doDisplayTasks = 12;
-    public static final int doEditTask = 13;
-    public static final int doCompleteTask = 14;
-    public static final int doCloseTodoList1 = 3;
-    public static final int doCloseTodoList2 = 15;
-    public static final int doAddComment = 16;
-    public static final int doPushDeadline = 17;
-
-    public static final int doSaveNewUser = 91;
-    public static final int doVerifyClient = 92;
-    public static final int doConfirmLogin = 93;
-    public static final int doNotConfirmLogin = 94;
-    public static final int doCheckForUsername = 95;
-
+    //hetkel on serverthreadis jama, kui nt pärast taski loomist user programmi sulgeb
+    //ilmselt on faili kirjutamisega probleem, sest errorid gsoniga seotud ja pärast seda
+    //on user.txt file täiesti tühi
 
     private final Socket socket;
-    //siia tuleks salvestada kuidagi hetkene user, kuid probleem on selles, et salvestamine
-    //toimuks static meetodis ja siis peaks field ka olema static, kuid ei saa teha seda staticuks
     private User currentUser;
     private Argon2 argon2 = Argon2Factory.create();
 
@@ -79,6 +64,7 @@ public class ServerThread implements Runnable {
                 allUsers.add(newUser);
             }
         }
+        //peaks siin exceptionid läbi mõtlema, hetkel lihtsalt tühi plokk
         catch (Exception e) {
         }
 
@@ -109,32 +95,32 @@ public class ServerThread implements Runnable {
         //Taskidega seotud käsud võiks alata 11-st
         //Kasutajaga seotud käsud võiks alata 91-st
         //91 on kasutaja loomine
-        if (requestType == doSaveNewUser) {
+        if (requestType == Commands.doSaveNewUser) {
             saveNewUser(socketIn);
         }
-        if (requestType == doVerifyClient) {
+        if (requestType == Commands.doVerifyClient) {
             verifyClient(socketIn, socketOut);
         }
-        if (requestType == doCheckForUsername) {
+        if (requestType == Commands.doCheckForUsername) {
             checkForUsernameInList(socketIn, socketOut);
         }
-        if(requestType == doAddTask){
+        if(requestType == Commands.doAddTask){
             addTask(socketIn, socketOut);
         }
-        if(requestType == doDisplayTasks){
+        if(requestType == Commands.doDisplayTasks){
             //vaata ülesandeid
             displayTasks(socketIn, socketOut);
         }
-        if(requestType == doEditTask){
+        if(requestType == Commands.doEditTask){
             //muuda ülesandeid
             editTask(socketIn, socketOut);
         }
-        if(requestType == doCompleteTask){
+        if(requestType == Commands.doCompleteTask){
             //märgi ülesanne lõpetatuks
             completeTask(socketIn, socketOut);
         }
 
-        if (requestType == doCloseTodoList1 || requestType == doCloseTodoList2) {
+        if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
             closeTodoList(socketIn, socketOut);
             return true;
         }
@@ -167,19 +153,19 @@ public class ServerThread implements Runnable {
             if (user.getUsername().equals(username)) {
                 if (argon2.verify(user.getPassword(), password)) { //Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
                     currentUser = user;
-                    socketOut.writeInt(doConfirmLogin); //kui sisselogimine õnnestub
+                    socketOut.writeInt(Commands.doConfirmLogin); //kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
                     responseSent = true;
                 }
                 else {
-                    socketOut.writeInt(doNotConfirmLogin); //kui sisselogimine ei õnnestu
+                    socketOut.writeInt(Commands.doNotConfirmLogin); //kui sisselogimine ei õnnestu
                     socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti.");
                     responseSent = true;
                 }
             }
         }
         if (!responseSent) {
-            socketOut.writeInt(doNotConfirmLogin); //94 tähendab, et sisselogimine ei õnnestunud
+            socketOut.writeInt(Commands.doNotConfirmLogin); //94 tähendab, et sisselogimine ei õnnestunud
             socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
         }
     }
@@ -225,31 +211,32 @@ public class ServerThread implements Runnable {
         //user võiks saada valida, mitmenda taski ta muuta soovib e. teame taski indeksit
         //saab valida kuidas ta kirjeldust muuta soovib ka
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(doEditTask);
+        socketOut.writeInt(Commands.doEditTask);
         socketOut.writeUTF("Sisestage taski järjekorranumber, mida te muuta soovite: ");
         int indeks = socketIn.readInt();
         socketOut.writeUTF("Mida soovite antud taskiga teha: ");
         socketOut.writeUTF("16 - Soovin lisada kommentaari.");
         socketOut.writeUTF("17 - Soovin deadline'i muuta. ");
         int requestType = socketIn.readInt();
-        if(requestType == doAddComment){
+        if(requestType == Commands.doAddComment){
             String comment = socketIn.readUTF();
             todoList.get(indeks-1).addComments(comment);
-            writeMessage(socketOut, doAddComment, "Kommentaar lisatud.");
+            System.out.println("saatmisel");
+           socketOut.writeUTF("Kommentaar lisatud.");
+            System.out.println("saadetud");
             socketOut.writeBoolean(false);
         }
-        if(requestType == doPushDeadline){
-            socketOut.writeInt(doPushDeadline);
+        if(requestType == Commands.doPushDeadline){
             socketOut.writeUTF("Sisestage päevade arv, mille võrra soovite deadline'i edasi lükata: ");
             int days = socketIn.readInt();
             todoList.get(indeks - 1).setDeadline(days);
+            socketOut.writeUTF("Deadline muudetud.");
             socketOut.writeBoolean(false);
         }
     }
 
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
-        List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(doAddTask);
+        socketOut.writeInt(Commands.doAddTask);
         socketOut.writeUTF("Sisestage taski kirjeldus: ");
         String taskDescription = socketIn.readUTF();
         // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
@@ -262,10 +249,18 @@ public class ServerThread implements Runnable {
 
     private void displayTasks(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(doDisplayTasks);
-        socketOut.writeInt(todoList.size());
+        socketOut.writeInt(Commands.doDisplayTasks);
+        int commentsAmount = 0;
+        for (Task task : todoList) {
+            commentsAmount += task.getComments().size();
+        }
+        socketOut.writeInt(todoList.size()*2 + commentsAmount);
         for (Task task : todoList) {
             socketOut.writeUTF(task.getTaskDescription());
+            for (String comment : task.getComments()) {
+                socketOut.writeUTF("     Comment: " + comment);
+            }
+            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
         }
         socketOut.writeBoolean(false);
     }
@@ -273,8 +268,8 @@ public class ServerThread implements Runnable {
     private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         // mingi taski lõpetamise meetod
         //user võiks saada valida, mitmenda taski ta listist lõpetada soovib e. teame taski indeksit
-        socketOut.writeInt(doCompleteTask);
-        writeMessage(socketOut, doCompleteTask, "Kirjutage selle taski järjekorranumber, mida soovite eemaldada: ");
+        socketOut.writeInt(Commands.doCompleteTask);
+        socketOut.writeUTF("Kirjutage selle taski järjekorranumber, mida soovite eemaldada: ");
         int indeks = socketIn.readInt();
         List<Task> todoList = currentUser.getToDoList();
         todoList.get(indeks - 1).setTaskFinished();

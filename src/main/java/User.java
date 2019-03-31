@@ -2,8 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
-    //mõtlesin et siia saaks teha siis kasutaja 'isendid', et kõigil siis mingid teatud fieldid
-    //ja kui kasutaja luuakse siis saab uue isendi luua
+
     final private String firstName;
     final private String lastName;
     final private String username;

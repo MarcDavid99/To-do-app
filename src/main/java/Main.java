@@ -13,25 +13,6 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static final int doAddTask = 11;
-    public static final int doDisplayTasks = 12;
-    public static final int doEditTask = 13;
-    public static final int doCompleteTask = 14;
-    public static final int doCloseTodoList1 = 3;
-    public static final int doCheckForUsername = 95;
-
-    // Neid hetkel pole vaja, aga äkki tulevikus on
-    /*
-    public static final int doCloseTodoList2 = 15;
-    public static final int doAddComment = 16;
-    public static final int doPushDeadline = 17;
-    */
-
-    public static final int doSaveNewUser = 91;
-    public static final int doVerifyClient = 92;
-    public static final int doConfirmLogin = 93;
-    public static final int doNotConfirmLogin = 94;
-
     private static Argon2 argon2 = Argon2Factory.create();
 
     public static void main(String[] args) throws Exception {
@@ -61,17 +42,19 @@ public class Main {
                                 String[] possibleCommands = {"11", "12", "13", "14", "15"};
                                 System.out.println("Erinevad võimalused: " + "\r\n" +
                                         "11 - lisa ülesanne" + "\r\n" +
-                                        "12 - vaata ülesannet" + "\r\n" +
+                                        "12 - vaata ülesandeid" + "\r\n" +
                                         "13 - muuda ülesannet" + "\r\n" +
                                         "14 - märgi ülesanne lõpetatuks" + "\r\n" +
                                         "15 - sulge programm");
 
                                 System.out.print("Valige sobiv tegevus: ");
-                                String command = scanner.nextLine();
+                                String command = scanner.next();
                                 if (Arrays.asList(possibleCommands).contains(command)) {
                                     commandToServer(out, command);
-                                    int messageTypeFromServer = input.readInt();
-                                    processCommand(input, out, messageTypeFromServer);
+                                    if(!command.equals("15")){
+                                        int messageTypeFromServer = input.readInt();
+                                        processCommand(input, out, messageTypeFromServer);
+                                    }
                                     if (input.readBoolean()) {
                                         System.out.println("Programm sulgub");
                                         return;
@@ -85,7 +68,7 @@ public class Main {
                         }
                         break;
                     case "3":
-                        out.writeInt(doCloseTodoList1);
+                        out.writeInt(Commands.doCloseTodoList1);
                         if (input.readBoolean()) {
                             System.out.println("Programm sulgub!");
                             break label;
@@ -100,23 +83,28 @@ public class Main {
         }
     }
 
+    //siin peab millalgi kõik exeptionid läbi mõtlema, sest hetkel kui user sisestab täisarvu asemel
+    //nt sõne, siis programm jookseb kokku (peab ka kontrollima et sisestatakse nt taski järjekorranr õigesti)
     private static void processCommand(DataInputStream input, DataOutputStream out, int messageTypeFromServer) throws IOException {
-        Scanner scanner = new Scanner(System.in);
-        if (messageTypeFromServer == doCompleteTask) {
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        if (messageTypeFromServer == Commands.doCompleteTask) {
             //message removemine
-            System.out.println(input.readUTF());
+            System.out.print(input.readUTF());
             int taskIndex = scanner.nextInt();
             out.writeInt(taskIndex);
             String message = input.readUTF();
-            System.out.println(message);
-        } else if (messageTypeFromServer == doDisplayTasks) {
+            System.out.println(message + "\r\n");
+        } else if (messageTypeFromServer == Commands.doDisplayTasks) {
             //task listi kuvamine kasutajale
             int tasksAmount = input.readInt();
+            System.out.println("Sinu to-do listis olevad taskid:");
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
-        } else if (messageTypeFromServer == doEditTask) {
-            System.out.println(input.readUTF());
+            System.out.println();
+        }
+        else if (messageTypeFromServer == Commands.doEditTask) {
+            System.out.print(input.readUTF());
             int taskIndex = scanner.nextInt();
             out.writeInt(taskIndex);
             //annab valiku, kuidas soovid messaget muuta
@@ -124,28 +112,31 @@ public class Main {
                 System.out.println(input.readUTF());
             }
             System.out.print("Valige sobiv tegevus: ");
-            String command = scanner.nextLine();
-            if (command.equals("16")) {
-                System.out.println("Sisestage kommentaar: ");
-                String comment = scanner.nextLine();
+            String whatUserWantsToDo = scanner.next();
+            if (whatUserWantsToDo.equals("16")) {
+                System.out.print("Sisestage kommentaar: ");
+                String comment = scanner.next();
+                out.writeInt(Commands.doAddComment);
                 out.writeUTF(comment);
-                System.out.println(input.readUTF());
+                System.out.println(input.readUTF() + "\r\n");
             }
-            else if (command.equals("17")) {
-                System.out.println(input.readUTF());
+            else if (whatUserWantsToDo.equals("17")) {
+                out.writeInt(Commands.doPushDeadline);
+                System.out.print(input.readUTF());
                 try {
                     int days = scanner.nextInt();
                     out.writeInt(days);
-                    System.out.println(input.readUTF());
+                    System.out.println(input.readUTF() + "\r\n");
                 } catch (InputMismatchException e) {
                     System.out.println("Te ei sisestanud päevade arvu korrektselt.");
                 }
             }
-        } else if (messageTypeFromServer == doAddTask) {
-            System.out.println(input.readUTF());
+        }
+        else if (messageTypeFromServer == Commands.doAddTask) {
+            System.out.print(input.readUTF());
             String taskDescription = scanner.nextLine();
             out.writeUTF(taskDescription);
-            System.out.println(input.readUTF());
+            System.out.println(input.readUTF() + "\r\n");
         }
     }
 
@@ -222,7 +213,7 @@ public class Main {
                             System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
                             System.out.println();
 
-                            socketOut.writeInt(doSaveNewUser);
+                            socketOut.writeInt(Commands.doSaveNewUser);
                             Gson gsonUser = new Gson();
                             String jsonUser = gsonUser.toJson(newUser);
                             socketOut.writeUTF(jsonUser);
@@ -252,7 +243,7 @@ public class Main {
     }
 
     private static boolean checkIfUsernameExists(DataInputStream socketIn, DataOutputStream socketOut, String username) throws IOException {
-        socketOut.writeInt(doCheckForUsername);
+        socketOut.writeInt(Commands.doCheckForUsername);
         socketOut.writeUTF(username);
         return socketIn.readBoolean();
     }
@@ -265,20 +256,20 @@ public class Main {
         String existingPassword = scanner.nextLine();
 
 
-        socketOut.writeInt(doVerifyClient);
+        socketOut.writeInt(Commands.doVerifyClient);
         socketOut.writeUTF(existingUsername);
         socketOut.writeUTF(existingPassword);
 
         //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
         int type = input.readInt();
         //93 tähendab, et sisselogimine õnnestus
-        if (type == doConfirmLogin) {
+        if (type == Commands.doConfirmLogin) {
             String message = input.readUTF();
             System.out.println(message);
             return true;
         }
         //94 tähendab, et ilmnes probleem sisselogimisel
-        if (type == doNotConfirmLogin) {
+        if (type == Commands.doNotConfirmLogin) {
             String message = input.readUTF();
             System.out.println(message);
             return false;
