@@ -4,12 +4,22 @@ import java.net.Socket;
 
 public class Server {
 
-
     public static void main(String[] args) throws Exception {
+        //boolean deadlineThreadActive = false;
         try (ServerSocket ss = new ServerSocket(1337)) {
             System.out.println("Server alustab tööd" + "\r\n");
             while (true) {
                 Socket socket = ss.accept();
+
+                // Siin pole veel midagi mõistlikku, sp välja kommenteeritud
+                /*
+                if (!deadlineThreadActive) {
+                    Thread deadlineThread = new  Thread(new DeadlineThread(socket));
+                    deadlineThread.start();
+                    deadlineThreadActive = true;
+                }
+                */
+
                 Thread thread = new Thread(new ServerThread(socket));
                 thread.start();
             }

@@ -62,7 +62,7 @@ public class Main {
                                 }
                                 //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                                 else {
-                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14)");
+                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14, 15)");
                                 }
                             }
                         }
@@ -76,7 +76,7 @@ public class Main {
                         break;
                     //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
                     default:
-                        System.out.println("Sisestage korrektne käsk (1,2 või 3)");
+                        System.out.println("Sisestage korrektne käsk (1, 2 või 3)");
                         break;
                 }
             }

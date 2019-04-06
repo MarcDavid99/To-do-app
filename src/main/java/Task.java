@@ -2,7 +2,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Task {
-    final private User taskOwner;
+
+    /*
+
+    Gson-i tõttu tekitas fieldi: final private User taskOwner kasutamine lõputu tsükli
+    Pidin selle ära kustutama ja siia tuleks mingi int tüüpi ID asemele teha
+
+     */
+    //final private User taskOwner;
     final private String taskDescription;
     final int taskID;
     private boolean isFinished;
@@ -11,8 +18,8 @@ public class Task {
     private Deadline taskDeadline = new Deadline();
 
 
-    public Task(User taskOwner, String taskDescription, int taskID) {
-        this.taskOwner = taskOwner;
+    public Task(String taskDescription, int taskID) {
+        //this.taskOwner = taskOwner;
         this.taskDescription = taskDescription;
         this.taskID = taskID;
         this.comments = new ArrayList<>();
@@ -32,9 +39,9 @@ public class Task {
         isFinished = true;
     }
 
-    public User getTaskOwner() {
-        return taskOwner;
-    }
+    //public User getTaskOwner() {
+    //    return taskOwner;
+    //}
 
     public String getTaskDescription() {
         return taskDescription;

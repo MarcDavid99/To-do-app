@@ -37,11 +37,12 @@ public class ServerThread implements Runnable {
             while (true) {
                 System.out.println("ServerThread teeb tööd");
                 closeProgramme = detectClientRequest(input, out);
+
                 if (closeProgramme) {
 
+                    System.out.println(allUsers);
                     writeExistingUsersToFile();
 
-                    System.out.println(allUsers);
                     System.out.println("ServerThread lõpetab töö!" + "\r\n");
                     break;
                 }
@@ -52,21 +53,29 @@ public class ServerThread implements Runnable {
     }
 
     private void readExistingUsersFromFile() throws IOException {
-        try {
-            Path pathToFile = Path.of("users.txt");
-            List<String> users = Files.readAllLines(pathToFile);
 
-            for (String user : users) {
-                String json = user;
-                System.out.println(json);
+        /*
+        Path pathToFile = Path.of("users.txt");
+        List<String> users = Files.readAllLines(pathToFile);
+
+        for (String user : users) {
+            String json = user;
+            System.out.println(json);
+            Gson gson = new Gson();
+            User newUser = gson.fromJson(json, User.class);
+            allUsers.add(newUser);
+        }
+        */
+
+        String jsonAllUsers;
+        try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
+            while ((jsonAllUsers = br.readLine()) != null) {
                 Gson gson = new Gson();
-                User newUser = gson.fromJson(json, User.class);
-                allUsers.add(newUser);
+                List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
+                allUsers.addAll(usersFromFile);
             }
         }
-        //peaks siin exceptionid läbi mõtlema, hetkel lihtsalt tühi plokk
-        catch (Exception e) {
-        }
+    }
 
         //Niisama abiks üleval ja all oleva koodi jaoks
         //Gson gsonUser = new Gson();
@@ -75,9 +84,9 @@ public class ServerThread implements Runnable {
         //String json = socketIn.readUTF();
         //Gson gson = new Gson();
         //User newUser = gson.fromJson(json, User.class);
-    }
 
     private void writeExistingUsersToFile() throws IOException {
+        /*
         FileWriter fileWriter = new FileWriter("users.txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
 
@@ -88,6 +97,18 @@ public class ServerThread implements Runnable {
         }
         printWriter.close();
         fileWriter.close();
+        */
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("users.txt"))) {
+            Gson gson = new Gson();
+            System.out.println("Enne allUsers-i jsonAllUsers-iks muutmist checkpoint");
+            String jsonAllUsers = gson.toJson(allUsers);
+            System.out.println("Pärast kõigi kasutajate json-iks muutmist");
+            System.out.println("jsonAllUsers:");
+            System.out.println(jsonAllUsers);
+            System.out.println("Enne faili kirjutamist checkpoint");
+            bw.write(jsonAllUsers);
+        }
     }
 
     private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
@@ -121,8 +142,7 @@ public class ServerThread implements Runnable {
         }
 
         if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
-            closeTodoList(socketIn, socketOut);
-            return true;
+            return closeTodoList(socketIn, socketOut);
         }
         return false;
     }
@@ -137,7 +157,6 @@ public class ServerThread implements Runnable {
         String json = socketIn.readUTF();
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
-        //Server.getRegisteredUsers().add(newUser);
         allUsers.add(newUser);
         writeExistingUsersToFile();
     }
@@ -147,25 +166,23 @@ public class ServerThread implements Runnable {
         String password = socketIn.readUTF();
         boolean responseSent = false;
 
-
-
         for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
-                if (argon2.verify(user.getPassword(), password)) { //Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
+                if (argon2.verify(user.getPassword(), password)) { // Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
                     currentUser = user;
-                    socketOut.writeInt(Commands.doConfirmLogin); //kui sisselogimine õnnestub
+                    socketOut.writeInt(Commands.doConfirmLogin); // kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
                     responseSent = true;
                 }
                 else {
-                    socketOut.writeInt(Commands.doNotConfirmLogin); //kui sisselogimine ei õnnestu
+                    socketOut.writeInt(Commands.doNotConfirmLogin); // kui sisselogimine ei õnnestu
                     socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti.");
                     responseSent = true;
                 }
             }
         }
         if (!responseSent) {
-            socketOut.writeInt(Commands.doNotConfirmLogin); //94 tähendab, et sisselogimine ei õnnestunud
+            socketOut.writeInt(Commands.doNotConfirmLogin); // sisselogimine ei õnnestunud
             socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
         }
     }
@@ -196,16 +213,6 @@ public class ServerThread implements Runnable {
         socketOut.writeBoolean(usernameAlreadyExists);
     }
 
-    private void sendInfoToClient(DataOutputStream socketOut) throws IOException {
-        // üldmeetod clientile (ehk Main-ile) tagasi info saatmiseks
-        // võiks delegeerida töö väiksematele spetsiifilistele meetoditele
-        // saadab spetsiifilistele meetoditele mingi käsu
-    }
-
-    private void sendConfirmationMessage(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-
-    }
-
     private void editTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         // mingi taski muutmise meetod
         //user võiks saada valida, mitmenda taski ta muuta soovib e. teame taski indeksit
@@ -222,17 +229,19 @@ public class ServerThread implements Runnable {
             String comment = socketIn.readUTF();
             todoList.get(indeks-1).addComments(comment);
             System.out.println("saatmisel");
-           socketOut.writeUTF("Kommentaar lisatud.");
+            socketOut.writeUTF("Kommentaar lisatud.");
             System.out.println("saadetud");
-            socketOut.writeBoolean(false);
+
         }
         if(requestType == Commands.doPushDeadline){
             socketOut.writeUTF("Sisestage päevade arv, mille võrra soovite deadline'i edasi lükata: ");
             int days = socketIn.readInt();
             todoList.get(indeks - 1).setDeadline(days);
             socketOut.writeUTF("Deadline muudetud.");
-            socketOut.writeBoolean(false);
+
         }
+
+        socketOut.writeBoolean(false);
     }
 
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
@@ -241,8 +250,9 @@ public class ServerThread implements Runnable {
         String taskDescription = socketIn.readUTF();
         // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
         int taskID = 0;
-        currentUser.addTask(new Task(currentUser, taskDescription, taskID));
+        currentUser.addTask(new Task(taskDescription, taskID));
         socketOut.writeUTF("Task loodud.");
+
         socketOut.writeBoolean(false);
 
     }
@@ -262,6 +272,7 @@ public class ServerThread implements Runnable {
             }
             socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
         }
+
         socketOut.writeBoolean(false);
     }
 
@@ -275,15 +286,7 @@ public class ServerThread implements Runnable {
         todoList.get(indeks - 1).setTaskFinished();
         todoList.remove(indeks - 1);
         socketOut.writeUTF("Task edukalt eemaldatud");
+
         socketOut.writeBoolean(false);
     }
-
-    private void taskReminder(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-    }
-
-    private void writeMessage(DataOutputStream socketOut, int messageType, String message) throws IOException {
-        socketOut.writeInt(messageType);
-        socketOut.writeUTF(message);
-    }
-
 }
