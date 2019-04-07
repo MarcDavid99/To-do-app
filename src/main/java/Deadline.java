@@ -15,8 +15,13 @@ public class Deadline{
 
     public void setDeadline(int deadlineAmount){
         //deadlineAmount = deadline päevade arv
-        LocalDate dateOnCreation = LocalDate.now();
-        deadlineDate = dateOnCreation.plusDays(deadlineAmount);
+        if(deadlineDate == null) {
+            LocalDate dateOnCreation = LocalDate.now();
+            deadlineDate = dateOnCreation.plusDays(deadlineAmount);
+        }
+        else {
+            deadlineDate = deadlineDate.plusDays(deadlineAmount);
+        }
     }
 
     public LocalDate getDeadlineDate() {

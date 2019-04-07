@@ -66,15 +66,21 @@ public class ServerThread implements Runnable {
             allUsers.add(newUser);
         }
         */
+        if(new File("users.txt").exists() && new File("users.txt").length() > 0) {
 
-        String jsonAllUsers;
-        try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
-            while ((jsonAllUsers = br.readLine()) != null) {
-                Gson gson = new Gson();
-                List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
-                allUsers.addAll(usersFromFile);
+            String jsonAllUsers;
+            try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
+                while ((jsonAllUsers = br.readLine()) != null) {
+                    Gson gson = new Gson();
+                    List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
+                    allUsers.addAll(usersFromFile);
+                }
             }
+        }else{
+            File users = new File("users.txt");
+            users.createNewFile();
         }
+
     }
 
         //Niisama abiks üleval ja all oleva koodi jaoks
@@ -123,7 +129,9 @@ public class ServerThread implements Runnable {
             verifyClient(socketIn, socketOut);
         }
         if (requestType == Commands.doCheckForUsername) {
-            checkForUsernameInList(socketIn, socketOut);
+
+            boolean checkusername = checkForUsernameInList(socketIn.readUTF());
+            socketOut.writeBoolean(checkusername);
         }
         if(requestType == Commands.doAddTask){
             addTask(socketIn, socketOut);
@@ -140,12 +148,15 @@ public class ServerThread implements Runnable {
             //märgi ülesanne lõpetatuks
             completeTask(socketIn, socketOut);
         }
-
+        if(requestType == Commands.doAddTaskToOtherUser){
+            addTaskToOtherUser(socketIn,socketOut);
+        }
         if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
             return closeTodoList(socketIn, socketOut);
         }
         return false;
     }
+
 
 
     private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
@@ -202,15 +213,14 @@ public class ServerThread implements Runnable {
         return null;
     }
 
-    private void checkForUsernameInList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        String username = socketIn.readUTF();
+    private boolean checkForUsernameInList(String username) throws IOException {
         boolean usernameAlreadyExists = false;
         for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
                 usernameAlreadyExists = true;
             }
         }
-        socketOut.writeBoolean(usernameAlreadyExists);
+        return usernameAlreadyExists;
     }
 
     private void editTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
@@ -242,6 +252,35 @@ public class ServerThread implements Runnable {
         }
 
         socketOut.writeBoolean(false);
+    }
+    private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception{
+        boolean foundUsername = true;
+        socketOut.writeInt(Commands.doAddTaskToOtherUser);
+        while(true) {
+            socketOut.writeUTF("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
+            if (!checkForUsernameInList(socketIn.readUTF())) {
+                foundUsername = false;
+            }else {
+                foundUsername = true;
+            }
+            socketOut.writeBoolean(foundUsername);
+            if(socketIn.readBoolean()){
+                break;
+            }
+        }
+        String username = socketIn.readUTF();
+        for (User user :
+                allUsers) {
+            if (user.getUsername().equals(username)) {
+                socketOut.writeUTF("Lisa ülesande kirjeldus: ");
+                String description = socketIn.readUTF();
+                int taskID = 0;
+                user.addTask(new Task(description,taskID));
+            }
+        }
+
+        socketOut.writeBoolean(false);
+
     }
 
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{

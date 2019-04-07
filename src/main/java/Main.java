@@ -39,13 +39,14 @@ public class Main {
                         //Kasutaja tuvastamise meetod
                         if (userVerification(out, input, scanner)) {
                             while (true) {
-                                String[] possibleCommands = {"11", "12", "13", "14", "15"};
+                                String[] possibleCommands = {"11", "12", "13", "14", "15","18"};
                                 System.out.println("Erinevad võimalused: " + "\r\n" +
                                         "11 - lisa ülesanne" + "\r\n" +
                                         "12 - vaata ülesandeid" + "\r\n" +
                                         "13 - muuda ülesannet" + "\r\n" +
                                         "14 - märgi ülesanne lõpetatuks" + "\r\n" +
-                                        "15 - sulge programm");
+                                        "15 - sulge programm" + "\r\n" +
+                                        "18 - lisa ülesanne teisele kasutajale");
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.next();
@@ -62,7 +63,7 @@ public class Main {
                                 }
                                 //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                                 else {
-                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14, 15)");
+                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14, 15,18)");
                                 }
                             }
                         }
@@ -137,6 +138,23 @@ public class Main {
             String taskDescription = scanner.nextLine();
             out.writeUTF(taskDescription);
             System.out.println(input.readUTF() + "\r\n");
+        }else if(messageTypeFromServer == Commands.doAddTaskToOtherUser){
+            while(true) { //Kontrollib kas kasutaja sisestatud kasutajanimi eksisteerib üldse
+                System.out.println(input.readUTF());
+                String enteredUsername = scanner.nextLine();
+                out.writeUTF(enteredUsername);
+                if(input.readBoolean()){
+                    out.writeBoolean(true); //Saadab serverile conformationi, et tõepoolest eksisteerib kasutaja nimi ja võib edasi minna
+                    out.writeUTF(enteredUsername);
+                    break;
+                }
+                System.out.println("Sisestatud kasutajanime ei eksisteeri, proovi uuesti");
+                out.writeBoolean(false);
+            }
+
+            System.out.println(input.readUTF());
+            out.writeUTF(scanner.nextLine()); //Küsib kasutajalt mis ülesande kirjeldus on ja saadab serverile
+
         }
     }
 
@@ -179,7 +197,7 @@ public class Main {
             System.out.print("Sisestage soovitud kasutajanimi(5-20 tähemärki): ");
             username = scanner.nextLine();
             if (username.length() >= 5 && username.length() <= 20) {
-                if (!checkIfUsernameExists(socketIn, socketOut, username)) {
+                if (!checkIfUsernameExists(socketIn,socketOut,username)) {
                     break;
                 } else {
                     System.out.println("Kasutajanimi juba eksisteerib, valige uus!");
@@ -193,6 +211,7 @@ public class Main {
             mailAddress = scanner.nextLine();
             System.out.print("Sisestage soovitud salasõna: ");
             password = scanner.nextLine();
+            String hashedPassword = argon2.hash(10,65536,1,password);
             if (isRequiredPassword(password)) {
                 //genereeritakse suvaline täisarv
                 int verificationCode = (int) Math.floor(Math.random() * 100000 + 1);
@@ -206,7 +225,7 @@ public class Main {
                         int inputCode = Integer.parseInt(scanner.nextLine());
                         if (inputCode == verificationCode) {
 
-                            String hashedPassword = argon2.hash(10,65536,1,password);
+
 
                             User newUser = new User(firstName, lastName, username, mailAddress, hashedPassword);
 

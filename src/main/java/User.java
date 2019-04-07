@@ -1,3 +1,6 @@
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +12,8 @@ public class User {
     final private String mailAdress;
     private String password;
     private List<Task> toDoList;
+
+
 
     //Creating a new user
     public User(String firstName, String lastName, String username, String mailAdress, String password) {
@@ -52,8 +57,8 @@ public class User {
     }
 
     public void setNewPassword(String newPassword){
-        //peab täiendama
-        this.password = newPassword;
+        Argon2 argon2 = Argon2Factory.create();
+        this.password = argon2.hash(10,65536,1,newPassword);
     }
 
     public List<Task> getToDoList() {
