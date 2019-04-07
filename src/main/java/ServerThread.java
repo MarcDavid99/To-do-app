@@ -66,7 +66,7 @@ public class ServerThread implements Runnable {
             allUsers.add(newUser);
         }
         */
-        if(new File("users.txt").exists() && new File("users.txt").length() > 0) {
+        if (new File("users.txt").exists() && new File("users.txt").length() > 0) {
 
             String jsonAllUsers;
             try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
@@ -76,20 +76,20 @@ public class ServerThread implements Runnable {
                     allUsers.addAll(usersFromFile);
                 }
             }
-        }else{
+        } else {
             File users = new File("users.txt");
             users.createNewFile();
         }
 
     }
 
-        //Niisama abiks üleval ja all oleva koodi jaoks
-        //Gson gsonUser = new Gson();
-        //String jsonUser = gsonUser.toJson(newUser);
+    //Niisama abiks üleval ja all oleva koodi jaoks
+    //Gson gsonUser = new Gson();
+    //String jsonUser = gsonUser.toJson(newUser);
 
-        //String json = socketIn.readUTF();
-        //Gson gson = new Gson();
-        //User newUser = gson.fromJson(json, User.class);
+    //String json = socketIn.readUTF();
+    //Gson gson = new Gson();
+    //User newUser = gson.fromJson(json, User.class);
 
     private void writeExistingUsersToFile() throws IOException {
         /*
@@ -133,30 +133,33 @@ public class ServerThread implements Runnable {
             boolean checkusername = checkForUsernameInList(socketIn.readUTF());
             socketOut.writeBoolean(checkusername);
         }
-        if(requestType == Commands.doAddTask){
+        if (requestType == Commands.doAddTask) {
             addTask(socketIn, socketOut);
         }
-        if(requestType == Commands.doDisplayTasks){
+        if (requestType == Commands.doDisplayTasks) {
             //vaata ülesandeid
             displayTasks(socketIn, socketOut);
         }
-        if(requestType == Commands.doEditTask){
-            //muuda ülesandeid
-            editTask(socketIn, socketOut);
+        if (requestType == Commands.doAddComment) {
+            //lisa kommentaar
+            addComment(socketIn, socketOut);
         }
-        if(requestType == Commands.doCompleteTask){
+        if(requestType == Commands.doPushDeadline){
+            //lükka taski deadline edasi
+            pushDeadline(socketIn, socketOut);
+        }
+        if (requestType == Commands.doCompleteTask) {
             //märgi ülesanne lõpetatuks
             completeTask(socketIn, socketOut);
         }
-        if(requestType == Commands.doAddTaskToOtherUser){
-            addTaskToOtherUser(socketIn,socketOut);
+        if (requestType == Commands.doAddTaskToOtherUser) {
+            addTaskToOtherUser(socketIn, socketOut);
         }
         if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
             return closeTodoList(socketIn, socketOut);
         }
         return false;
     }
-
 
 
     private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
@@ -184,8 +187,7 @@ public class ServerThread implements Runnable {
                     socketOut.writeInt(Commands.doConfirmLogin); // kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
                     responseSent = true;
-                }
-                else {
+                } else {
                     socketOut.writeInt(Commands.doNotConfirmLogin); // kui sisselogimine ei õnnestu
                     socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti.");
                     responseSent = true;
@@ -199,14 +201,14 @@ public class ServerThread implements Runnable {
     }
 
     //Vajab parandusi
-    private String readHashedPasswordFromFile(String username) throws Exception{
+    private String readHashedPasswordFromFile(String username) throws Exception {
         List<String> fileContent = Files.readAllLines(Path.of("users.txt"));
-        if (fileContent.size() == 1){ //kui fail on tühi
-            return argon2.hash(10,65536,1,allUsers.get(0).getPassword().toCharArray());
+        if (fileContent.size() == 1) { //kui fail on tühi
+            return argon2.hash(10, 65536, 1, allUsers.get(0).getPassword().toCharArray());
         }
         for (String user :
                 fileContent) {
-            if (user.contains(username)){
+            if (user.contains(username)) {
                 return user.split(";;")[5];
             }
         }
@@ -223,48 +225,72 @@ public class ServerThread implements Runnable {
         return usernameAlreadyExists;
     }
 
-    private void editTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        // mingi taski muutmise meetod
-        //user võiks saada valida, mitmenda taski ta muuta soovib e. teame taski indeksit
-        //saab valida kuidas ta kirjeldust muuta soovib ka
+    private void addComment(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(Commands.doEditTask);
-        socketOut.writeUTF("Sisestage taski järjekorranumber, mida te muuta soovite: ");
+        socketOut.writeInt(Commands.doAddComment);
+        int commentsAmount = 0;
+        for (Task task : todoList) {
+            commentsAmount += task.getComments().size();
+        }
+        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
+        socketOut.writeInt(todoList.size());
+        for (Task task : todoList) {
+            socketOut.writeUTF(task.getTaskDescription());
+            for (String comment : task.getComments()) {
+                socketOut.writeUTF("     Comment: " + comment);
+            }
+            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
+        }
+
         int indeks = socketIn.readInt();
-        socketOut.writeUTF("Mida soovite antud taskiga teha: ");
-        socketOut.writeUTF("16 - Soovin lisada kommentaari.");
-        socketOut.writeUTF("17 - Soovin deadline'i muuta. ");
-        int requestType = socketIn.readInt();
-        if(requestType == Commands.doAddComment){
-            String comment = socketIn.readUTF();
-            todoList.get(indeks-1).addComments(comment);
-            System.out.println("saatmisel");
-            socketOut.writeUTF("Kommentaar lisatud.");
-            System.out.println("saadetud");
-
-        }
-        if(requestType == Commands.doPushDeadline){
-            socketOut.writeUTF("Sisestage päevade arv, mille võrra soovite deadline'i edasi lükata: ");
-            int days = socketIn.readInt();
-            todoList.get(indeks - 1).setDeadline(days);
-            socketOut.writeUTF("Deadline muudetud.");
-
-        }
+        String comment = socketIn.readUTF();
+        todoList.get(indeks - 1).addComments(comment);
+        System.out.println("saatmisel");
+        socketOut.writeUTF("Kommentaar lisatud.");
+        System.out.println("saadetud");
 
         socketOut.writeBoolean(false);
     }
-    private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception{
+
+    private void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        List<Task> todoList = currentUser.getToDoList();
+        socketOut.writeInt(Commands.doPushDeadline);
+        int commentsAmount = 0;
+        for (Task task : todoList) {
+            commentsAmount += task.getComments().size();
+        }
+        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
+        socketOut.writeInt(todoList.size());
+        for (Task task : todoList) {
+            socketOut.writeUTF(task.getTaskDescription());
+            for (String comment : task.getComments()) {
+                socketOut.writeUTF("     Comment: " + comment);
+            }
+            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
+        }
+
+        int indeks = socketIn.readInt();
+        int pushDeadline = socketIn.readInt();
+        todoList.get(indeks - 1).setDeadline(pushDeadline);
+        System.out.println("saatmisel");
+        socketOut.writeUTF("Deadline edasi lükatud.");
+        System.out.println("saadetud");
+
+        socketOut.writeBoolean(false);
+    }
+
+    private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         boolean foundUsername = true;
         socketOut.writeInt(Commands.doAddTaskToOtherUser);
-        while(true) {
+        while (true) {
             socketOut.writeUTF("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
             if (!checkForUsernameInList(socketIn.readUTF())) {
                 foundUsername = false;
-            }else {
+            } else {
                 foundUsername = true;
             }
             socketOut.writeBoolean(foundUsername);
-            if(socketIn.readBoolean()){
+            if (socketIn.readBoolean()) {
                 break;
             }
         }
@@ -275,7 +301,7 @@ public class ServerThread implements Runnable {
                 socketOut.writeUTF("Lisa ülesande kirjeldus: ");
                 String description = socketIn.readUTF();
                 int taskID = 0;
-                user.addTask(new Task(description,taskID));
+                user.addTask(new Task(description, taskID));
             }
         }
 
@@ -283,7 +309,7 @@ public class ServerThread implements Runnable {
 
     }
 
-    private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+    private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         socketOut.writeInt(Commands.doAddTask);
         socketOut.writeUTF("Sisestage taski kirjeldus: ");
         String taskDescription = socketIn.readUTF();
@@ -303,7 +329,7 @@ public class ServerThread implements Runnable {
         for (Task task : todoList) {
             commentsAmount += task.getComments().size();
         }
-        socketOut.writeInt(todoList.size()*2 + commentsAmount);
+        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
         for (Task task : todoList) {
             socketOut.writeUTF(task.getTaskDescription());
             for (String comment : task.getComments()) {
@@ -316,12 +342,23 @@ public class ServerThread implements Runnable {
     }
 
     private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        // mingi taski lõpetamise meetod
-        //user võiks saada valida, mitmenda taski ta listist lõpetada soovib e. teame taski indeksit
-        socketOut.writeInt(Commands.doCompleteTask);
-        socketOut.writeUTF("Kirjutage selle taski järjekorranumber, mida soovite eemaldada: ");
-        int indeks = socketIn.readInt();
         List<Task> todoList = currentUser.getToDoList();
+        socketOut.writeInt(Commands.doCompleteTask);
+        int commentsAmount = 0;
+        for (Task task : todoList) {
+            commentsAmount += task.getComments().size();
+        }
+        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
+        socketOut.writeInt(todoList.size());
+        for (Task task : todoList) {
+            socketOut.writeUTF(task.getTaskDescription());
+            for (String comment : task.getComments()) {
+                socketOut.writeUTF("     Comment: " + comment);
+            }
+            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
+        }
+
+        int indeks = socketIn.readInt();
         todoList.get(indeks - 1).setTaskFinished();
         todoList.remove(indeks - 1);
         socketOut.writeUTF("Task edukalt eemaldatud");
