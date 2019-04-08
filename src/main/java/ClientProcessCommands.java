@@ -7,7 +7,7 @@ public class ClientProcessCommands {
     public static void processDisplayTasks(DataInputStream input) throws IOException {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
-        System.out.println("Sinu to-do listis olevad taskid:");
+        System.out.println("Sinu aktiivsed taskid:");
         for (int i = 0; i < tasksAmount; i++) {
             System.out.println(input.readUTF());
         }

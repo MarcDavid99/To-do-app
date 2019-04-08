@@ -20,9 +20,9 @@ public class Main {
 
             label:
             while (true) {
-                System.out.print("Kui soovite registreerida kasutajat, kirjutage 1" + "\r\n" +
-                        "Kui teil on kasutaja olemas, kirjutage 2" + "\r\n" +
-                        "Kui soovite programmi sulgeda, kirjutage 3" + "\r\n" +
+                System.out.print("Registreerimiseks kirjutage:       1" + "\r\n" +
+                                 "Sisse logimiseks kirjutage:        2" + "\r\n" +
+                                 "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
                         "Valige tegevus: ");
                 Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
@@ -46,7 +46,6 @@ public class Main {
                                         "15 - märgi ülesanne lõpetatuks" + "\r\n" +
                                         "16 - lisa ülesanne teisele kasutajale" + "\r\n" +
                                         "17 - sulge programm" + "\r\n");
-
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();
@@ -74,7 +73,7 @@ public class Main {
                                         out.writeInt(Commands.doCloseTodoList2);
                                     }
                                     if (input.readBoolean()) {
-                                        System.out.println("Programm sulgub");
+                                        System.out.println("Programm sulgub!");
                                         return;
                                     }
                                 }
@@ -94,7 +93,7 @@ public class Main {
                         break;
                     //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
                     default:
-                        System.out.println("Sisestage korrektne käsk (1, 2 või 3)");
+                        System.out.println("Sisestage korrektne käsk (1, 2, 3)");
                         break;
                 }
             }

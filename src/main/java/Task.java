@@ -39,9 +39,12 @@ public class Task {
         isFinished = true;
     }
 
-    //public User getTaskOwner() {
-    //    return taskOwner;
-    //}
+    // vt üles, miks välja kommenteeritud
+    /*
+    public User getTaskOwner() {
+        return taskOwner;
+    }
+    */
 
     public String getTaskDescription() {
         return taskDescription;

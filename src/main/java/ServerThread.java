@@ -25,13 +25,13 @@ public class ServerThread implements Runnable {
         try (socket;
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
-            System.out.println("Uue kliendi jaoks luuakse uus thread");
+            System.out.println("DEBUG: Uue kliendi jaoks luuakse uus thread");
 
             readExistingUsersFromFile();
 
             boolean closeProgramme;
             while (true) {
-                System.out.println("ServerThread teeb tööd");
+                System.out.println("DEBUG: ServerThread teeb tööd");
                 closeProgramme = detectClientRequest(input, out);
 
                 if (closeProgramme) {
@@ -39,7 +39,7 @@ public class ServerThread implements Runnable {
                     System.out.println(allUsers);
                     writeExistingUsersToFile();
 
-                    System.out.println("ServerThread lõpetab töö!" + "\r\n");
+                    System.out.println("DEBUG: ServerThread lõpetab töö!" + "\r\n");
                     break;
                 }
             }
@@ -50,77 +50,36 @@ public class ServerThread implements Runnable {
 
     private void readExistingUsersFromFile() throws IOException {
 
-        /*
-        Path pathToFile = Path.of("users.txt");
-        List<String> users = Files.readAllLines(pathToFile);
-
-        for (String user : users) {
-            String json = user;
-            System.out.println(json);
-            Gson gson = new Gson();
-            User newUser = gson.fromJson(json, User.class);
-            allUsers.add(newUser);
-        }
-        */
         if (new File("users.txt").exists() && new File("users.txt").length() > 0) {
-
             String jsonAllUsers;
-            try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
-                while ((jsonAllUsers = br.readLine()) != null) {
-                    Gson gson = new Gson();
-                    List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
-                    allUsers.addAll(usersFromFile);
-                }
-            }
-        } else {
+            List<String> lines = Files.readAllLines(Path.of("users.txt"));
+            Gson gson = new Gson();
+            jsonAllUsers = lines.get(0);
+            List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
+            allUsers.addAll(usersFromFile);
+
+        }
+        else {
             try {
                 Files.createFile(Path.of("users.txt"));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 System.out.println("File already exists");
             }
         }
-
     }
 
-    //Niisama abiks üleval ja all oleva koodi jaoks
-    //Gson gsonUser = new Gson();
-    //String jsonUser = gsonUser.toJson(newUser);
-
-    //String json = socketIn.readUTF();
-    //Gson gson = new Gson();
-    //User newUser = gson.fromJson(json, User.class);
-
     private void writeExistingUsersToFile() throws IOException {
-        /*
-        FileWriter fileWriter = new FileWriter("users.txt");
-        PrintWriter printWriter = new PrintWriter(fileWriter);
 
-        for (User registeredUser : allUsers) {
-            Gson gson = new Gson();
-            String jsonUser = gson.toJson(registeredUser);
-            printWriter.println(jsonUser);
-        }
-        printWriter.close();
-        fileWriter.close();
-        */
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("users.txt"))) {
-            Gson gson = new Gson();
-            System.out.println("Enne allUsers-i jsonAllUsers-iks muutmist checkpoint");
-            String jsonAllUsers = gson.toJson(allUsers);
-            System.out.println("Pärast kõigi kasutajate json-iks muutmist");
-            System.out.println("jsonAllUsers:");
-            System.out.println(jsonAllUsers);
-            System.out.println("Enne faili kirjutamist checkpoint");
-            bw.write(jsonAllUsers);
-        }
+        Path pathToFile = Path.of("users.txt");
+        Gson gson = new Gson();
+        String jsonAllUsers = gson.toJson(allUsers);
+        Files.write(pathToFile, jsonAllUsers.getBytes());
     }
 
     private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
+
         int requestType = socketIn.readInt();
-        //Taskidega seotud käsud võiks alata 11-st
-        //Kasutajaga seotud käsud võiks alata 91-st
-        //91 on kasutaja loomine
         if (requestType == Commands.doSaveNewUser) {
             saveNewUser(socketIn);
         }

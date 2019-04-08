@@ -13,8 +13,6 @@ public class User {
     private String password;
     private List<Task> toDoList;
 
-
-
     //Creating a new user
     public User(String firstName, String lastName, String username, String mailAdress, String password) {
         this.firstName = firstName;
@@ -34,7 +32,6 @@ public class User {
         this.password = password;
         this.toDoList = toDoList;
     }
-
 
     public String getFirstName() {
         return firstName;

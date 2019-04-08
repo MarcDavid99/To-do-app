@@ -18,7 +18,7 @@ public class DeadlineThread implements Runnable {
         try (socket;
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
-            System.out.println("Alustab Deadline-de kontrollimise thread");
+            System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread");
 
             // DeadlineThread-i töö
 

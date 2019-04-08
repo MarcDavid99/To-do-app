@@ -66,10 +66,14 @@ public class UserCreationVerification {
                 int verificationCode = (int) Math.floor(Math.random() * 100000 + 1);
                 //saadetakse kood sisestatud meilile
                 SendMail verificationmail = new SendMail();
-                if (verificationmail.sendMail(mailAddress, "Verification code for your To-Do list account",
-                        "Hello!" + "\r\n" + "\r\n" + "Your verification code is: " + verificationCode + "." + "\r\n" + "\r\n" +
+                if (verificationmail.sendMail(mailAddress,
+                        "Verification code for your To-Do list account",
+                        "Hello!" +
+                                "\r\n" + "\r\n" +
+                                "Your verification code is: " + verificationCode + "." +
+                                "\r\n" + "\r\n" +
                                 "Thank you for using our to-do app!")) {
-                    System.out.print("Sisestage sisestatud meiliaadressile saadetud verification code: ");
+                    System.out.print("Sisestage meiliaadressile saadetud verification code: ");
                     try {
                         int inputCode = Integer.parseInt(scanner.nextLine());
                         if (inputCode == verificationCode) {
@@ -77,7 +81,7 @@ public class UserCreationVerification {
 
                             User newUser = new User(firstName, lastName, username, mailAddress, hashedPassword);
 
-                            System.out.println("Kasutaja on edukalt loodud; kasutajanimi: " + username);
+                            System.out.println("Kasutaja " + username + " on edukalt loodud!");
                             System.out.println();
 
                             socketOut.writeInt(Commands.doSaveNewUser);
