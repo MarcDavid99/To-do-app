@@ -1,5 +1,4 @@
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientProcessCommands {
@@ -30,7 +29,8 @@ public class ClientProcessCommands {
     }
 
     public static void processAddTaskToOtherUsers(DataInputStream input) throws IOException {
-
+        System.out.println(input.readUTF());
+        System.out.println();
     }
 
     public static void processAddComment(DataInputStream input) throws IOException {

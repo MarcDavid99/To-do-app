@@ -1,4 +1,3 @@
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Scanner;
@@ -56,7 +55,6 @@ public class ClientSendMessage {
             }
         }
 
-
         while (true) {
             System.out.print("Sisestage päevade arv, mille võrra soovite deadline'i edasi lükata: ");
             String line = scanner.nextLine();
@@ -78,25 +76,14 @@ public class ClientSendMessage {
         out.writeUTF(taskDescription);
     }
 
-    public static void sendAddTaskToOtherUsers(DataOutputStream out, DataInputStream input) throws IOException {
+    public static void sendAddTaskToOtherUsers(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-        while (true) { //Kontrollib kas kasutaja sisestatud kasutajanimi eksisteerib üldse
-            System.out.print("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
-            String enteredUsername = scanner.nextLine();
-            System.out.println("Lisa ülesande kirjeldus: ");
-            String description = scanner.nextLine();
-
-            out.writeUTF(enteredUsername);
-            out.writeUTF(description);
-            if (input.readBoolean()) {
-                System.out.println("Kasutajale " + enteredUsername + " on lisatud ülesanne kirjeldusega " + description);
-                break;
-            } else {
-                System.out.println("Sisestatud kasutajanime ei eksisteeri, proovi uuesti");
-                continue;
-            }
-        }
-
-        out.writeBoolean(false);
+        System.out.print("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
+        String enteredUsername = scanner.nextLine();
+        System.out.print("Lisa ülesande kirjeldus: ");
+        String description = scanner.nextLine();
+        out.writeInt(Commands.doAddTaskToOtherUser);
+        out.writeUTF(enteredUsername);
+        out.writeUTF(description);
     }
 }

@@ -121,12 +121,6 @@ public class ServerThread implements Runnable {
         return false;
     }
 
-
-    private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        socketOut.writeBoolean(true);
-        return true;
-    }
-
     private void saveNewUser(DataInputStream socketIn) throws IOException {
         String json = socketIn.readUTF();
         Gson gson = new Gson();
@@ -185,6 +179,14 @@ public class ServerThread implements Runnable {
         return usernameAlreadyExists;
     }
 
+
+    //todo listiga seotud meetodid
+
+    private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        socketOut.writeBoolean(true);
+        return true;
+    }
+
     private void addComment(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
 
@@ -221,8 +223,6 @@ public class ServerThread implements Runnable {
     }
 
     private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
-        while (true) {
-            socketOut.writeInt(Commands.doAddTaskToOtherUser);
             String username = socketIn.readUTF();
             String description = socketIn.readUTF();
             if (checkForUsernameInList(username)) {
@@ -232,12 +232,14 @@ public class ServerThread implements Runnable {
                         user.addTask(new Task(description, taskID));
                     }
                 }
-                socketOut.writeBoolean(true);
-                break;
-            } else {
-                socketOut.writeBoolean(false);
+                socketOut.writeInt(Commands.doAddTaskToOtherUser);
+                socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
             }
-        }
+            else {
+                socketOut.writeInt(Commands.errorOccured);
+                socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
+            }
+        socketOut.writeBoolean(false);
 
     }
 

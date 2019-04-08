@@ -63,13 +63,14 @@ public class Main {
                                             boolean notImportant = input.readBoolean();
                                         }
                                         //serverile vajaliku info saatmine
-                                        commandToServer(out, input, commandInt, scanner);
+                                        commandToServer(out, commandInt);
 
                                         //serverilt saadud info vastuvõtmine
                                         int serverMessageType = input.readInt();
-                                        processServerMessageType(out, input, serverMessageType, scanner);
+                                        processServerMessageType(input, serverMessageType);
 
-                                    } else {
+                                    }
+                                    else {
                                         out.writeInt(Commands.doCloseTodoList2);
                                     }
                                     if (input.readBoolean()) {
@@ -102,7 +103,7 @@ public class Main {
     }
 
 
-    private static void commandToServer(DataOutputStream out, DataInputStream input, int command, Scanner scanner) throws IOException {
+    private static void commandToServer(DataOutputStream out, int command) throws IOException {
         if (command == Commands.doCompleteTask) {
             ClientSendMessage.sendCompleteTask(out);
         } else if (command == Commands.doDisplayTasks) {
@@ -114,11 +115,11 @@ public class Main {
         } else if (command == Commands.doAddTask) {
             ClientSendMessage.sendAddTask(out);
         } else if (command == Commands.doAddTaskToOtherUser) {
-            ClientSendMessage.sendAddTaskToOtherUsers(out, input);
+            ClientSendMessage.sendAddTaskToOtherUsers(out);
         }
     }
 
-    private static void processServerMessageType(DataOutputStream out, DataInputStream input, int command, Scanner scanner) throws IOException {
+    private static void processServerMessageType(DataInputStream input, int command) throws IOException {
         if (command == Commands.doCompleteTask) {
             ClientProcessCommands.processCompleteTask(input);
         } else if (command == Commands.doDisplayTasks) {
