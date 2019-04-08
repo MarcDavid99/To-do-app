@@ -8,10 +8,14 @@ public class DeadlineThread implements Runnable {
     // teen siia hiljem threadi, mis perioodiliselt kontrollib kõigi taskide deadline
 
     private final Socket socket;
+    private final ServerContext sctx;
 
-    public DeadlineThread(Socket socket) {
+    public DeadlineThread(Socket socket, ServerContext sctx) {
+
         this.socket = socket;
+        this.sctx = sctx;
     }
+
 
     public void run() {
 
@@ -23,12 +27,16 @@ public class DeadlineThread implements Runnable {
             // DeadlineThread-i töö
             while (true) {
 
+                // TODO: Kontroll lõpuni teha (hetkel algelised tsüklid)
+                List<User> allUsersToCheck = sctx.getAllUsers();
+                for (User user : allUsersToCheck) {
+                    List<Task> currentUserTaskList = user.getToDoList();
+                    for (Task task : currentUserTaskList) {
+                    }
+                }
                 /*
-
                 kontrollib deadline siin
-
                  */
-
 
                 // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
                 long timeOfSleep = 3600000; // 3 tundi millisekundites

@@ -12,15 +12,17 @@ import java.util.List;
 public class ServerThread implements Runnable {
 
     private final Socket socket;
+    private final ServerContext sctx;
     private User currentUser;
     private Argon2 argon2 = Argon2Factory.create();
 
     private List<User> allUsers = new ArrayList<>();
 
-    public ServerThread(Socket socket) {
-        this.socket = socket;
-    }
+    public ServerThread(Socket socket, ServerContext sctx) {
 
+        this.socket = socket;
+        this.sctx = sctx;
+    }
 
     public void run() {
         try (socket;
@@ -34,6 +36,9 @@ public class ServerThread implements Runnable {
             while (true) {
                 System.out.println("DEBUG: ServerThread teeb tööd");
                 closeProgramme = detectClientRequest(input, out);
+
+                // Värskendab sctx-is olevat Userite listi
+                sctx.setAllUsers(allUsers);
 
                 if (closeProgramme) {
 

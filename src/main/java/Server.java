@@ -1,5 +1,7 @@
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Server {
@@ -18,10 +20,13 @@ public class Server {
                 }
                 */
 
+            // TODO: teen hiljem ilmselt CopyOnWriteArrayList-iks
+            List<User> starterUserList = new ArrayList<>();
+            ServerContext serverContext = new ServerContext(starterUserList);
             while (true) {
                 Socket socket = ss.accept();
 
-                Thread thread = new Thread(new ServerThread(socket));
+                Thread thread = new Thread(new ServerThread(socket, serverContext));
                 thread.start();
             }
         }
