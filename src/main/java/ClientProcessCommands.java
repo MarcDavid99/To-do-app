@@ -124,20 +124,22 @@ public class ClientProcessCommands {
 
     public static void addTaskToOtherUsers(Scanner scanner, DataOutputStream out, DataInputStream input) throws IOException {
         while (true) { //Kontrollib kas kasutaja sisestatud kasutajanimi eksisteerib üldse
-            System.out.print(input.readUTF());
+            System.out.print("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
             String enteredUsername = scanner.nextLine();
+            System.out.println("Lisa ülesande kirjeldus: ");
+            String description = scanner.nextLine();
+
             out.writeUTF(enteredUsername);
-            if (input.readBoolean()) {
-                out.writeBoolean(true); //Saadab serverile conformationi, et tõepoolest eksisteerib kasutaja nimi ja võib edasi minna
-                out.writeUTF(enteredUsername);
+            out.writeUTF(description);
+            if(input.readBoolean()){
+                System.out.println("Kasutajale " + enteredUsername + " on lisatud ülesanne kirjeldusega " + description);
                 break;
+            }else{
+                System.out.println("Sisestatud kasutajanime ei eksisteeri, proovi uuesti");
+                continue;
             }
-            System.out.println("Sisestatud kasutajanime ei eksisteeri, proovi uuesti");
-            out.writeBoolean(false);
         }
 
-        System.out.print(input.readUTF());
-        out.writeUTF(scanner.nextLine()); //Küsib kasutajalt mis ülesande kirjeldus on ja saadab serverile
-
+        out.writeBoolean(false);
     }
 }

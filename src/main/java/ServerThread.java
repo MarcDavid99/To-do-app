@@ -77,8 +77,11 @@ public class ServerThread implements Runnable {
                 }
             }
         } else {
-            File users = new File("users.txt");
-            users.createNewFile();
+            try {
+                Files.createFile(Path.of("users.txt"));
+            }catch (Exception e){
+                System.out.println("File already exists");
+            }
         }
 
     }
@@ -280,32 +283,23 @@ public class ServerThread implements Runnable {
     }
 
     private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
-        boolean foundUsername = true;
-        socketOut.writeInt(Commands.doAddTaskToOtherUser);
         while (true) {
-            socketOut.writeUTF("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
-            if (!checkForUsernameInList(socketIn.readUTF())) {
-                foundUsername = false;
-            } else {
-                foundUsername = true;
-            }
-            socketOut.writeBoolean(foundUsername);
-            if (socketIn.readBoolean()) {
+            socketOut.writeInt(Commands.doAddTaskToOtherUser);
+            String username = socketIn.readUTF();
+            String description = socketIn.readUTF();
+            if (checkForUsernameInList(username)) {
+                for (User user : allUsers) {
+                    if (user.getUsername().equals(username)) {
+                        int taskID = 0;
+                        user.addTask(new Task(description, taskID));
+                    }
+                }
+                socketOut.writeBoolean(true);
                 break;
+            } else {
+                socketOut.writeBoolean(false);
             }
         }
-        String username = socketIn.readUTF();
-        for (User user :
-                allUsers) {
-            if (user.getUsername().equals(username)) {
-                socketOut.writeUTF("Lisa ülesande kirjeldus: ");
-                String description = socketIn.readUTF();
-                int taskID = 0;
-                user.addTask(new Task(description, taskID));
-            }
-        }
-
-        socketOut.writeBoolean(false);
 
     }
 
