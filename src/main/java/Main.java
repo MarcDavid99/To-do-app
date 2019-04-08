@@ -24,7 +24,7 @@ public class Main {
                         "Kui teil on kasutaja olemas, kirjutage 2" + "\r\n" +
                         "Kui soovite programmi sulgeda, kirjutage 3" + "\r\n" +
                         "Valige tegevus: ");
-                Scanner scanner = new Scanner(System.in);
+                Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
 
                 switch (initialCommand) {
@@ -37,6 +37,7 @@ public class Main {
                         if (UserCreationVerification.userVerification(out, input, scanner)) {
                             while (true) {
                                 String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17"};
+                                String[] commandsThatNeedList = {"13", "14", "15"};
                                 System.out.println("Erinevad võimalused: " + "\r\n" +
                                         "11 - lisa ülesanne" + "\r\n" +
                                         "12 - vaata ülesandeid" + "\r\n" +
@@ -51,10 +52,26 @@ public class Main {
                                 String command = scanner.nextLine();
                                 System.out.println();
                                 if (Arrays.asList(possibleCommands).contains(command)) {
-                                    commandToServer(out, command);
-                                    if (!command.equals("17")) {
-                                        int messageTypeFromServer = input.readInt();
-                                        processCommand(input, out, messageTypeFromServer);
+                                    int commandInt = Integer.parseInt(command);
+                                    if (commandInt != Commands.doCloseTodoList2) {
+                                        if (Arrays.asList(commandsThatNeedList).contains(command)) {
+                                            out.writeInt(Commands.doDisplayTasks);
+                                            //messageType loeb sisse, sest server saadab displayTasksi korral message type
+                                            int messageType = input.readInt();
+                                            ClientProcessCommands.processDisplayTasks(input);
+                                            //loeb siin ikkagi sisse booleani, kuigi see pole oluline, aga ma ei hakka uut meetodit tegema
+                                            //kui saab kasutada displayTasksi
+                                            boolean notImportant = input.readBoolean();
+                                        }
+                                        //serverile vajaliku info saatmine
+                                        commandToServer(out, input, commandInt, scanner);
+
+                                        //serverilt saadud info vastuvõtmine
+                                        int serverMessageType = input.readInt();
+                                        processServerMessageType(out, input, serverMessageType, scanner);
+
+                                    } else {
+                                        out.writeInt(Commands.doCloseTodoList2);
                                     }
                                     if (input.readBoolean()) {
                                         System.out.println("Programm sulgub");
@@ -82,33 +99,41 @@ public class Main {
                 }
             }
         }
+
     }
 
-    private static void processCommand(DataInputStream input, DataOutputStream out, int messageTypeFromServer) throws IOException {
-        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-        if (messageTypeFromServer == Commands.doCompleteTask) {
-            ClientProcessCommands.completeTask(scanner, out, input);
-        }
-        else if (messageTypeFromServer == Commands.doDisplayTasks) {
-            ClientProcessCommands.doDisplayTasks(out, input);
-        }
-        else if (messageTypeFromServer == Commands.doAddComment) {
-            ClientProcessCommands.addComment(scanner, out, input);
-        }
-        else if (messageTypeFromServer == Commands.doPushDeadline) {
-            ClientProcessCommands.pushDeadline(scanner, out, input);
-        }
-        else if (messageTypeFromServer == Commands.doAddTask) {
-            ClientProcessCommands.addTask(scanner, input, out);
-        }
-        else if (messageTypeFromServer == Commands.doAddTaskToOtherUser) {
-            ClientProcessCommands.addTaskToOtherUsers(scanner, out, input);
+
+    private static void commandToServer(DataOutputStream out, DataInputStream input, int command, Scanner scanner) throws IOException {
+        if (command == Commands.doCompleteTask) {
+            ClientSendMessage.sendCompleteTask(out);
+        } else if (command == Commands.doDisplayTasks) {
+            out.writeInt(Commands.doDisplayTasks);
+        } else if (command == Commands.doAddComment) {
+            ClientSendMessage.sendAddComment(out);
+        } else if (command == Commands.doPushDeadline) {
+            ClientSendMessage.sendPushDeadline(out);
+        } else if (command == Commands.doAddTask) {
+            ClientSendMessage.sendAddTask(out);
+        } else if (command == Commands.doAddTaskToOtherUser) {
+            ClientSendMessage.sendAddTaskToOtherUsers(out, input);
         }
     }
 
-    private static void commandToServer(DataOutputStream socketOut, String command) throws IOException {
-        int commandAsInt = Integer.parseInt(command);
-        socketOut.writeInt(commandAsInt);
+    private static void processServerMessageType(DataOutputStream out, DataInputStream input, int command, Scanner scanner) throws IOException {
+        if (command == Commands.doCompleteTask) {
+            ClientProcessCommands.processCompleteTask(input);
+        } else if (command == Commands.doDisplayTasks) {
+            ClientProcessCommands.processDisplayTasks(input);
+        } else if (command == Commands.doAddComment) {
+            ClientProcessCommands.processAddComment(input);
+        } else if (command == Commands.doPushDeadline) {
+            ClientProcessCommands.processPushDeadline(input);
+        } else if (command == Commands.doAddTask) {
+            ClientProcessCommands.processAddTask(input);
+        } else if (command == Commands.doAddTaskToOtherUser) {
+            ClientProcessCommands.processAddTaskToOtherUsers(input);
+        } else if (command == Commands.errorOccured) {
+            ClientProcessCommands.processErrorOccured(input);
+        }
     }
-
 }

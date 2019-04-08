@@ -7,6 +7,7 @@ public class Commands {
     public static final int doAddComment = 13;
     public static final int doPushDeadline = 14;
     public static final int doAddTaskToOtherUser = 16;
+    public static final int errorOccured = 20;
     public static final int doSaveNewUser = 91;
     public static final int doVerifyClient = 92;
     public static final int doConfirmLogin = 93;

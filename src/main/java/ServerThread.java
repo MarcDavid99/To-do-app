@@ -11,10 +11,6 @@ import java.util.List;
 
 public class ServerThread implements Runnable {
 
-    //hetkel on serverthreadis jama, kui nt pärast taski loomist user programmi sulgeb
-    //ilmselt on faili kirjutamisega probleem, sest errorid gsoniga seotud ja pärast seda
-    //on user.txt file täiesti tühi
-
     private final Socket socket;
     private User currentUser;
     private Argon2 argon2 = Argon2Factory.create();
@@ -79,7 +75,7 @@ public class ServerThread implements Runnable {
         } else {
             try {
                 Files.createFile(Path.of("users.txt"));
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("File already exists");
             }
         }
@@ -140,19 +136,15 @@ public class ServerThread implements Runnable {
             addTask(socketIn, socketOut);
         }
         if (requestType == Commands.doDisplayTasks) {
-            //vaata ülesandeid
-            displayTasks(socketIn, socketOut);
+            displayTasks(socketOut);
         }
         if (requestType == Commands.doAddComment) {
-            //lisa kommentaar
             addComment(socketIn, socketOut);
         }
-        if(requestType == Commands.doPushDeadline){
-            //lükka taski deadline edasi
+        if (requestType == Commands.doPushDeadline) {
             pushDeadline(socketIn, socketOut);
         }
         if (requestType == Commands.doCompleteTask) {
-            //märgi ülesanne lõpetatuks
             completeTask(socketIn, socketOut);
         }
         if (requestType == Commands.doAddTaskToOtherUser) {
@@ -230,55 +222,36 @@ public class ServerThread implements Runnable {
 
     private void addComment(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(Commands.doAddComment);
-        int commentsAmount = 0;
-        for (Task task : todoList) {
-            commentsAmount += task.getComments().size();
-        }
-        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
-        socketOut.writeInt(todoList.size());
-        for (Task task : todoList) {
-            socketOut.writeUTF(task.getTaskDescription());
-            for (String comment : task.getComments()) {
-                socketOut.writeUTF("     Comment: " + comment);
-            }
-            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
-        }
 
-        int indeks = socketIn.readInt();
-        String comment = socketIn.readUTF();
-        todoList.get(indeks - 1).addComments(comment);
-        System.out.println("saatmisel");
-        socketOut.writeUTF("Kommentaar lisatud.");
-        System.out.println("saadetud");
+        int indeks = socketIn.readInt()-1;
+        if(indeks >= 0 && indeks < todoList.size()){
+            String comment = socketIn.readUTF();
+            todoList.get(indeks).addComments(comment);
+            socketOut.writeInt(Commands.doAddComment);
+            socketOut.writeUTF("Kommentaar lisatud.");
+        }
+        else {
+            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
+        }
 
         socketOut.writeBoolean(false);
     }
 
     private void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(Commands.doPushDeadline);
-        int commentsAmount = 0;
-        for (Task task : todoList) {
-            commentsAmount += task.getComments().size();
-        }
-        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
-        socketOut.writeInt(todoList.size());
-        for (Task task : todoList) {
-            socketOut.writeUTF(task.getTaskDescription());
-            for (String comment : task.getComments()) {
-                socketOut.writeUTF("     Comment: " + comment);
-            }
-            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
-        }
 
-        int indeks = socketIn.readInt();
-        int pushDeadline = socketIn.readInt();
-        todoList.get(indeks - 1).setDeadline(pushDeadline);
-        System.out.println("saatmisel");
-        socketOut.writeUTF("Deadline edasi lükatud.");
-        System.out.println("saadetud");
-
+        int indeks = socketIn.readInt()-1;
+        if(indeks >= 0 && indeks < todoList.size()){
+            int pushDeadline = socketIn.readInt();
+            todoList.get(indeks).setDeadline(pushDeadline);
+            socketOut.writeInt(Commands.doPushDeadline);
+            socketOut.writeUTF("Deadline edasi lükatud.");
+        }
+        else {
+            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
+        }
         socketOut.writeBoolean(false);
     }
 
@@ -304,19 +277,18 @@ public class ServerThread implements Runnable {
     }
 
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        socketOut.writeInt(Commands.doAddTask);
-        socketOut.writeUTF("Sisestage taski kirjeldus: ");
         String taskDescription = socketIn.readUTF();
         // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
         int taskID = 0;
         currentUser.addTask(new Task(taskDescription, taskID));
-        socketOut.writeUTF("Task loodud.");
 
+        socketOut.writeInt(Commands.doAddTask);
+        socketOut.writeUTF("Task loodud.");
         socketOut.writeBoolean(false);
 
     }
 
-    private void displayTasks(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void displayTasks(DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
         socketOut.writeInt(Commands.doDisplayTasks);
         int commentsAmount = 0;
@@ -337,26 +309,16 @@ public class ServerThread implements Runnable {
 
     private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(Commands.doCompleteTask);
-        int commentsAmount = 0;
-        for (Task task : todoList) {
-            commentsAmount += task.getComments().size();
+        int indeks = socketIn.readInt() - 1;
+        if (indeks >= 0 && indeks < todoList.size()) {
+            todoList.get(indeks).setTaskFinished();
+            todoList.remove(indeks);
+            socketOut.writeInt(Commands.doCompleteTask);
+            socketOut.writeUTF("Task edukalt eemaldatud");
+        } else {
+            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
-        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
-        socketOut.writeInt(todoList.size());
-        for (Task task : todoList) {
-            socketOut.writeUTF(task.getTaskDescription());
-            for (String comment : task.getComments()) {
-                socketOut.writeUTF("     Comment: " + comment);
-            }
-            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
-        }
-
-        int indeks = socketIn.readInt();
-        todoList.get(indeks - 1).setTaskFinished();
-        todoList.remove(indeks - 1);
-        socketOut.writeUTF("Task edukalt eemaldatud");
-
         socketOut.writeBoolean(false);
     }
 }
