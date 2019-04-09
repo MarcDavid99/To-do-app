@@ -41,23 +41,25 @@ public class DeadlineThread implements Runnable {
                 // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
                 long timeOfSleep = 3600000; // 3 tundi millisekundites
                 long start, end, timeSlept;
-                boolean interrupted = false;
 
-                while (timeOfSleep > 0) {
-                    start = System.currentTimeMillis();
-                    try {
-                        Thread.sleep(timeOfSleep);
-                        break;
-                    }
-                    catch (InterruptedException e) {
-                        end = System.currentTimeMillis();
-                        timeSlept = end - start;
-                        timeOfSleep -= timeSlept;
-                        interrupted = true;
+                try {
+                    while (timeOfSleep > 0) {
+                        start = System.currentTimeMillis();
+                        try {
+                            Thread.sleep(timeOfSleep);
+                            break;
+                        }
+                        catch (InterruptedException e) {
+                            end = System.currentTimeMillis();
+                            timeSlept = end - start;
+                            timeOfSleep -= timeSlept;
+                            Thread.currentThread().interrupt();
+                        }
                     }
                 }
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
+                catch (Exception e) {
+                    System.out.println("DEBUG: DeadlineThread-i .sleep() meetod katkestati");
+                    throw new RuntimeException(e);
                 }
             }
         }
