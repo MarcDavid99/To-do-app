@@ -6,11 +6,16 @@ public class ClientProcessCommands {
     public static void processDisplayTasks(DataInputStream input) throws IOException {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
-        System.out.println("Sinu aktiivsed taskid:");
-        for (int i = 0; i < tasksAmount; i++) {
-            System.out.println(input.readUTF());
+        if (tasksAmount == 0) {
+            System.out.println("Sul pole ühtegi aktiivset taski. \r\n");
         }
-        System.out.println();
+        else {
+            System.out.println("Sinu aktiivsed taskid:");
+            for (int i = 0; i < tasksAmount; i++) {
+                System.out.println(input.readUTF());
+            }
+            System.out.println();
+        }
     }
 
     public static void processAddTask(DataInputStream input) throws IOException {

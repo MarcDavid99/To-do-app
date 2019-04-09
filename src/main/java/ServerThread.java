@@ -58,9 +58,9 @@ public class ServerThread implements Runnable {
 
         if (new File("users.txt").exists() && new File("users.txt").length() > 0) {
             String jsonAllUsers;
-            List<String> lines = Files.readAllLines(Path.of("users.txt"));
+            Path pathToFile = Path.of("users.txt");
+            jsonAllUsers = Files.readString(pathToFile);
             Gson gson = new Gson();
-            jsonAllUsers = lines.get(0);
             List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
             allUsers.addAll(usersFromFile);
 
@@ -80,7 +80,7 @@ public class ServerThread implements Runnable {
         Path pathToFile = Path.of("users.txt");
         Gson gson = new Gson();
         String jsonAllUsers = gson.toJson(allUsers);
-        Files.write(pathToFile, jsonAllUsers.getBytes());
+        Files.writeString(pathToFile, jsonAllUsers);
     }
 
     private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
@@ -180,7 +180,7 @@ public class ServerThread implements Runnable {
     }
 
 
-    //todo listiga seotud meetodid
+    // TODO: listiga seotud meetodid
 
     private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         socketOut.writeBoolean(true);
@@ -196,6 +196,7 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).addComments(comment);
             socketOut.writeInt(Commands.doAddComment);
             socketOut.writeUTF("Kommentaar lisatud.");
+            writeExistingUsersToFile();
         }
         else {
             socketOut.writeInt(Commands.errorOccured);
@@ -214,6 +215,7 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).setDeadline(pushDeadline);
             socketOut.writeInt(Commands.doPushDeadline);
             socketOut.writeUTF("Deadline edasi lükatud.");
+            writeExistingUsersToFile();
         }
         else {
             socketOut.writeInt(Commands.errorOccured);
@@ -234,6 +236,7 @@ public class ServerThread implements Runnable {
                 }
                 socketOut.writeInt(Commands.doAddTaskToOtherUser);
                 socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
+                writeExistingUsersToFile();
             }
             else {
                 socketOut.writeInt(Commands.errorOccured);
@@ -252,7 +255,7 @@ public class ServerThread implements Runnable {
         socketOut.writeInt(Commands.doAddTask);
         socketOut.writeUTF("Task loodud.");
         socketOut.writeBoolean(false);
-
+        writeExistingUsersToFile();
     }
 
     private void displayTasks(DataOutputStream socketOut) throws IOException {
@@ -263,12 +266,32 @@ public class ServerThread implements Runnable {
             commentsAmount += task.getComments().size();
         }
         socketOut.writeInt(todoList.size() * 2 + commentsAmount);
+        int taskNumber = 1;
         for (Task task : todoList) {
-            socketOut.writeUTF(task.getTaskDescription());
-            for (String comment : task.getComments()) {
-                socketOut.writeUTF("     Comment: " + comment);
+            socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
+            if (task.getComments().size() == 1) {
+                socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
             }
-            socketOut.writeUTF("     Deadline: " + task.getTaskDeadline().getDeadlineDate());
+            else {
+                int commentNumber = 1;
+                for (String comment : task.getComments()) {
+                    if (commentNumber == 1) {
+                        socketOut.writeUTF("   *Kommentaarid:" + "\r\n" +
+                                "      " + commentNumber + ". " + comment);
+                    }
+                    else {
+                        socketOut.writeUTF("      " + commentNumber + ". " + comment);
+                    }
+                    commentNumber += 1;
+                }
+            }
+            /*
+            for (String comment : task.getComments()) {
+                socketOut.writeUTF("   *Kommentaar: " + comment);
+            }
+            */
+            socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
+            taskNumber += 1;
         }
 
         socketOut.writeBoolean(false);
@@ -282,6 +305,7 @@ public class ServerThread implements Runnable {
             todoList.remove(indeks);
             socketOut.writeInt(Commands.doCompleteTask);
             socketOut.writeUTF("Task edukalt eemaldatud");
+            writeExistingUsersToFile();
         } else {
             socketOut.writeInt(Commands.errorOccured);
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
