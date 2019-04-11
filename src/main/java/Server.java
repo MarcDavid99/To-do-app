@@ -7,22 +7,22 @@ import java.util.List;
 public class Server {
 
     public static void main(String[] args) throws Exception {
-        //boolean deadlineThreadActive = false;
         try (ServerSocket ss = new ServerSocket(1337)) {
             System.out.println("DEBUG: Server alustab tööd" + "\r\n");
-
-            // Siin pole veel midagi mõistlikku, sp välja kommenteeritud
-                /*
-                if (!deadlineThreadActive) {
-                    Thread deadlineThread = new Thread(new DeadlineThread(socket));
-                    deadlineThread.start();
-                    deadlineThreadActive = true;
-                }
-                */
 
             // TODO: teen hiljem ilmselt CopyOnWriteArrayList-iks
             List<User> starterUserList = new ArrayList<>();
             ServerContext serverContext = new ServerContext(starterUserList);
+
+
+            // Välja kommenteeritud, sest terve Server ootab hektel DeadlineThreadi taga
+            /*
+
+            Thread deadlineThread = new Thread(new DeadlineThread(ss.accept(), serverContext));
+            deadlineThread.start();
+
+            */
+
             while (true) {
                 Socket socket = ss.accept();
 

@@ -5,8 +5,6 @@ import java.util.List;
 
 public class DeadlineThread implements Runnable {
 
-    // teen siia hiljem threadi, mis perioodiliselt kontrollib kõigi taskide deadline
-
     private final Socket socket;
     private final ServerContext sctx;
 
@@ -24,42 +22,59 @@ public class DeadlineThread implements Runnable {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread");
 
-            // DeadlineThread-i töö
-            while (true) {
+            long timeOfSleep = 3600000; // 3 tundi millisekundites
+            // long timeOfSleep = 10000;        10 sekundit (Testväärtus)
+            long start = 0; // vajab algväärtust
+            long end;
+            long timeSlept;
 
-                // TODO: Kontroll lõpuni teha (hetkel algelised tsüklid)
+
+            while (true) {
                 List<User> allUsersToCheck = sctx.getAllUsers();
                 for (User user : allUsersToCheck) {
                     List<Task> currentUserTaskList = user.getToDoList();
                     for (Task task : currentUserTaskList) {
+
+                        // TODO: Taskidele tuleks lisada mingi boolean või int arv, mis näitab, kas deadline
+                        // TODO: tulekut on juba hoiatatud. Int-ist oleks kasu, kui anname kasutajale võimaluse
+                        // TODO: paluda nt mitut meeldetuletust.
+                        // Hetkel saadetakse iga 3 tunni tagant kasutajale e-mail.
+
+                        Deadline currentDeadline = task.getTaskDeadline();
+                        if (currentDeadline.isPastDeadline()) {
+
+                            String mailSubject = "Reminder of your task in our To-Do List!";
+                            String mailBody = "Hello!" +
+                                    "\r\n" + "\r\n" +
+                                    "Your task's deadline is approaching soon." + "\r\n" +
+                                    "Task description: " + task.getTaskDescription() +
+                                    "\r\n" + "\r\n" +
+                                    "Thank you for using our to-do app!";
+
+                            SendMail remindCurrentTaskOwner = new SendMail();
+                            remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
+                        }
                     }
                 }
-                /*
-                kontrollib deadline siin
-                 */
+                // Värskendab sctx-s hoiustatavat userite listi
+                sctx.setAllUsers(allUsersToCheck);
 
+                System.out.println("DEBUG: DeadlineThread jääb magama");
                 // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
-                long timeOfSleep = 3600000; // 3 tundi millisekundites
-                long start, end, timeSlept;
-
                 try {
                     while (timeOfSleep > 0) {
                         start = System.currentTimeMillis();
-                        try {
-                            Thread.sleep(timeOfSleep);
-                            break;
-                        }
-                        catch (InterruptedException e) {
-                            end = System.currentTimeMillis();
-                            timeSlept = end - start;
-                            timeOfSleep -= timeSlept;
-                            Thread.currentThread().interrupt();
-                        }
+                        Thread.sleep(timeOfSleep);
+                        timeOfSleep = 3600000; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
+                        System.out.println("DEBUG: DeadlineThread ärkab");
+                        break;
+
                     }
-                }
-                catch (Exception e) {
-                    System.out.println("DEBUG: DeadlineThread-i .sleep() meetod katkestati");
-                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    end = System.currentTimeMillis();
+                    timeSlept = end - start;
+                    timeOfSleep -= timeSlept;
+                    Thread.currentThread().interrupt();
                 }
             }
         }

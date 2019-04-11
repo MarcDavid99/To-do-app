@@ -63,7 +63,6 @@ public class ServerThread implements Runnable {
             Gson gson = new Gson();
             List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
             allUsers.addAll(usersFromFile);
-
         }
         else {
             try {
