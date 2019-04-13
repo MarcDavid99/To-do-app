@@ -9,12 +9,14 @@ public class User {
     final private String firstName;
     final private String lastName;
     final private String username;
+    final private String userID;
     final private String mailAdress;
     private String password;
     private List<Task> toDoList;
 
     //Creating a new user
-    public User(String firstName, String lastName, String username, String mailAdress, String password) {
+    public User(String userID, String firstName, String lastName, String username, String mailAdress, String password) {
+        this.userID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -23,15 +25,6 @@ public class User {
         this.toDoList = new ArrayList<>();
     }
 
-    //Reading an existing user from .txt file
-    public User(String firstName, String lastName, String username, String mailAdress, String password, List<Task> toDoList) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.username = username;
-        this.mailAdress = mailAdress;
-        this.password = password;
-        this.toDoList = toDoList;
-    }
 
     public String getFirstName() {
         return firstName;
@@ -43,6 +36,10 @@ public class User {
 
     public String getMailAdress() {
         return mailAdress;
+    }
+
+    public String getUserID() {
+        return userID;
     }
 
     public String getUsername() {

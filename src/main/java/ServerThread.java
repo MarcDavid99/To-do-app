@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ServerThread implements Runnable {
 
@@ -93,8 +94,8 @@ public class ServerThread implements Runnable {
         }
         if (requestType == Commands.doCheckForUsername) {
 
-            boolean checkusername = checkForUsernameInList(socketIn.readUTF());
-            socketOut.writeBoolean(checkusername);
+            boolean checkUsername = checkForUsernameInList(socketIn.readUTF());
+            socketOut.writeBoolean(checkUsername);
         }
         if (requestType == Commands.doAddTask) {
             addTask(socketIn, socketOut);
@@ -229,8 +230,8 @@ public class ServerThread implements Runnable {
             if (checkForUsernameInList(username)) {
                 for (User user : allUsers) {
                     if (user.getUsername().equals(username)) {
-                        int taskID = 0;
-                        user.addTask(new Task(description, taskID));
+                        String taskID = UUID.randomUUID().toString();
+                        user.addTask(new Task(description, taskID, currentUser.getUserID()));
                     }
                 }
                 socketOut.writeInt(Commands.doAddTaskToOtherUser);
@@ -248,8 +249,8 @@ public class ServerThread implements Runnable {
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String taskDescription = socketIn.readUTF();
         // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
-        int taskID = 0;
-        currentUser.addTask(new Task(taskDescription, taskID));
+        String taskID = UUID.randomUUID().toString();
+        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID()));
 
         socketOut.writeInt(Commands.doAddTask);
         socketOut.writeUTF("Task loodud.");

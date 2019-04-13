@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class UserCreationVerification {
     static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws IOException {
@@ -78,8 +79,8 @@ public class UserCreationVerification {
                         int inputCode = Integer.parseInt(scanner.nextLine());
                         if (inputCode == verificationCode) {
 
-
-                            User newUser = new User(firstName, lastName, username, mailAddress, hashedPassword);
+                            String userID = UUID.randomUUID().toString();
+                            User newUser = new User(userID, firstName, lastName, username, mailAddress, hashedPassword);
 
                             System.out.println("Kasutaja " + username + " on edukalt loodud!");
                             System.out.println();

@@ -9,22 +9,21 @@ public class Task {
     Pidin selle ära kustutama ja siia tuleks mingi int tüüpi ID asemele teha
 
      */
-    //final private User taskOwner;
+    final private String taskOwnerID;
     final private String taskDescription;
-    final int taskID;
+    final String taskID;
     private boolean isFinished;
     final private List<Task> linkedTasks;
     final private List<String> comments;
     private Deadline taskDeadline = new Deadline();
 
 
-    public Task(String taskDescription, int taskID) {
-        //this.taskOwner = taskOwner;
+    public Task(String taskDescription, String taskID, String taskOwnerID) {
+        this.taskOwnerID = taskOwnerID;
         this.taskDescription = taskDescription;
         this.taskID = taskID;
         this.comments = new ArrayList<>();
         this.linkedTasks = new ArrayList<>();
-        //kui alles taski loome, siis ilmselt see pole kohe algul finished
         this.isFinished = false;
         this.taskDeadline.setDeadline(7); //Taski creatimisel on automaatselt deadlinei dateks järgmine nädal
     }
@@ -39,12 +38,10 @@ public class Task {
         isFinished = true;
     }
 
-    // vt üles, miks välja kommenteeritud
-    /*
-    public User getTaskOwner() {
-        return taskOwner;
+    public String getTaskOwnerID() {
+        return taskOwnerID;
     }
-    */
+
 
     public String getTaskDescription() {
         return taskDescription;
