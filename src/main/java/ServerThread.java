@@ -231,7 +231,7 @@ public class ServerThread implements Runnable {
                 for (User user : allUsers) {
                     if (user.getUsername().equals(username)) {
                         String taskID = UUID.randomUUID().toString();
-                        user.addTask(new Task(description, taskID, currentUser.getUserID()));
+                        user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID()));
                     }
                 }
                 socketOut.writeInt(Commands.doAddTaskToOtherUser);
@@ -250,7 +250,7 @@ public class ServerThread implements Runnable {
         String taskDescription = socketIn.readUTF();
         // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
         String taskID = UUID.randomUUID().toString();
-        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID()));
+        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID()));
 
         socketOut.writeInt(Commands.doAddTask);
         socketOut.writeUTF("Task loodud.");

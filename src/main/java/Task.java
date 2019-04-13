@@ -9,7 +9,8 @@ public class Task {
     Pidin selle ära kustutama ja siia tuleks mingi int tüüpi ID asemele teha
 
      */
-    final private String taskOwnerID;
+    final private String taskCreatorID;
+    final private String taskUserID;
     final private String taskDescription;
     final String taskID;
     private boolean isFinished;
@@ -18,8 +19,9 @@ public class Task {
     private Deadline taskDeadline = new Deadline();
 
 
-    public Task(String taskDescription, String taskID, String taskOwnerID) {
-        this.taskOwnerID = taskOwnerID;
+    public Task(String taskDescription, String taskID, String taskCreatorID, String taskUserID) {
+        this.taskCreatorID = taskCreatorID;
+        this.taskUserID = taskUserID;
         this.taskDescription = taskDescription;
         this.taskID = taskID;
         this.comments = new ArrayList<>();
@@ -38,10 +40,17 @@ public class Task {
         isFinished = true;
     }
 
-    public String getTaskOwnerID() {
-        return taskOwnerID;
+    public String getTaskCreatorID() {
+        return taskCreatorID;
     }
 
+    public String getTaskUserID() {
+        return taskUserID;
+    }
+
+    public String getTaskID() {
+        return taskID;
+    }
 
     public String getTaskDescription() {
         return taskDescription;
