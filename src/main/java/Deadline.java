@@ -42,6 +42,11 @@ public class Deadline{
         }
     }
 
+    // TODO: teha meetod, mis kontrollib deadline kaugust
+    public boolean isDeadlineApproaching() {
+        return true;
+    }
+
     public String dateToString(){
         //Teeb selle Date'i loetavaks inimeste jaoks.
         return deadlineDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));

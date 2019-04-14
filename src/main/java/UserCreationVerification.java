@@ -4,6 +4,7 @@ import de.mkammerer.argon2.Argon2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -64,7 +65,7 @@ public class UserCreationVerification {
             String hashedPassword = argon2.hash(10, 65536, 1, password);
             if (isRequiredPassword(password)) {
                 //genereeritakse suvaline täisarv
-                int verificationCode = (int) Math.floor(Math.random() * 100000 + 1);
+                String verificationCode = generateVerificationCode();
                 //saadetakse kood sisestatud meilile
                 SendMail verificationmail = new SendMail();
                 if (verificationmail.sendMail(mailAddress,
@@ -76,8 +77,8 @@ public class UserCreationVerification {
                                 "Thank you for using our to-do app!")) {
                     System.out.print("Sisestage meiliaadressile saadetud verification code: ");
                     try {
-                        int inputCode = Integer.parseInt(scanner.nextLine());
-                        if (inputCode == verificationCode) {
+                        String inputCode = scanner.nextLine();
+                        if (inputCode.equals(verificationCode)) {
 
                             String userID = UUID.randomUUID().toString();
                             User newUser = new User(userID, firstName, lastName, username, mailAddress, hashedPassword);
@@ -138,6 +139,18 @@ public class UserCreationVerification {
         socketOut.writeInt(Commands.doCheckForUsername);
         socketOut.writeUTF(username);
         return socketIn.readBoolean();
+    }
+
+    private static String generateVerificationCode() {
+        String possibleCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder verificationCode = new StringBuilder();
+        Random random = new Random();
+        while (verificationCode.length() < 7) {
+            int elementIndex = random.nextInt(possibleCharacters.length());
+            verificationCode.append(possibleCharacters.charAt(elementIndex));
+        }
+        String strVerificationCode = verificationCode.toString();
+        return strVerificationCode;
     }
 
     private static boolean isRequiredPassword(String password) {

@@ -17,6 +17,8 @@ public class Task {
     final private List<Task> linkedTasks;
     final private List<String> comments;
     private Deadline taskDeadline = new Deadline();
+    private boolean remindedOfApproachingDeadline;
+    private boolean remindedOfPassedDeadline;
 
 
     public Task(String taskDescription, String taskID, String taskCreatorID, String taskUserID) {
@@ -28,6 +30,8 @@ public class Task {
         this.linkedTasks = new ArrayList<>();
         this.isFinished = false;
         this.taskDeadline.setDeadline(7); //Taski creatimisel on automaatselt deadlinei dateks järgmine nädal
+        this.remindedOfApproachingDeadline = false;
+        this.remindedOfPassedDeadline = false;
     }
 
 
@@ -50,6 +54,22 @@ public class Task {
 
     public String getTaskID() {
         return taskID;
+    }
+
+    public boolean isRemindedOfApproachingDeadline() {
+        return remindedOfApproachingDeadline;
+    }
+
+    public void setRemindedOfApproachingDeadline(boolean remindedOfApproachingDeadline) {
+        this.remindedOfApproachingDeadline = remindedOfApproachingDeadline;
+    }
+
+    public boolean isRemindedOfPassedDeadline() {
+        return remindedOfPassedDeadline;
+    }
+
+    public void setRemindedOfPassedDeadline(boolean remindedOfPassedDeadline) {
+        this.remindedOfPassedDeadline = remindedOfPassedDeadline;
     }
 
     public String getTaskDescription() {

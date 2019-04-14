@@ -285,11 +285,6 @@ public class ServerThread implements Runnable {
                     commentNumber += 1;
                 }
             }
-            /*
-            for (String comment : task.getComments()) {
-                socketOut.writeUTF("   *Kommentaar: " + comment);
-            }
-            */
             socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
             taskNumber += 1;
         }
