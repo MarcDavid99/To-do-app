@@ -21,8 +21,8 @@ public class Main {
             label:
             while (true) {
                 System.out.print("Registreerimiseks kirjutage:       1" + "\r\n" +
-                                 "Sisse logimiseks kirjutage:        2" + "\r\n" +
-                                 "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
+                        "Sisse logimiseks kirjutage:        2" + "\r\n" +
+                        "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
                         "Valige tegevus: ");
                 Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
@@ -36,7 +36,7 @@ public class Main {
                         //Kasutaja tuvastamise meetod
                         if (UserCreationVerification.userVerification(out, input, scanner)) {
                             while (true) {
-                                String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17"};
+                                String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18"};
                                 String[] commandsThatNeedList = {"13", "14", "15"};
                                 System.out.println("Erinevad võimalused: " + "\r\n" +
                                         "11 - lisa ülesanne" + "\r\n" +
@@ -45,7 +45,8 @@ public class Main {
                                         "14 - muuda ülesande deadline'i" + "\r\n" +
                                         "15 - märgi ülesanne lõpetatuks" + "\r\n" +
                                         "16 - lisa ülesanne teisele kasutajale" + "\r\n" +
-                                        "17 - sulge programm" + "\r\n");
+                                        "17 - otsi ülesannet (mida jälgida)" + "\r\n" +
+                                        "18 - sulge programm" + "\r\n");
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();
@@ -69,8 +70,7 @@ public class Main {
                                         int serverMessageType = input.readInt();
                                         processServerMessageType(input, serverMessageType);
 
-                                    }
-                                    else {
+                                    } else {
                                         out.writeInt(Commands.doCloseTodoList2);
                                     }
                                     if (input.readBoolean()) {
@@ -80,7 +80,7 @@ public class Main {
                                 }
                                 //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                                 else {
-                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17)");
+                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)");
                                 }
                             }
                         }
@@ -116,6 +116,8 @@ public class Main {
             ClientSendMessage.sendAddTask(out);
         } else if (command == Commands.doAddTaskToOtherUser) {
             ClientSendMessage.sendAddTaskToOtherUsers(out);
+        } else if (command == Commands.doSearchTasks) {
+            ClientSendMessage.sendSearchTasks(out);
         }
     }
 
@@ -134,6 +136,8 @@ public class Main {
             ClientProcessCommands.processAddTaskToOtherUsers(input);
         } else if (command == Commands.errorOccured) {
             ClientProcessCommands.processErrorOccured(input);
+        } else if (command == Commands.doSearchTasks) {
+            ClientProcessCommands.processShowSearchedTasks(input);
         }
     }
 }

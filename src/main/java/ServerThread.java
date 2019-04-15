@@ -64,12 +64,10 @@ public class ServerThread implements Runnable {
             Gson gson = new Gson();
             List<User> usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
             allUsers.addAll(usersFromFile);
-        }
-        else {
+        } else {
             try {
                 Files.createFile(Path.of("users.txt"));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("File already exists");
             }
         }
@@ -114,6 +112,15 @@ public class ServerThread implements Runnable {
         }
         if (requestType == Commands.doAddTaskToOtherUser) {
             addTaskToOtherUser(socketIn, socketOut);
+        }
+        if (requestType == Commands.doSearchTasksByDescription) {
+            searchTaskByDescription(socketIn, socketOut);
+        }
+        if (requestType == Commands.doSearchTasksByUsername) {
+            searchTaskByUsername(socketIn, socketOut);
+        }
+        if (requestType == Commands.doSearchTasksByDeadline) {
+            searchTaskByDeadline(socketIn, socketOut);
         }
         if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
             return closeTodoList(socketIn, socketOut);
@@ -190,15 +197,14 @@ public class ServerThread implements Runnable {
     private void addComment(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
 
-        int indeks = socketIn.readInt()-1;
-        if(indeks >= 0 && indeks < todoList.size()){
+        int indeks = socketIn.readInt() - 1;
+        if (indeks >= 0 && indeks < todoList.size()) {
             String comment = socketIn.readUTF();
             todoList.get(indeks).addComments(comment);
             socketOut.writeInt(Commands.doAddComment);
             socketOut.writeUTF("Kommentaar lisatud.");
             writeExistingUsersToFile();
-        }
-        else {
+        } else {
             socketOut.writeInt(Commands.errorOccured);
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
@@ -209,15 +215,14 @@ public class ServerThread implements Runnable {
     private void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
 
-        int indeks = socketIn.readInt()-1;
-        if(indeks >= 0 && indeks < todoList.size()){
+        int indeks = socketIn.readInt() - 1;
+        if (indeks >= 0 && indeks < todoList.size()) {
             int pushDeadline = socketIn.readInt();
             todoList.get(indeks).setDeadline(pushDeadline);
             socketOut.writeInt(Commands.doPushDeadline);
             socketOut.writeUTF("Deadline edasi lükatud.");
             writeExistingUsersToFile();
-        }
-        else {
+        } else {
             socketOut.writeInt(Commands.errorOccured);
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
@@ -225,23 +230,22 @@ public class ServerThread implements Runnable {
     }
 
     private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
-            String username = socketIn.readUTF();
-            String description = socketIn.readUTF();
-            if (checkForUsernameInList(username)) {
-                for (User user : allUsers) {
-                    if (user.getUsername().equals(username)) {
-                        String taskID = UUID.randomUUID().toString();
-                        user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID()));
-                    }
+        String username = socketIn.readUTF();
+        String description = socketIn.readUTF();
+        if (checkForUsernameInList(username)) {
+            for (User user : allUsers) {
+                if (user.getUsername().equals(username)) {
+                    String taskID = UUID.randomUUID().toString();
+                    user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID()));
                 }
-                socketOut.writeInt(Commands.doAddTaskToOtherUser);
-                socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
-                writeExistingUsersToFile();
             }
-            else {
-                socketOut.writeInt(Commands.errorOccured);
-                socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
-            }
+            socketOut.writeInt(Commands.doAddTaskToOtherUser);
+            socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
+            writeExistingUsersToFile();
+        } else {
+            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
+        }
         socketOut.writeBoolean(false);
 
     }
@@ -261,33 +265,7 @@ public class ServerThread implements Runnable {
     private void displayTasks(DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
         socketOut.writeInt(Commands.doDisplayTasks);
-        int commentsAmount = 0;
-        for (Task task : todoList) {
-            commentsAmount += task.getComments().size();
-        }
-        socketOut.writeInt(todoList.size() * 2 + commentsAmount);
-        int taskNumber = 1;
-        for (Task task : todoList) {
-            socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
-            if (task.getComments().size() == 1) {
-                socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
-            }
-            else {
-                int commentNumber = 1;
-                for (String comment : task.getComments()) {
-                    if (commentNumber == 1) {
-                        socketOut.writeUTF("   *Kommentaarid:" + "\r\n" +
-                                "      " + commentNumber + ". " + comment);
-                    }
-                    else {
-                        socketOut.writeUTF("      " + commentNumber + ". " + comment);
-                    }
-                    commentNumber += 1;
-                }
-            }
-            socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
-            taskNumber += 1;
-        }
+        sendTasks(todoList, socketOut);
 
         socketOut.writeBoolean(false);
     }
@@ -306,5 +284,101 @@ public class ServerThread implements Runnable {
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
         socketOut.writeBoolean(false);
+    }
+
+    private void searchTaskByDeadline(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        String deadline = socketIn.readUTF();
+        List<Task> suitableTasksArray = new ArrayList<>();
+
+        for (User user : allUsers) {
+            List<Task> todoList = user.getToDoList();
+            for (Task task : todoList) {
+                if (task.getTaskDeadline().getDeadlineDate().toString().equals(deadline)) {
+                    suitableTasksArray.add(task);
+                }
+            }
+        }
+
+        socketOut.writeInt(Commands.doSearchTasks);
+        sendTasks(suitableTasksArray, socketOut);
+
+        socketOut.writeBoolean(false);
+    }
+
+    private void searchTaskByUsername(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+        String username = socketIn.readUTF();
+        List<Task> todoList;
+        if (checkForUsernameInList(username)) {
+            for (User user : allUsers) {
+                if (user.getUsername().equals(username)) {
+                    todoList = user.getToDoList();
+                    socketOut.writeInt(Commands.doSearchTasks);
+                    sendTasks(todoList, socketOut);
+                    break;
+                }
+            }
+        }
+        else {
+            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
+        }
+        socketOut.writeBoolean(false);
+    }
+
+    private void searchTaskByDescription(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+        List<Task> suitableTasks = new ArrayList<>();
+        String description = socketIn.readUTF();
+
+        for (User user: allUsers) {
+            for (Task task : user.getToDoList()) {
+                if(task.getTaskDescription().contains(description)){
+                    suitableTasks.add(task);
+                }
+            }
+        }
+
+        socketOut.writeInt(Commands.doSearchTasks);
+        sendTasks(suitableTasks, socketOut);
+        socketOut.writeBoolean(false);
+    }
+
+    private void sendTasks(List<Task> list, DataOutputStream socketOut) throws IOException{
+        int commentsAmount = 0;
+        for (Task task : list) {
+            commentsAmount += task.getComments().size();
+        }
+        socketOut.writeInt(list.size() * 4 + commentsAmount);
+        int taskNumber = 1;
+        for (Task task : list) {
+            socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
+            if (task.getComments().size() == 1) {
+                socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
+            } else {
+                int commentNumber = 1;
+                for (String comment : task.getComments()) {
+                    if (commentNumber == 1) {
+                        socketOut.writeUTF("   *Kommentaarid:" + "\r\n" +
+                                "      " + commentNumber + ". " + comment);
+                    } else {
+                        socketOut.writeUTF("      " + commentNumber + ". " + comment);
+                    }
+                    commentNumber += 1;
+                }
+            }
+            String taskCreator = "";
+            String taskUser = "";
+            for (User user : allUsers) {
+                if(user.getUserID().equals(task.getTaskCreatorID())){
+                    taskCreator = user.getUsername();
+                }
+                if(user.getUserID().equals(task.getTaskUserID())){
+                    taskUser = user.getUsername();
+                }
+            }
+            socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
+            socketOut.writeUTF("   *Taski looja: " + taskCreator);
+            socketOut.writeUTF("   *Taski täitja: " + taskUser);
+            taskNumber += 1;
+        }
     }
 }

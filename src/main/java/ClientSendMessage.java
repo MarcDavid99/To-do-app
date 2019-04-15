@@ -86,4 +86,47 @@ public class ClientSendMessage {
         out.writeUTF(enteredUsername);
         out.writeUTF(description);
     }
+
+    public static void sendSearchTasks(DataOutputStream out) throws IOException {
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        while(true){
+            System.out.println("21 - soovin taski otsida kirjelduse järgi\n" +
+                    "22 - soovin taski otsida kasutajanime järgi\n" +
+                    "23 - soovin taski otsida deadline'i järgi");
+            System.out.print("Sisestage sobiva käsu number: ");
+            String line = scanner.nextLine();
+            try {
+                int command = Integer.parseInt(line);
+                if(command == Commands.doSearchTasksByDescription){
+                    out.writeInt(Commands.doSearchTasksByDescription);
+                    System.out.print("Sisestage kirjeldus, mille järgi te taski/taske otsida soovite: ");
+                    String description = scanner.nextLine();
+                    out.writeUTF(description);
+                    System.out.println();
+                    return;
+                }
+                else if(command == Commands.doSearchTasksByUsername){
+                    out.writeInt(Commands.doSearchTasksByUsername);
+                    System.out.print("Sisestage kasutajanimi, kelle taskide seast te soovite taski otsida: ");
+                    String username = scanner.nextLine();
+                    out.writeUTF(username);
+                    System.out.println();
+                    return;
+                }
+                else if(command == Commands.doSearchTasksByDeadline){
+                    out.writeInt(Commands.doSearchTasksByDeadline);
+                    System.out.print("Sisestage kuupäev, mille järgi te taski otsida soovite (kujul yyyy-MM-dd): ");
+                    String deadline = scanner.nextLine();
+                    out.writeUTF(deadline);
+                    System.out.println();
+                    return;
+                }
+                else{
+                    System.out.println("\nTeie valitud käsk ei ole valikus. Proovige uuesti.\n");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\nTe ei sisestanud järjekorranumbrit õigel kujul.\n");
+            }
+        }
+    }
 }
