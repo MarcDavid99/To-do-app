@@ -59,4 +59,13 @@ public class ClientProcessCommands {
             System.out.println();
         }
     }
+
+    public static void processFollowTask(DataInputStream input) throws IOException {
+        int didItWork = input.readInt();
+        if (didItWork == 0){
+            System.out.println(input.readUTF());
+        }else if (didItWork == 1){
+            System.out.println("Ülesande jälgimine toimis.");
+        }
+    }
 }

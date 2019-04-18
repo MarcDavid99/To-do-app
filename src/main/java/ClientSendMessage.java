@@ -129,4 +129,15 @@ public class ClientSendMessage {
             }
         }
     }
+
+    public static void sendFollowTask(DataOutputStream out) throws IOException{
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        System.out.println("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
+        String username = scanner.nextLine();
+        System.out.println("Sisesta ülesande indeks, mida soovid jälgida: ");
+        String taskIndex = scanner.nextLine();
+        out.writeInt(Commands.doFollowTask);
+        out.writeUTF(username);
+        out.writeUTF(taskIndex);
+    }
 }

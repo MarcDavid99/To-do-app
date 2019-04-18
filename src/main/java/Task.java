@@ -19,6 +19,8 @@ public class Task {
     private Deadline taskDeadline = new Deadline();
     private boolean remindedOfApproachingDeadline;
     private boolean remindedOfPassedDeadline;
+    private List<User> taskFollowers;
+
 
 
     public Task(String taskDescription, String taskID, String taskCreatorID, String taskUserID) {
@@ -32,15 +34,30 @@ public class Task {
         this.taskDeadline.setDeadline(7); //Taski creatimisel on automaatselt deadlinei dateks järgmine nädal
         this.remindedOfApproachingDeadline = false;
         this.remindedOfPassedDeadline = false;
+        this.taskFollowers = new ArrayList<>();
     }
 
-
+    public void addFollower(User user){
+        taskFollowers.add(user);
+    }
 
     public void setDeadline(int deadlineAmountInDays) {
         this.taskDeadline.setDeadline(deadlineAmountInDays);
     }
 
     public void setTaskFinished(){
+        if(!taskFollowers.isEmpty()){
+            for (User user : taskFollowers) {
+                new SendMail().sendMail(user.getMailAdress(),
+                        "A task you are following is completed.",
+                        "Hello!" +
+                                "\r\n" + "\r\n" +
+                                "The following task has been set as finished: " + this.getTaskDescription() +
+                                "\r\n" + "\r\n" +
+
+                                "Thank you for using our to-do app!");
+            }
+        }
         isFinished = true;
     }
 
@@ -89,6 +106,20 @@ public class Task {
     }
 
     public void addComments(String comment) {
+        if(!taskFollowers.isEmpty()){
+            for (User user : taskFollowers) {
+                new SendMail().sendMail(user.getMailAdress(),
+                        "A comment was added to a task you are following.",
+                        "Hello!" +
+                                "\r\n" + "\r\n" +
+                                "A comment was added to the following task: " + this.getTaskDescription() +
+                                "\r\n" +
+                                "The comment that was added: " + comment +
+                                "\r\n" + "\r\n" +
+
+                                "Thank you for using our to-do app!");
+            }
+        }
         comments.add(comment);
     }
 

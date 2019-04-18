@@ -36,7 +36,7 @@ public class Main {
                         //Kasutaja tuvastamise meetod
                         if (UserCreationVerification.userVerification(out, input, scanner)) {
                             while (true) {
-                                String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18"};
+                                String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18","19"};
                                 String[] commandsThatNeedList = {"13", "14", "15"};
                                 System.out.println("Erinevad võimalused: " + "\r\n" +
                                         "11 - lisa ülesanne" + "\r\n" +
@@ -45,8 +45,9 @@ public class Main {
                                         "14 - muuda ülesande deadline'i" + "\r\n" +
                                         "15 - märgi ülesanne lõpetatuks" + "\r\n" +
                                         "16 - lisa ülesanne teisele kasutajale" + "\r\n" +
-                                        "17 - otsi ülesannet (mida jälgida)" + "\r\n" +
-                                        "18 - sulge programm" + "\r\n");
+                                        "17 - otsi ülesannet" + "\r\n" +
+                                        "18 - jälgi mingit ülesannet" + "\r\n" +
+                                        "19 - sulge programm" + "\r\n");
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();
@@ -118,6 +119,8 @@ public class Main {
             ClientSendMessage.sendAddTaskToOtherUsers(out);
         } else if (command == Commands.doSearchTasks) {
             ClientSendMessage.sendSearchTasks(out);
+        } else if (command == Commands.doFollowTask) {
+            ClientSendMessage.sendFollowTask(out);
         }
     }
 
@@ -138,6 +141,8 @@ public class Main {
             ClientProcessCommands.processErrorOccured(input);
         } else if (command == Commands.doSearchTasks) {
             ClientProcessCommands.processShowSearchedTasks(input);
+        } else if (command == Commands.doFollowTask) {
+            ClientProcessCommands.processFollowTask(input);
         }
     }
 }

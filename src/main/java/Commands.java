@@ -3,7 +3,8 @@ public class Commands {
     public static final int doDisplayTasks = 12;
     public static final int doCompleteTask = 15;
     public static final int doCloseTodoList1 = 3;
-    public static final int doCloseTodoList2 = 18;
+    public static final int doCloseTodoList2 = 19;
+    public static final int doFollowTask = 18;
     public static final int doSearchTasks = 17;
     public static final int doSearchTasksByDescription = 21;
     public static final int doSearchTasksByUsername = 22;

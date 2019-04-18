@@ -122,10 +122,40 @@ public class ServerThread implements Runnable {
         if (requestType == Commands.doSearchTasksByDeadline) {
             searchTaskByDeadline(socketIn, socketOut);
         }
+        if (requestType == Commands.doFollowTask) {
+            followTask(socketIn,socketOut);
+        }
         if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
             return closeTodoList(socketIn, socketOut);
         }
         return false;
+    }
+
+    private void followTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        String username = socketIn.readUTF();
+        int taskIndex = Integer.parseInt(socketIn.readUTF());
+
+        for (User user : allUsers) {
+            if (user.getUsername().equals(username)) {
+                if(user.getToDoList().contains(user.getToDoList().get(taskIndex-1))){ //taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
+                    user.getToDoList().get(taskIndex-1).addFollower(currentUser);
+                    socketOut.writeInt(Commands.doFollowTask);
+                    socketOut.writeInt(1);
+                    socketOut.writeBoolean(false);
+                }else{
+                    socketOut.writeInt(Commands.doFollowTask);
+                    socketOut.writeInt(0);
+                    socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
+                    socketOut.writeBoolean(false);
+                }
+            }
+        }
+        if(!checkForUsernameInList(username)) {
+            socketOut.writeInt(Commands.doFollowTask);
+            socketOut.writeInt(0);
+            socketOut.writeUTF("Sellist kasutajanime pole olemas.");
+            socketOut.writeBoolean(false);
+        }
     }
 
     private void saveNewUser(DataInputStream socketIn) throws IOException {
