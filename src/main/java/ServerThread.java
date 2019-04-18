@@ -296,7 +296,6 @@ public class ServerThread implements Runnable {
         List<Task> todoList = currentUser.getToDoList();
         socketOut.writeInt(Commands.doDisplayTasks);
         sendTasks(todoList, socketOut);
-
         socketOut.writeBoolean(false);
     }
 

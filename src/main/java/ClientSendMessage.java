@@ -10,10 +10,10 @@ public class ClientSendMessage {
             String line = scanner.nextLine();
             try {
                 int taskIndex = Integer.parseInt(line);
-                out.writeInt(Commands.doAddComment);
-                out.writeInt(taskIndex);
                 System.out.print("Sisestage kommentaar: ");
                 String comment = scanner.next();
+                out.writeInt(Commands.doAddComment);
+                out.writeInt(taskIndex);
                 out.writeUTF(comment);
                 return;
 
@@ -42,13 +42,12 @@ public class ClientSendMessage {
 
     public static void sendPushDeadline(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        int taskIndex;
         while (true) {
             System.out.print("Sisestage taski järjekorranumber, mille deadline'i te muuta soovite: ");
             String line = scanner.nextLine();
             try {
-                int taskIndex = Integer.parseInt(line);
-                out.writeInt(Commands.doPushDeadline);
-                out.writeInt(taskIndex);
+                taskIndex = Integer.parseInt(line);
                 break;
             } catch (NumberFormatException e) {
                 System.out.println("Te ei sisestanud järjekorranumbrit õigel kujul.");
@@ -60,6 +59,8 @@ public class ClientSendMessage {
             String line = scanner.nextLine();
             try {
                 int days = Integer.parseInt(line);
+                out.writeInt(Commands.doPushDeadline);
+                out.writeInt(taskIndex);
                 out.writeInt(days);
                 return;
             } catch (NumberFormatException e) {
@@ -98,25 +99,25 @@ public class ClientSendMessage {
             try {
                 int command = Integer.parseInt(line);
                 if(command == Commands.doSearchTasksByDescription){
-                    out.writeInt(Commands.doSearchTasksByDescription);
                     System.out.print("Sisestage kirjeldus, mille järgi te taski/taske otsida soovite: ");
                     String description = scanner.nextLine();
+                    out.writeInt(Commands.doSearchTasksByDescription);
                     out.writeUTF(description);
                     System.out.println();
                     return;
                 }
                 else if(command == Commands.doSearchTasksByUsername){
-                    out.writeInt(Commands.doSearchTasksByUsername);
                     System.out.print("Sisestage kasutajanimi, kelle taskide seast te soovite taski otsida: ");
                     String username = scanner.nextLine();
+                    out.writeInt(Commands.doSearchTasksByUsername);
                     out.writeUTF(username);
                     System.out.println();
                     return;
                 }
                 else if(command == Commands.doSearchTasksByDeadline){
-                    out.writeInt(Commands.doSearchTasksByDeadline);
                     System.out.print("Sisestage kuupäev, mille järgi te taski otsida soovite (kujul yyyy-MM-dd): ");
                     String deadline = scanner.nextLine();
+                    out.writeInt(Commands.doSearchTasksByDeadline);
                     out.writeUTF(deadline);
                     System.out.println();
                     return;
