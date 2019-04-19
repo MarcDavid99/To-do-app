@@ -20,10 +20,10 @@ public class Task {
     private boolean remindedOfApproachingDeadline;
     private boolean remindedOfPassedDeadline;
     private List<String> taskFollowers;
+    private boolean isPrivateTask;
 
 
-
-    public Task(String taskDescription, String taskID, String taskCreatorID, String taskUserID) {
+    public Task(String taskDescription, String taskID, String taskCreatorID, String taskUserID, boolean isPrivateTask) {
         this.taskCreatorID = taskCreatorID;
         this.taskUserID = taskUserID;
         this.taskDescription = taskDescription;
@@ -35,6 +35,7 @@ public class Task {
         this.remindedOfApproachingDeadline = false;
         this.remindedOfPassedDeadline = false;
         this.taskFollowers = new ArrayList<>();
+        this.isPrivateTask = isPrivateTask;
     }
 
     public void addFollower(String userId){
@@ -125,6 +126,9 @@ public class Task {
 
     public Deadline getTaskDeadline() {
         return taskDeadline;
+    }
+    public boolean isPrivateTask() {
+        return isPrivateTask;
     }
 
     public void addComments(String comment, List<User> allUsers) {

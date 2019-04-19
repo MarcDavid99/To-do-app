@@ -1,4 +1,5 @@
 public class Commands {
+
     public static final int doAddTask = 11;
     public static final int doDisplayTasks = 12;
     public static final int doCompleteTask = 15;

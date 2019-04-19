@@ -123,7 +123,7 @@ public class ServerThread implements Runnable {
             searchTaskByDeadline(socketIn, socketOut);
         }
         if (requestType == Commands.doFollowTask) {
-            followTask(socketIn,socketOut);
+            followTask(socketIn, socketOut);
         }
         if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
             return closeTodoList(socketIn, socketOut);
@@ -137,12 +137,12 @@ public class ServerThread implements Runnable {
 
         for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
-                if(user.getToDoList().contains(user.getToDoList().get(taskIndex-1))){ //taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
-                    user.getToDoList().get(taskIndex-1).addFollower(currentUser.getUserID());
+                if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) { //taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
+                    user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
                     socketOut.writeInt(Commands.doFollowTask);
                     socketOut.writeInt(1);
                     socketOut.writeBoolean(false);
-                }else{
+                } else {
                     socketOut.writeInt(Commands.doFollowTask);
                     socketOut.writeInt(0);
                     socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
@@ -150,7 +150,7 @@ public class ServerThread implements Runnable {
                 }
             }
         }
-        if(!checkForUsernameInList(username)) {
+        if (!checkForUsernameInList(username)) {
             socketOut.writeInt(Commands.doFollowTask);
             socketOut.writeInt(0);
             socketOut.writeUTF("Sellist kasutajanime pole olemas.");
@@ -262,11 +262,12 @@ public class ServerThread implements Runnable {
     private void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         String username = socketIn.readUTF();
         String description = socketIn.readUTF();
+        boolean isPrivateTask = socketIn.readBoolean();
         if (checkForUsernameInList(username)) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     String taskID = UUID.randomUUID().toString();
-                    user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID()));
+                    user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID(), isPrivateTask));
                 }
             }
             socketOut.writeInt(Commands.doAddTaskToOtherUser);
@@ -282,9 +283,9 @@ public class ServerThread implements Runnable {
 
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String taskDescription = socketIn.readUTF();
-        // siia peaks mõtlema, kuidas unique task id teha, hetkel kõigil 0.
+        boolean isPrivateTask = socketIn.readBoolean();
         String taskID = UUID.randomUUID().toString();
-        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID()));
+        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID(), isPrivateTask));
 
         socketOut.writeInt(Commands.doAddTask);
         socketOut.writeUTF("Task loodud.");
@@ -334,7 +335,7 @@ public class ServerThread implements Runnable {
         socketOut.writeBoolean(false);
     }
 
-    private void searchTaskByUsername(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+    private void searchTaskByUsername(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
         List<Task> todoList;
         if (checkForUsernameInList(username)) {
@@ -346,21 +347,20 @@ public class ServerThread implements Runnable {
                     break;
                 }
             }
-        }
-        else {
+        } else {
             socketOut.writeInt(Commands.errorOccured);
             socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
         }
         socketOut.writeBoolean(false);
     }
 
-    private void searchTaskByDescription(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+    private void searchTaskByDescription(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> suitableTasks = new ArrayList<>();
         String description = socketIn.readUTF();
 
-        for (User user: allUsers) {
+        for (User user : allUsers) {
             for (Task task : user.getToDoList()) {
-                if(task.getTaskDescription().contains(description)){
+                if (task.getTaskDescription().contains(description)) {
                     suitableTasks.add(task);
                 }
             }
@@ -371,42 +371,53 @@ public class ServerThread implements Runnable {
         socketOut.writeBoolean(false);
     }
 
-    private void sendTasks(List<Task> list, DataOutputStream socketOut) throws IOException{
-        int commentsAmount = 0;
+    private void sendTasks(List<Task> list, DataOutputStream socketOut) throws IOException {
+        int messagesAmount = 0;
         for (Task task : list) {
-            commentsAmount += task.getComments().size();
+            if (!task.isPrivateTask()) {
+                int commentsAmount = task.getComments().size();
+                messagesAmount += commentsAmount;
+                //+3, sest taski looja, täitja ja deadline
+                messagesAmount += 3;
+            }
         }
-        socketOut.writeInt(list.size() * 4 + commentsAmount);
+        socketOut.writeInt(list.size() + messagesAmount);
         int taskNumber = 1;
+
         for (Task task : list) {
-            socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
-            if (task.getComments().size() == 1) {
-                socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
-            } else {
-                int commentNumber = 1;
-                for (String comment : task.getComments()) {
-                    if (commentNumber == 1) {
-                        socketOut.writeUTF("   *Kommentaarid:" + "\r\n" +
-                                "      " + commentNumber + ". " + comment);
-                    } else {
-                        socketOut.writeUTF("      " + commentNumber + ". " + comment);
+            if (task.isPrivateTask()) {
+                socketOut.writeUTF(taskNumber + ") ülesanne on privaatne");
+            }
+            else {
+                socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
+                if (task.getComments().size() == 1) {
+                    socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
+                } else {
+                    int commentNumber = 1;
+                    for (String comment : task.getComments()) {
+                        if (commentNumber == 1) {
+                            socketOut.writeUTF("   *Kommentaarid:" + "\r\n" +
+                                    "      " + commentNumber + ". " + comment);
+                        } else {
+                            socketOut.writeUTF("      " + commentNumber + ". " + comment);
+                        }
+                        commentNumber += 1;
                     }
-                    commentNumber += 1;
                 }
+                String taskCreator = "";
+                String taskUser = "";
+                for (User user : allUsers) {
+                    if (user.getUserID().equals(task.getTaskCreatorID())) {
+                        taskCreator = user.getUsername();
+                    }
+                    if (user.getUserID().equals(task.getTaskUserID())) {
+                        taskUser = user.getUsername();
+                    }
+                }
+                socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
+                socketOut.writeUTF("   *Taski looja: " + taskCreator);
+                socketOut.writeUTF("   *Taski täitja: " + taskUser);
             }
-            String taskCreator = "";
-            String taskUser = "";
-            for (User user : allUsers) {
-                if(user.getUserID().equals(task.getTaskCreatorID())){
-                    taskCreator = user.getUsername();
-                }
-                if(user.getUserID().equals(task.getTaskUserID())){
-                    taskUser = user.getUsername();
-                }
-            }
-            socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
-            socketOut.writeUTF("   *Taski looja: " + taskCreator);
-            socketOut.writeUTF("   *Taski täitja: " + taskUser);
             taskNumber += 1;
         }
     }

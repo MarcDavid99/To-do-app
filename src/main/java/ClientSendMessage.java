@@ -73,8 +73,23 @@ public class ClientSendMessage {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         System.out.print("Sisestage taski kirjeldus: ");
         String taskDescription = scanner.nextLine();
+        boolean isPrivateTask;
+        while (true) {
+            System.out.print("Kas soovite, et task oleks privaatne (jah/ei)? ");
+            String privacy = scanner.nextLine();
+            if (privacy.equals("jah")) {
+                isPrivateTask = true;
+                break;
+            }
+            else if (privacy.equals("ei")) {
+                isPrivateTask = false;
+                break;
+            }
+            System.out.println("Sisestus oli vigane, kirjutage (jah/ei)");
+        }
         out.writeInt(Commands.doAddTask);
         out.writeUTF(taskDescription);
+        out.writeBoolean(isPrivateTask);
     }
 
     public static void sendAddTaskToOtherUsers(DataOutputStream out) throws IOException {
