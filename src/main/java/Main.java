@@ -25,6 +25,7 @@ public class Main {
 
             label:
             while (true) {
+                System.out.println(ANSI_RED + "Erinevad võimalused: " + ANSI_RESET);
                 System.out.print(
                         "Registreerimiseks kirjutage:       1" + "\r\n" +
                         "Sisse logimiseks kirjutage:        2" + "\r\n" +
