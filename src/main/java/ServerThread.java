@@ -237,7 +237,7 @@ public class ServerThread implements Runnable {
             writeExistingUsersToFile();
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-            socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
+            socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
         }
 
         socketOut.writeBoolean(false);
@@ -251,11 +251,11 @@ public class ServerThread implements Runnable {
             int pushDeadline = socketIn.readInt();
             todoList.get(indeks).setDeadline(pushDeadline, allUsers);
             socketOut.writeInt(Commands.DO_PUSH_DEADLINE.getValue());
-            socketOut.writeUTF("Deadline edasi lükatud.");
+            socketOut.writeUTF("Tähtaeg edasi lükatud.");
             writeExistingUsersToFile();
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-            socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
+            socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
         }
         socketOut.writeBoolean(false);
     }
@@ -289,7 +289,7 @@ public class ServerThread implements Runnable {
         currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID(), isPrivateTask));
 
         socketOut.writeInt(Commands.DO_ADD_TASK.getValue());
-        socketOut.writeUTF("Task loodud.");
+        socketOut.writeUTF("Ülesanne loodud.");
         socketOut.writeBoolean(false);
         writeExistingUsersToFile();
     }
@@ -309,11 +309,11 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).setTaskFinished(allUsers);
             todoList.remove(indeks);
             socketOut.writeInt(Commands.DO_COMPLETE_TASK.getValue());
-            socketOut.writeUTF("Task edukalt eemaldatud");
+            socketOut.writeUTF("Ülesanne edukalt eemaldatud");
             writeExistingUsersToFile();
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-            socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
+            socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
         }
         socketOut.writeBoolean(false);
     }
@@ -417,8 +417,8 @@ public class ServerThread implements Runnable {
                     }
                 }
                 socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
-                socketOut.writeUTF("   *Taski looja: " + taskCreator);
-                socketOut.writeUTF("   *Taski täitja: " + taskUser);
+                socketOut.writeUTF("   *Ülesande looja: " + taskCreator);
+                socketOut.writeUTF("   *Ülesande täitja: " + taskUser);
             }
             taskNumber += 1;
         }

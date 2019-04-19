@@ -20,10 +20,11 @@ public class Main {
 
             label:
             while (true) {
-                System.out.print("Registreerimiseks kirjutage:       1" + "\r\n" +
+                System.out.print(
+                        "Registreerimiseks kirjutage:       1" + "\r\n" +
                         "Sisse logimiseks kirjutage:        2" + "\r\n" +
                         "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
-                        "Valige tegevus: ");
+                        "Valige sobiv tegevus: ");
                 Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
 
@@ -39,15 +40,15 @@ public class Main {
                                 String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18","19"};
                                 String[] commandsThatNeedList = {"13", "14", "15"};
                                 System.out.println("Erinevad võimalused: " + "\r\n" +
-                                        "11 - lisa ülesanne" + "\r\n" +
-                                        "12 - vaata ülesandeid" + "\r\n" +
-                                        "13 - lisa ülesandele kommentaar" + "\r\n" +
-                                        "14 - muuda ülesande deadline'i" + "\r\n" +
-                                        "15 - märgi ülesanne lõpetatuks" + "\r\n" +
-                                        "16 - lisa ülesanne teisele kasutajale" + "\r\n" +
-                                        "17 - otsi ülesannet" + "\r\n" +
-                                        "18 - jälgi mingit ülesannet" + "\r\n" +
-                                        "19 - sulge programm" + "\r\n");
+                                        "Lisa ülesanne:                     11" + "\r\n" +
+                                        "Vaata ülesandeid:                  12" + "\r\n" +
+                                        "Lisa üleasndele kommentaar:        13" + "\r\n" +
+                                        "Muuda ülesande tähtaega:           14" + "\r\n" +
+                                        "Märgi ülesanne lõpetatuks:         15" + "\r\n" +
+                                        "Lisa ülesanne teisele kasutajale:  16" + "\r\n" +
+                                        "Otsi ülesannet:                    17" + "\r\n" +
+                                        "Jälgi mingit ülesannet:            18" + "\r\n" +
+                                        "Sulge programm:                    19" + "\r\n");
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();

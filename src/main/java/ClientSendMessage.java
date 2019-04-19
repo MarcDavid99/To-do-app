@@ -6,7 +6,7 @@ public class ClientSendMessage {
     public static void sendAddComment(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
-            System.out.print("Sisestage taski järjekorranumber, millele te kommentaari lisada soovite: ");
+            System.out.print("Sisestage ülesande järjekorranumber, millele te kommentaari lisada soovite: ");
             String line = scanner.nextLine();
             try {
                 int taskIndex = Integer.parseInt(line);
@@ -27,7 +27,7 @@ public class ClientSendMessage {
     public static void sendCompleteTask(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
-            System.out.print("Sisestage taski järjekorranumber, mida te eemaldada soovite: ");
+            System.out.print("Sisestage ülesande järjekorranumber, mida te eemaldada soovite: ");
             String line = scanner.nextLine();
             try {
                 int taskIndex = Integer.parseInt(line);
@@ -44,7 +44,7 @@ public class ClientSendMessage {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         int taskIndex;
         while (true) {
-            System.out.print("Sisestage taski järjekorranumber, mille deadline'i te muuta soovite: ");
+            System.out.print("Sisestage ülesande järjekorranumber, mille tähtaega te muuta soovite: ");
             String line = scanner.nextLine();
             try {
                 taskIndex = Integer.parseInt(line);
@@ -55,7 +55,7 @@ public class ClientSendMessage {
         }
 
         while (true) {
-            System.out.print("Sisestage päevade arv, mille võrra soovite deadline'i edasi lükata: ");
+            System.out.print("Sisestage päevade arv, mille võrra soovite tähtaega edasi lükata: ");
             String line = scanner.nextLine();
             try {
                 int days = Integer.parseInt(line);
@@ -71,11 +71,11 @@ public class ClientSendMessage {
 
     public static void sendAddTask(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-        System.out.print("Sisestage taski kirjeldus: ");
+        System.out.print("Sisestage ülesande kirjeldus: ");
         String taskDescription = scanner.nextLine();
         boolean isPrivateTask;
         while (true) {
-            System.out.print("Kas soovite, et task oleks privaatne (jah/ei)? ");
+            System.out.print("Kas soovite, et ülesanne oleks privaatne (jah/ei)? ");
             String privacy = scanner.nextLine();
             if (privacy.equals("jah")) {
                 isPrivateTask = true;
@@ -106,15 +106,16 @@ public class ClientSendMessage {
     public static void sendSearchTasks(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while(true){
-            System.out.println("21 - soovin taski otsida kirjelduse järgi\n" +
-                    "22 - soovin taski otsida kasutajanime järgi\n" +
-                    "23 - soovin taski otsida deadline'i järgi");
-            System.out.print("Sisestage sobiva käsu number: ");
+            System.out.println("" +
+                    "Soovin ülesannet otsida kirjelduse järgi:     21" + "\r\n" +
+                    "Soovin ülesannet otsida kasutajanime järgi:   22" + "\r\n" +
+                    "Soovin ülesannet otsida tähtaja järgi:        23" + "\r\n");
+            System.out.print("Valige sobiv tegevus: ");
             String line = scanner.nextLine();
             try {
                 int command = Integer.parseInt(line);
                 if(command == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()){
-                    System.out.print("Sisestage kirjeldus, mille järgi te taski/taske otsida soovite: ");
+                    System.out.print("Sisestage kirjeldus, mille järgi te ülesannet/ülesandeid otsida soovite: ");
                     String description = scanner.nextLine();
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue());
                     out.writeUTF(description);
@@ -122,7 +123,7 @@ public class ClientSendMessage {
                     return;
                 }
                 else if(command == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()){
-                    System.out.print("Sisestage kasutajanimi, kelle taskide seast te soovite taski otsida: ");
+                    System.out.print("Sisestage kasutajanimi, kelle ülesannete seast te otsida soovite: ");
                     String username = scanner.nextLine();
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue());
                     out.writeUTF(username);
@@ -130,7 +131,7 @@ public class ClientSendMessage {
                     return;
                 }
                 else if(command == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()){
-                    System.out.print("Sisestage kuupäev, mille järgi te taski otsida soovite (kujul yyyy-MM-dd): ");
+                    System.out.print("Sisestage kuupäev, mille järgi te ülesannet otsida soovite (kujul yyyy-MM-dd): ");
                     String deadline = scanner.nextLine();
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue());
                     out.writeUTF(deadline);
@@ -138,10 +139,10 @@ public class ClientSendMessage {
                     return;
                 }
                 else{
-                    System.out.println("\nTeie valitud käsk ei ole valikus. Proovige uuesti.\n");
+                    System.out.println("\r\n" + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + "\r\n");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\nTe ei sisestanud järjekorranumbrit õigel kujul.\n");
+                System.out.println("\r\n" + "Te ei sisestanud järjekorranumbrit õigel kujul." + "\r\n");
             }
         }
     }

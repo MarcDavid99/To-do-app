@@ -41,10 +41,10 @@ public class DeadlineThread implements Runnable {
 
                         if (currentDeadline.isPastDeadline()) {
                             if (task.isRemindedOfPassedDeadline()) {
-                                String mailSubject = "Reminder of your task in our To-Do List!";
+                                String mailSubject = "Reminder that your task's deadline has passed!";
                                 String mailBody = "Hello!" +
                                         "\r\n" + "\r\n" +
-                                        "Your task's deadline is approaching soon." + "\r\n" +
+                                        "Your task's deadline has passed" + "\r\n" +
                                         "Task description: " + task.getTaskDescription() + "\r\n" +
                                         "Deadline: " + currentDeadline.dateToString() +
                                         "\r\n" + "\r\n" +
@@ -59,10 +59,10 @@ public class DeadlineThread implements Runnable {
                         // TODO: teha sellest korralik meetod (vt Deadline.java)
                         if (currentDeadline.isDeadlineApproaching()) {
                             if (task.isRemindedOfApproachingDeadline()) {
-                                String mailSubject = "Reminder that your task's deadline has passed!";
+                                String mailSubject = "Reminder of your task in our To-Do List!";
                                 String mailBody = "Hello!" +
                                         "\r\n" + "\r\n" +
-                                        "Your task's deadline has passed" + "\r\n" +
+                                        "Your task's deadline is approaching soon." + "\r\n" +
                                         "Task description: " + task.getTaskDescription() + "\r\n" +
                                         "Deadline: " + currentDeadline.dateToString() +
                                         "\r\n" + "\r\n" +

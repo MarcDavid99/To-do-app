@@ -70,7 +70,7 @@ public class Task {
                 for (User currentUser : allUsers) {
                     if(currentUser.getUserID().equals(userId)){
                         new SendMail().sendMail(currentUser.getMailAdress(),
-                                "A task you are following is completed.",
+                                "A task you are following has been marked as completed.",
                                 "Hello!" +
                                         "\r\n" + "\r\n" +
                                         "The following task has been set as finished: " + this.getTaskDescription() +

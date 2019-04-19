@@ -31,13 +31,13 @@ public class Deadline{
     public boolean isPastDeadline(){
         LocalDate dateToCheck = LocalDate.now();
         if (dateToCheck.isEqual(deadlineDate)){
-            System.out.println("Same day as deadline!");
+            System.out.println("Tänane päev ongi tähtaeg!");
             return false;
         }else if (dateToCheck.isAfter(deadlineDate)){
-            System.out.println("Past deadline");
+            System.out.println("Tähtaeg on möödunud!");
             return true; //on üle deadline
         }else{
-            System.out.println("You have " + DAYS.between(LocalDate.now(),deadlineDate) + " Until deadline");
+            System.out.println("Sul on " + DAYS.between(LocalDate.now(),deadlineDate) + " päeva tähtajani.");
             return false;
         }
     }

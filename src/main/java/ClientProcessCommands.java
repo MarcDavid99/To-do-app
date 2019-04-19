@@ -7,9 +7,9 @@ public class ClientProcessCommands {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
         if (tasksAmount == 0) {
-            System.out.println("Sul pole ühtegi aktiivset taski. \r\n");
+            System.out.println("Sul pole ühtegi aktiivset ülesannet. \r\n");
         } else {
-            System.out.println("Sinu aktiivsed taskid:");
+            System.out.println("Sinu aktiivsed ülesanded:");
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
@@ -50,9 +50,9 @@ public class ClientProcessCommands {
     public static void processShowSearchedTasks(DataInputStream input) throws IOException {
         int tasksAmount = input.readInt();
         if (tasksAmount == 0) {
-            System.out.println("Ei leitud sinu otsingule vastavaid taske. \r\n");
+            System.out.println("Ei leitud sinu otsingule vastavaid ülesandeid. \r\n");
         } else {
-            System.out.println("Leitud taskid:");
+            System.out.println("Leitud ülesanded:");
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
