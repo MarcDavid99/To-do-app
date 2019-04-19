@@ -14,14 +14,10 @@ public class Server {
             List<User> starterUserList = new ArrayList<>();
             ServerContext serverContext = new ServerContext(starterUserList);
 
-
-            // Välja kommenteeritud, sest terve Server ootab hektel DeadlineThreadi taga
-            /*
-
-            Thread deadlineThread = new Thread(new DeadlineThread(ss.accept(), serverContext));
+            Thread deadlineThread = new Thread(new DeadlineThread(serverContext));
             deadlineThread.start();
 
-            */
+            System.out.println("DEBUG: DeadlineThread loodud ja programm jätkab");
 
             while (true) {
                 Socket socket = ss.accept();

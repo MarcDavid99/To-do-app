@@ -31,20 +31,22 @@ public class Deadline{
     public boolean isPastDeadline(){
         LocalDate dateToCheck = LocalDate.now();
         if (dateToCheck.isEqual(deadlineDate)){
-            System.out.println("Tänane päev ongi tähtaeg!");
             return false;
         }else if (dateToCheck.isAfter(deadlineDate)){
-            System.out.println("Tähtaeg on möödunud!");
             return true; //on üle deadline
-        }else{
-            System.out.println("Sul on " + DAYS.between(LocalDate.now(),deadlineDate) + " päeva tähtajani.");
+        }
+        else{
             return false;
         }
     }
 
-    // TODO: teha meetod, mis kontrollib deadline kaugust
     public boolean isDeadlineApproaching() {
-        return true;
+        // TODO: Mõelda, kas anda kasutajale valik mitu päeva varem ta hoiatust soovib
+        if (DAYS.between(LocalDate.now(),deadlineDate) < 7) {
+            System.out.println("DEBUG: Tuleks saata tähtaja meeldetuletuse meil!");
+            return true;
+        }
+        return false;
     }
 
     public String dateToString(){

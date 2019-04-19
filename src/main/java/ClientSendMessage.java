@@ -3,6 +3,12 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class ClientSendMessage {
+
+    // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+
     public static void sendAddComment(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
@@ -18,7 +24,7 @@ public class ClientSendMessage {
                 return;
 
             } catch (NumberFormatException e) {
-                System.out.println("Te ei sisestanud järjekorranumbrit õigel kujul.");
+                System.out.println(ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET);
             }
         }
 
@@ -35,7 +41,7 @@ public class ClientSendMessage {
                 out.writeInt(taskIndex);
                 return;
             } catch (NumberFormatException e) {
-                System.out.println("Te ei sisestanud järjekorranumbrit õigel kujul.");
+                System.out.println(ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET);
             }
         }
     }
@@ -50,7 +56,7 @@ public class ClientSendMessage {
                 taskIndex = Integer.parseInt(line);
                 break;
             } catch (NumberFormatException e) {
-                System.out.println("Te ei sisestanud järjekorranumbrit õigel kujul.");
+                System.out.println(ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET);
             }
         }
 
@@ -64,7 +70,7 @@ public class ClientSendMessage {
                 out.writeInt(days);
                 return;
             } catch (NumberFormatException e) {
-                System.out.println("Te ei sisestanud päevade arvu korrektselt.");
+                System.out.println(ANSI_YELLOW + "Te ei sisestanud päevade arvu korrektselt." + ANSI_RESET);
             }
         }
     }
@@ -85,7 +91,7 @@ public class ClientSendMessage {
                 isPrivateTask = false;
                 break;
             }
-            System.out.println("Sisestus oli vigane, kirjutage (jah/ei)");
+            System.out.println(ANSI_YELLOW + "Sisestus oli vigane, kirjutage (jah/ei)" + ANSI_RESET);
         }
         out.writeInt(Commands.DO_ADD_TASK.getValue());
         out.writeUTF(taskDescription);
@@ -139,10 +145,10 @@ public class ClientSendMessage {
                     return;
                 }
                 else{
-                    System.out.println("\r\n" + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + "\r\n");
+                    System.out.println("\r\n" + ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + ANSI_RESET + "\r\n");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\r\n" + "Te ei sisestanud järjekorranumbrit õigel kujul." + "\r\n");
+                System.out.println("\r\n" + ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET + "\r\n");
             }
         }
     }

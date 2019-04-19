@@ -3,13 +3,17 @@ import java.io.IOException;
 
 public class ClientProcessCommands {
 
+    // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
+
     public static void processDisplayTasks(DataInputStream input) throws IOException {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
         if (tasksAmount == 0) {
             System.out.println("Sul pole ühtegi aktiivset ülesannet. \r\n");
         } else {
-            System.out.println("Sinu aktiivsed ülesanded:");
+            System.out.println(ANSI_RED + "Sinu aktiivsed ülesanded:" + ANSI_RESET);
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
@@ -52,7 +56,7 @@ public class ClientProcessCommands {
         if (tasksAmount == 0) {
             System.out.println("Ei leitud sinu otsingule vastavaid ülesandeid. \r\n");
         } else {
-            System.out.println("Leitud ülesanded:");
+            System.out.println(ANSI_RED + "Leitud ülesanded:" + ANSI_RESET);
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }

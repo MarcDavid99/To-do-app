@@ -12,6 +12,11 @@ public class Main {
 
     private static Argon2 argon2 = Argon2Factory.create();
 
+    // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+
     public static void main(String[] args) throws Exception {
 
         try (Socket socket = new Socket("localhost", 1337);
@@ -27,6 +32,7 @@ public class Main {
                         "Valige sobiv tegevus: ");
                 Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
+                System.out.println();
 
                 switch (initialCommand) {
                     case "1":
@@ -39,7 +45,7 @@ public class Main {
                             while (true) {
                                 String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18","19"};
                                 String[] commandsThatNeedList = {"13", "14", "15"};
-                                System.out.println("Erinevad võimalused: " + "\r\n" +
+                                System.out.println(ANSI_RED + "Erinevad võimalused: " + ANSI_RESET + "\r\n" +
                                         "Lisa ülesanne:                     11" + "\r\n" +
                                         "Vaata ülesandeid:                  12" + "\r\n" +
                                         "Lisa üleasndele kommentaar:        13" + "\r\n" +
@@ -48,7 +54,7 @@ public class Main {
                                         "Lisa ülesanne teisele kasutajale:  16" + "\r\n" +
                                         "Otsi ülesannet:                    17" + "\r\n" +
                                         "Jälgi mingit ülesannet:            18" + "\r\n" +
-                                        "Sulge programm:                    19" + "\r\n");
+                                        "Sulge programm:                    19");
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();
@@ -82,7 +88,7 @@ public class Main {
                                 }
                                 //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                                 else {
-                                    System.out.println("Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)");
+                                    System.out.println(ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)" + ANSI_RESET);
                                 }
                             }
                         }
@@ -96,7 +102,7 @@ public class Main {
                         break;
                     //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
                     default:
-                        System.out.println("Sisestage korrektne käsk (1, 2, 3)");
+                        System.out.println(ANSI_YELLOW + "Sisestage korrektne käsk (1, 2, 3)" + ANSI_RESET);
                         break;
                 }
             }

@@ -417,8 +417,8 @@ public class ServerThread implements Runnable {
                     }
                 }
                 socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
-                socketOut.writeUTF("   *Ülesande looja: " + taskCreator);
-                socketOut.writeUTF("   *Ülesande täitja: " + taskUser);
+                socketOut.writeUTF("   *Looja: " + taskCreator);
+                socketOut.writeUTF("   *Täitja: " + taskUser);
             }
             taskNumber += 1;
         }
