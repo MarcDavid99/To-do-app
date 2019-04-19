@@ -12,7 +12,7 @@ public class ClientSendMessage {
                 int taskIndex = Integer.parseInt(line);
                 System.out.print("Sisestage kommentaar: ");
                 String comment = scanner.next();
-                out.writeInt(Commands.doAddComment);
+                out.writeInt(Commands.DO_ADD_COMMENT.getValue());
                 out.writeInt(taskIndex);
                 out.writeUTF(comment);
                 return;
@@ -31,7 +31,7 @@ public class ClientSendMessage {
             String line = scanner.nextLine();
             try {
                 int taskIndex = Integer.parseInt(line);
-                out.writeInt(Commands.doCompleteTask);
+                out.writeInt(Commands.DO_COMPLETE_TASK.getValue());
                 out.writeInt(taskIndex);
                 return;
             } catch (NumberFormatException e) {
@@ -59,7 +59,7 @@ public class ClientSendMessage {
             String line = scanner.nextLine();
             try {
                 int days = Integer.parseInt(line);
-                out.writeInt(Commands.doPushDeadline);
+                out.writeInt(Commands.DO_PUSH_DEADLINE.getValue());
                 out.writeInt(taskIndex);
                 out.writeInt(days);
                 return;
@@ -87,7 +87,7 @@ public class ClientSendMessage {
             }
             System.out.println("Sisestus oli vigane, kirjutage (jah/ei)");
         }
-        out.writeInt(Commands.doAddTask);
+        out.writeInt(Commands.DO_ADD_TASK.getValue());
         out.writeUTF(taskDescription);
         out.writeBoolean(isPrivateTask);
     }
@@ -98,7 +98,7 @@ public class ClientSendMessage {
         String enteredUsername = scanner.nextLine();
         System.out.print("Lisa ülesande kirjeldus: ");
         String description = scanner.nextLine();
-        out.writeInt(Commands.doAddTaskToOtherUser);
+        out.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
         out.writeUTF(enteredUsername);
         out.writeUTF(description);
     }
@@ -113,26 +113,26 @@ public class ClientSendMessage {
             String line = scanner.nextLine();
             try {
                 int command = Integer.parseInt(line);
-                if(command == Commands.doSearchTasksByDescription){
+                if(command == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()){
                     System.out.print("Sisestage kirjeldus, mille järgi te taski/taske otsida soovite: ");
                     String description = scanner.nextLine();
-                    out.writeInt(Commands.doSearchTasksByDescription);
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue());
                     out.writeUTF(description);
                     System.out.println();
                     return;
                 }
-                else if(command == Commands.doSearchTasksByUsername){
+                else if(command == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()){
                     System.out.print("Sisestage kasutajanimi, kelle taskide seast te soovite taski otsida: ");
                     String username = scanner.nextLine();
-                    out.writeInt(Commands.doSearchTasksByUsername);
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue());
                     out.writeUTF(username);
                     System.out.println();
                     return;
                 }
-                else if(command == Commands.doSearchTasksByDeadline){
+                else if(command == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()){
                     System.out.print("Sisestage kuupäev, mille järgi te taski otsida soovite (kujul yyyy-MM-dd): ");
                     String deadline = scanner.nextLine();
-                    out.writeInt(Commands.doSearchTasksByDeadline);
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue());
                     out.writeUTF(deadline);
                     System.out.println();
                     return;
@@ -152,7 +152,7 @@ public class ClientSendMessage {
         String username = scanner.nextLine();
         System.out.print("Sisesta ülesande indeks, mida soovid jälgida: ");
         String taskIndex = scanner.nextLine();
-        out.writeInt(Commands.doFollowTask);
+        out.writeInt(Commands.DO_FOLLOW_TASK.getValue());
         out.writeUTF(username);
         out.writeUTF(taskIndex);
     }

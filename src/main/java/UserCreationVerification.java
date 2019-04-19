@@ -86,7 +86,7 @@ public class UserCreationVerification {
                             System.out.println("Kasutaja " + username + " on edukalt loodud!");
                             System.out.println();
 
-                            socketOut.writeInt(Commands.doSaveNewUser);
+                            socketOut.writeInt(Commands.DO_SAVE_NEW_USER.getValue());
                             Gson gsonUser = new Gson();
                             String jsonUser = gsonUser.toJson(newUser);
                             socketOut.writeUTF(jsonUser);
@@ -114,19 +114,19 @@ public class UserCreationVerification {
         String existingPassword = scanner.nextLine();
 
 
-        socketOut.writeInt(Commands.doVerifyClient);
+        socketOut.writeInt(Commands.DO_VERIFY_CLIENT.getValue());
         socketOut.writeUTF(existingUsername);
         socketOut.writeUTF(existingPassword);
 
         //tuleks saada serverilt tagasi kinnitus, et kasutaja on olemas ja parool õige
         int type = input.readInt();
-        if (type == Commands.doConfirmLogin) {
+        if (type == Commands.DO_CONFIRM_LOGIN.getValue()) {
             String message = input.readUTF();
             System.out.println(message);
             System.out.println();
             return true;
         }
-        if (type == Commands.doNotConfirmLogin) {
+        if (type == Commands.DO_NOT_CONFIRM_LOGIN.getValue()) {
             String message = input.readUTF();
             System.out.println(message);
             return false;
@@ -136,7 +136,7 @@ public class UserCreationVerification {
 
 
     private static boolean checkIfUsernameExists(DataInputStream socketIn, DataOutputStream socketOut, String username) throws IOException {
-        socketOut.writeInt(Commands.doCheckForUsername);
+        socketOut.writeInt(Commands.DO_CHECK_FOR_USERNAME.getValue());
         socketOut.writeUTF(username);
         return socketIn.readBoolean();
     }

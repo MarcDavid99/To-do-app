@@ -84,48 +84,49 @@ public class ServerThread implements Runnable {
     private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
 
         int requestType = socketIn.readInt();
-        if (requestType == Commands.doSaveNewUser) {
+        if (requestType == Commands.DO_SAVE_NEW_USER.getValue()) {
             saveNewUser(socketIn);
         }
-        if (requestType == Commands.doVerifyClient) {
+        if (requestType == Commands.DO_VERIFY_CLIENT.getValue()) {
             verifyClient(socketIn, socketOut);
         }
-        if (requestType == Commands.doCheckForUsername) {
+        if (requestType == Commands.DO_CHECK_FOR_USERNAME.getValue()) {
 
             boolean checkUsername = checkForUsernameInList(socketIn.readUTF());
             socketOut.writeBoolean(checkUsername);
         }
-        if (requestType == Commands.doAddTask) {
+        if (requestType == Commands.DO_ADD_TASK.getValue()) {
             addTask(socketIn, socketOut);
         }
-        if (requestType == Commands.doDisplayTasks) {
+        if (requestType == Commands.DO_DISPLAY_TASK.getValue()) {
             displayTasks(socketOut);
         }
-        if (requestType == Commands.doAddComment) {
+        if (requestType == Commands.DO_ADD_COMMENT.getValue()) {
             addComment(socketIn, socketOut);
         }
-        if (requestType == Commands.doPushDeadline) {
+        if (requestType == Commands.DO_PUSH_DEADLINE.getValue()) {
             pushDeadline(socketIn, socketOut);
         }
-        if (requestType == Commands.doCompleteTask) {
+        if (requestType == Commands.DO_COMPLETE_TASK.getValue()) {
             completeTask(socketIn, socketOut);
         }
-        if (requestType == Commands.doAddTaskToOtherUser) {
+        if (requestType == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
             addTaskToOtherUser(socketIn, socketOut);
         }
-        if (requestType == Commands.doSearchTasksByDescription) {
+        if (requestType == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()) {
             searchTaskByDescription(socketIn, socketOut);
         }
-        if (requestType == Commands.doSearchTasksByUsername) {
+        if (requestType == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()) {
             searchTaskByUsername(socketIn, socketOut);
         }
-        if (requestType == Commands.doSearchTasksByDeadline) {
+        if (requestType == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
             searchTaskByDeadline(socketIn, socketOut);
         }
-        if (requestType == Commands.doFollowTask) {
+
+        if (requestType == Commands.DO_FOLLOW_TASK.getValue()) {
             followTask(socketIn, socketOut);
         }
-        if (requestType == Commands.doCloseTodoList1 || requestType == Commands.doCloseTodoList2) {
+        if (requestType == Commands.DO_CLOSE_TODO_LIST_1.getValue() || requestType == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
             return closeTodoList(socketIn, socketOut);
         }
         return false;
@@ -139,11 +140,11 @@ public class ServerThread implements Runnable {
             if (user.getUsername().equals(username)) {
                 if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) { //taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
                     user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
-                    socketOut.writeInt(Commands.doFollowTask);
+                    socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
                     socketOut.writeInt(1);
                     socketOut.writeBoolean(false);
                 } else {
-                    socketOut.writeInt(Commands.doFollowTask);
+                    socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
                     socketOut.writeInt(0);
                     socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
                     socketOut.writeBoolean(false);
@@ -151,7 +152,7 @@ public class ServerThread implements Runnable {
             }
         }
         if (!checkForUsernameInList(username)) {
-            socketOut.writeInt(Commands.doFollowTask);
+            socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
             socketOut.writeInt(0);
             socketOut.writeUTF("Sellist kasutajanime pole olemas.");
             socketOut.writeBoolean(false);
@@ -175,18 +176,18 @@ public class ServerThread implements Runnable {
             if (user.getUsername().equals(username)) {
                 if (argon2.verify(user.getPassword(), password)) { // Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
                     currentUser = user;
-                    socketOut.writeInt(Commands.doConfirmLogin); // kui sisselogimine õnnestub
+                    socketOut.writeInt(Commands.DO_CONFIRM_LOGIN.getValue()); // kui sisselogimine õnnestub
                     socketOut.writeUTF("Olete sisselogitud.");
                     responseSent = true;
                 } else {
-                    socketOut.writeInt(Commands.doNotConfirmLogin); // kui sisselogimine ei õnnestu
+                    socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // kui sisselogimine ei õnnestu
                     socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti.");
                     responseSent = true;
                 }
             }
         }
         if (!responseSent) {
-            socketOut.writeInt(Commands.doNotConfirmLogin); // sisselogimine ei õnnestunud
+            socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // sisselogimine ei õnnestunud
             socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
         }
     }
@@ -231,11 +232,11 @@ public class ServerThread implements Runnable {
         if (indeks >= 0 && indeks < todoList.size()) {
             String comment = socketIn.readUTF();
             todoList.get(indeks).addComments(comment, allUsers);
-            socketOut.writeInt(Commands.doAddComment);
+            socketOut.writeInt(Commands.DO_ADD_COMMENT.getValue());
             socketOut.writeUTF("Kommentaar lisatud.");
             writeExistingUsersToFile();
         } else {
-            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
 
@@ -249,11 +250,11 @@ public class ServerThread implements Runnable {
         if (indeks >= 0 && indeks < todoList.size()) {
             int pushDeadline = socketIn.readInt();
             todoList.get(indeks).setDeadline(pushDeadline, allUsers);
-            socketOut.writeInt(Commands.doPushDeadline);
+            socketOut.writeInt(Commands.DO_PUSH_DEADLINE.getValue());
             socketOut.writeUTF("Deadline edasi lükatud.");
             writeExistingUsersToFile();
         } else {
-            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
         socketOut.writeBoolean(false);
@@ -270,11 +271,11 @@ public class ServerThread implements Runnable {
                     user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID(), isPrivateTask));
                 }
             }
-            socketOut.writeInt(Commands.doAddTaskToOtherUser);
+            socketOut.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
             socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
             writeExistingUsersToFile();
         } else {
-            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
         }
         socketOut.writeBoolean(false);
@@ -287,7 +288,7 @@ public class ServerThread implements Runnable {
         String taskID = UUID.randomUUID().toString();
         currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID(), isPrivateTask));
 
-        socketOut.writeInt(Commands.doAddTask);
+        socketOut.writeInt(Commands.DO_ADD_TASK.getValue());
         socketOut.writeUTF("Task loodud.");
         socketOut.writeBoolean(false);
         writeExistingUsersToFile();
@@ -295,10 +296,11 @@ public class ServerThread implements Runnable {
 
     private void displayTasks(DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
-        socketOut.writeInt(Commands.doDisplayTasks);
+        socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
         sendTasks(todoList, socketOut);
         socketOut.writeBoolean(false);
     }
+
 
     private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
@@ -306,11 +308,11 @@ public class ServerThread implements Runnable {
         if (indeks >= 0 && indeks < todoList.size()) {
             todoList.get(indeks).setTaskFinished(allUsers);
             todoList.remove(indeks);
-            socketOut.writeInt(Commands.doCompleteTask);
+            socketOut.writeInt(Commands.DO_COMPLETE_TASK.getValue());
             socketOut.writeUTF("Task edukalt eemaldatud");
             writeExistingUsersToFile();
         } else {
-            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga taski sinu todo listis ei leidu.");
         }
         socketOut.writeBoolean(false);
@@ -329,7 +331,7 @@ public class ServerThread implements Runnable {
             }
         }
 
-        socketOut.writeInt(Commands.doSearchTasks);
+        socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
         sendTasks(suitableTasksArray, socketOut);
 
         socketOut.writeBoolean(false);
@@ -342,13 +344,13 @@ public class ServerThread implements Runnable {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     todoList = user.getToDoList();
-                    socketOut.writeInt(Commands.doSearchTasks);
+                    socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
                     sendTasks(todoList, socketOut);
                     break;
                 }
             }
         } else {
-            socketOut.writeInt(Commands.errorOccured);
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
         }
         socketOut.writeBoolean(false);
@@ -366,7 +368,7 @@ public class ServerThread implements Runnable {
             }
         }
 
-        socketOut.writeInt(Commands.doSearchTasks);
+        socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
         sendTasks(suitableTasks, socketOut);
         socketOut.writeBoolean(false);
     }

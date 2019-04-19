@@ -54,9 +54,9 @@ public class Main {
                                 System.out.println();
                                 if (Arrays.asList(possibleCommands).contains(command)) {
                                     int commandInt = Integer.parseInt(command);
-                                    if (commandInt != Commands.doCloseTodoList2) {
+                                    if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
                                         if (Arrays.asList(commandsThatNeedList).contains(command)) {
-                                            out.writeInt(Commands.doDisplayTasks);
+                                            out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
                                             //messageType loeb sisse, sest server saadab displayTasksi korral message type
                                             int messageType = input.readInt();
                                             ClientProcessCommands.processDisplayTasks(input);
@@ -72,7 +72,7 @@ public class Main {
                                         processServerMessageType(input, serverMessageType);
 
                                     } else {
-                                        out.writeInt(Commands.doCloseTodoList2);
+                                        out.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
                                     }
                                     if (input.readBoolean()) {
                                         System.out.println("Programm sulgub!");
@@ -87,7 +87,7 @@ public class Main {
                         }
                         break;
                     case "3":
-                        out.writeInt(Commands.doCloseTodoList1);
+                        out.writeInt(Commands.DO_CLOSE_TODO_LIST_1.getValue());
                         if (input.readBoolean()) {
                             System.out.println("Programm sulgub!");
                             break label;
@@ -105,43 +105,43 @@ public class Main {
 
 
     private static void commandToServer(DataOutputStream out, int command) throws IOException {
-        if (command == Commands.doCompleteTask) {
+        if (command == Commands.DO_COMPLETE_TASK.getValue()) {
             ClientSendMessage.sendCompleteTask(out);
-        } else if (command == Commands.doDisplayTasks) {
-            out.writeInt(Commands.doDisplayTasks);
-        } else if (command == Commands.doAddComment) {
+        } else if (command == Commands.DO_DISPLAY_TASK.getValue()) {
+            out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+        } else if (command == Commands.DO_ADD_COMMENT.getValue()) {
             ClientSendMessage.sendAddComment(out);
-        } else if (command == Commands.doPushDeadline) {
+        } else if (command == Commands.DO_PUSH_DEADLINE.getValue()) {
             ClientSendMessage.sendPushDeadline(out);
-        } else if (command == Commands.doAddTask) {
+        } else if (command == Commands.DO_ADD_TASK.getValue()) {
             ClientSendMessage.sendAddTask(out);
-        } else if (command == Commands.doAddTaskToOtherUser) {
+        } else if (command == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
             ClientSendMessage.sendAddTaskToOtherUsers(out);
-        } else if (command == Commands.doSearchTasks) {
+        } else if (command == Commands.DO_SEARCH_TASKS.getValue()) {
             ClientSendMessage.sendSearchTasks(out);
-        } else if (command == Commands.doFollowTask) {
+        } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
             ClientSendMessage.sendFollowTask(out);
         }
     }
 
     private static void processServerMessageType(DataInputStream input, int command) throws IOException {
-        if (command == Commands.doCompleteTask) {
+        if (command == Commands.DO_COMPLETE_TASK.getValue()) {
             ClientProcessCommands.processCompleteTask(input);
-        } else if (command == Commands.doDisplayTasks) {
+        } else if (command == Commands.DO_DISPLAY_TASK.getValue()) {
             ClientProcessCommands.processDisplayTasks(input);
-        } else if (command == Commands.doAddComment) {
+        } else if (command == Commands.DO_ADD_COMMENT.getValue()) {
             ClientProcessCommands.processAddComment(input);
-        } else if (command == Commands.doPushDeadline) {
+        } else if (command == Commands.DO_PUSH_DEADLINE.getValue()) {
             ClientProcessCommands.processPushDeadline(input);
-        } else if (command == Commands.doAddTask) {
+        } else if (command == Commands.DO_ADD_TASK.getValue()) {
             ClientProcessCommands.processAddTask(input);
-        } else if (command == Commands.doAddTaskToOtherUser) {
+        } else if (command == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
             ClientProcessCommands.processAddTaskToOtherUsers(input);
-        } else if (command == Commands.errorOccured) {
+        } else if (command == Commands.ERROR_OCCURED.getValue()) {
             ClientProcessCommands.processErrorOccured(input);
-        } else if (command == Commands.doSearchTasks) {
+        } else if (command == Commands.DO_SEARCH_TASKS.getValue()) {
             ClientProcessCommands.processShowSearchedTasks(input);
-        } else if (command == Commands.doFollowTask) {
+        } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
             ClientProcessCommands.processFollowTask(input);
         }
     }
