@@ -138,7 +138,7 @@ public class ServerThread implements Runnable {
         for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
                 if(user.getToDoList().contains(user.getToDoList().get(taskIndex-1))){ //taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
-                    user.getToDoList().get(taskIndex-1).addFollower(currentUser);
+                    user.getToDoList().get(taskIndex-1).addFollower(currentUser.getUserID());
                     socketOut.writeInt(Commands.doFollowTask);
                     socketOut.writeInt(1);
                     socketOut.writeBoolean(false);
@@ -230,7 +230,7 @@ public class ServerThread implements Runnable {
         int indeks = socketIn.readInt() - 1;
         if (indeks >= 0 && indeks < todoList.size()) {
             String comment = socketIn.readUTF();
-            todoList.get(indeks).addComments(comment);
+            todoList.get(indeks).addComments(comment, allUsers);
             socketOut.writeInt(Commands.doAddComment);
             socketOut.writeUTF("Kommentaar lisatud.");
             writeExistingUsersToFile();
@@ -248,7 +248,7 @@ public class ServerThread implements Runnable {
         int indeks = socketIn.readInt() - 1;
         if (indeks >= 0 && indeks < todoList.size()) {
             int pushDeadline = socketIn.readInt();
-            todoList.get(indeks).setDeadline(pushDeadline);
+            todoList.get(indeks).setDeadline(pushDeadline, allUsers);
             socketOut.writeInt(Commands.doPushDeadline);
             socketOut.writeUTF("Deadline edasi lükatud.");
             writeExistingUsersToFile();
@@ -303,7 +303,7 @@ public class ServerThread implements Runnable {
         List<Task> todoList = currentUser.getToDoList();
         int indeks = socketIn.readInt() - 1;
         if (indeks >= 0 && indeks < todoList.size()) {
-            todoList.get(indeks).setTaskFinished();
+            todoList.get(indeks).setTaskFinished(allUsers);
             todoList.remove(indeks);
             socketOut.writeInt(Commands.doCompleteTask);
             socketOut.writeUTF("Task edukalt eemaldatud");

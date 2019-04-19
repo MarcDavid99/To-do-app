@@ -19,7 +19,7 @@ public class Task {
     private Deadline taskDeadline = new Deadline();
     private boolean remindedOfApproachingDeadline;
     private boolean remindedOfPassedDeadline;
-    private List<User> taskFollowers;
+    private List<String> taskFollowers;
 
 
 
@@ -37,25 +37,47 @@ public class Task {
         this.taskFollowers = new ArrayList<>();
     }
 
-    public void addFollower(User user){
-        taskFollowers.add(user);
+    public void addFollower(String userId){
+
+        taskFollowers.add(userId);
     }
 
-    public void setDeadline(int deadlineAmountInDays) {
+    public void setDeadline(int deadlineAmountInDays, List<User> allUsers) {
+        if(!taskFollowers.isEmpty()){
+            for (String userId : taskFollowers) {
+                for (User currentUser : allUsers) {
+                    if(currentUser.getUserID().equals(userId)){
+                        new SendMail().sendMail(currentUser.getMailAdress(),
+                                "The deadline of a task you are following has been adjusted",
+                                "Hello!" +
+                                        "\r\n" + "\r\n" +
+                                        "The following task's deadline has been adjusted: " + this.getTaskDescription() +
+                                        "\r\n" +
+                                        "New deadline: " + this.getTaskDeadline().dateToString() +
+                                        "\r\n" + "\r\n" +
+                                        "Thank you for using our to-do app!");
+                    }
+                }
+            }
+        }
         this.taskDeadline.setDeadline(deadlineAmountInDays);
     }
 
-    public void setTaskFinished(){
+    public void setTaskFinished(List<User> allUsers){
         if(!taskFollowers.isEmpty()){
-            for (User user : taskFollowers) {
-                new SendMail().sendMail(user.getMailAdress(),
-                        "A task you are following is completed.",
-                        "Hello!" +
-                                "\r\n" + "\r\n" +
-                                "The following task has been set as finished: " + this.getTaskDescription() +
-                                "\r\n" + "\r\n" +
+            for (String userId : taskFollowers) {
+                for (User currentUser : allUsers) {
+                    if(currentUser.getUserID().equals(userId)){
+                        new SendMail().sendMail(currentUser.getMailAdress(),
+                                "A task you are following is completed.",
+                                "Hello!" +
+                                        "\r\n" + "\r\n" +
+                                        "The following task has been set as finished: " + this.getTaskDescription() +
+                                        "\r\n" + "\r\n" +
 
-                                "Thank you for using our to-do app!");
+                                        "Thank you for using our to-do app!");
+                    }
+                }
             }
         }
         isFinished = true;
@@ -105,19 +127,23 @@ public class Task {
         return taskDeadline;
     }
 
-    public void addComments(String comment) {
+    public void addComments(String comment, List<User> allUsers) {
         if(!taskFollowers.isEmpty()){
-            for (User user : taskFollowers) {
-                new SendMail().sendMail(user.getMailAdress(),
-                        "A comment was added to a task you are following.",
-                        "Hello!" +
-                                "\r\n" + "\r\n" +
-                                "A comment was added to the following task: " + this.getTaskDescription() +
-                                "\r\n" +
-                                "The comment that was added: " + comment +
-                                "\r\n" + "\r\n" +
+            for (String userId : taskFollowers) {
+                for (User currentUser : allUsers) {
+                    if(currentUser.getUserID().equals(userId)){
+                        new SendMail().sendMail(currentUser.getMailAdress(),
+                                "A comment was added to a task you are following.",
+                                "Hello!" +
+                                        "\r\n" + "\r\n" +
+                                        "A comment was added to the following task: " + this.getTaskDescription() +
+                                        "\r\n" +
+                                        "The comment that was added: " + comment +
+                                        "\r\n" + "\r\n" +
 
-                                "Thank you for using our to-do app!");
+                                        "Thank you for using our to-do app!");
+                    }
+                }
             }
         }
         comments.add(comment);
