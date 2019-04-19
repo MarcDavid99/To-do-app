@@ -1,4 +1,3 @@
-import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -16,12 +15,14 @@ public class DeadlineThread implements Runnable {
 
         System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread");
 
-        //long timeOfSleep = sleepAmount; // 3 tundi millisekundites
-        long timeOfSleep = 10000;        //10 sekundit (Testväärtus)
+        long timeOfSleep = sleepAmount; // 3 tundi millisekundites
+        //long timeOfSleep = 10000;        //10 sekundit (Testväärtus)
         long start = 0; // vajab algväärtust
         long end;
         long timeSlept;
 
+
+        // TODO: Kuigi DeadlineThreadis märgitakse taski juurde, et see on täidetud, ei tea ükski teine klass sellest
 
         while (true) {
             List<User> allUsersToCheck = sctx.getAllUsers();
@@ -48,7 +49,6 @@ public class DeadlineThread implements Runnable {
                             task.setRemindedOfPassedDeadline(true);
                         }
                     }
-                    // TODO: teha sellest korralik meetod (vt Deadline.java)
                     if (currentDeadline.isDeadlineApproaching()) {
                         if (!task.isRemindedOfApproachingDeadline()) {
                             String mailSubject = "Reminder of your task in our To-Do List!";
@@ -77,8 +77,8 @@ public class DeadlineThread implements Runnable {
                 while (timeOfSleep > 0) {
                     start = System.currentTimeMillis();
                     Thread.sleep(timeOfSleep);
-                    //timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
-                    timeOfSleep = 10000; //testväärtus
+                    timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
+                    //timeOfSleep = 10000; //testväärtus
                     System.out.println("DEBUG: DeadlineThread ärkab");
                     break;
 

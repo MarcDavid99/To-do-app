@@ -14,6 +14,8 @@ public class Server {
             List<User> starterUserList = new ArrayList<>();
             ServerContext serverContext = new ServerContext(starterUserList);
 
+
+            // TODO: DeadlineThreadi deadlinede ära kontrollimisest ei saa ükski teine klass teada ehk see tuleb korda teha
             Thread deadlineThread = new Thread(new DeadlineThread(serverContext));
             deadlineThread.start();
 
