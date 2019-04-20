@@ -10,11 +10,6 @@ import java.util.UUID;
 
 public class UserCreationVerification {
 
-    // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-
     static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws IOException {
 
         /*Console console = System.console();
@@ -38,7 +33,7 @@ public class UserCreationVerification {
             if (firstName.length() >= 2 && firstName.length() <= 40) {
                 break;
             } else {
-                System.out.println(ANSI_YELLOW + "Sisestasite ebakorrektse pikkusega eesnime, proovige uuesti!" + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Sisestasite ebakorrektse pikkusega eesnime, proovige uuesti!" + TextColours.ANSI_RESET);
             }
         }
         while (true) {
@@ -47,7 +42,7 @@ public class UserCreationVerification {
             if (lastName.length() >= 2 && lastName.length() <= 40) {
                 break;
             } else {
-                System.out.println(ANSI_YELLOW + "Sisestasite ebakorrektse pikkusega perenime, proovige uuesti!" + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Sisestasite ebakorrektse pikkusega perenime, proovige uuesti!" + TextColours.ANSI_RESET);
             }
         }
         while (true) {
@@ -57,10 +52,10 @@ public class UserCreationVerification {
                 if (!checkIfUsernameExists(socketIn, socketOut, username)) {
                     break;
                 } else {
-                    System.out.println(ANSI_YELLOW + "Kasutajanimi juba eksisteerib, valige uus!" + ANSI_RESET);
+                    System.out.println(TextColours.ANSI_YELLOW + "Kasutajanimi juba eksisteerib, valige uus!" + TextColours.ANSI_RESET);
                 }
             } else {
-                System.out.println(ANSI_YELLOW + "Sisestasite ebakorrektse pikkusega kasutajanime, proovige uuesti!" + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Sisestasite ebakorrektse pikkusega kasutajanime, proovige uuesti!" + TextColours.ANSI_RESET);
             }
         }
         while (true) {
@@ -98,17 +93,17 @@ public class UserCreationVerification {
                             socketOut.writeUTF(jsonUser);
                             break;
                         } else {
-                            System.out.println(ANSI_YELLOW + "Sisestatud kood ei ole õige, palun proovige uuesti registreerida." + ANSI_RESET);
+                            System.out.println(TextColours.ANSI_YELLOW + "Sisestatud kood ei ole õige, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
                         }
 
                     } catch (NumberFormatException e) {
-                        System.out.println(ANSI_YELLOW + "Sisestasite koodi valesti." + ANSI_RESET);
+                        System.out.println(TextColours.ANSI_YELLOW + "Sisestasite koodi valesti." + TextColours.ANSI_RESET);
                     }
                 } else {
-                    System.out.println(ANSI_YELLOW + "Sisestatud meiliaadressile meili saatmine ebaõnnestus, palun proovige uuesti registreerida." + ANSI_RESET);
+                    System.out.println(TextColours.ANSI_YELLOW + "Sisestatud meiliaadressile meili saatmine ebaõnnestus, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
                 }
             } else {
-                System.out.println(ANSI_YELLOW + "Salasõna peab olema vähemalt 8 tähemärki pikk. Palun proovige uuesti registreerida." + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Salasõna peab olema vähemalt 8 tähemärki pikk. Palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
             }
         }
     }

@@ -12,11 +12,6 @@ public class Main {
 
     private static Argon2 argon2 = Argon2Factory.create();
 
-    // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-
     public static void main(String[] args) throws Exception {
 
         try (Socket socket = new Socket("localhost", 1337);
@@ -25,7 +20,7 @@ public class Main {
 
             label:
             while (true) {
-                System.out.println(ANSI_RED + "Erinevad võimalused: " + ANSI_RESET);
+                System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET);
                 System.out.print(
                         "Registreerimiseks kirjutage:       1" + "\r\n" +
                         "Sisse logimiseks kirjutage:        2" + "\r\n" +
@@ -46,7 +41,7 @@ public class Main {
                             while (true) {
                                 String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18","19"};
                                 String[] commandsThatNeedList = {"13", "14", "15"};
-                                System.out.println(ANSI_RED + "Erinevad võimalused: " + ANSI_RESET + "\r\n" +
+                                System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET + "\r\n" +
                                         "Lisa ülesanne:                     11" + "\r\n" +
                                         "Vaata ülesandeid:                  12" + "\r\n" +
                                         "Lisa üleasndele kommentaar:        13" + "\r\n" +
@@ -83,13 +78,13 @@ public class Main {
                                         out.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
                                     }
                                     if (input.readBoolean()) {
-                                        System.out.println("Programm sulgub!");
+                                        System.out.println(TextColours.ANSI_RED + "Programm sulgub!" + TextColours.ANSI_RESET);
                                         return;
                                     }
                                 }
                                 //Vigane käsk kasutaja poolt, eeldusel et ta kasutaja on olemas
                                 else {
-                                    System.out.println(ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)" + ANSI_RESET);
+                                    System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)" + TextColours.ANSI_RESET);
                                 }
                             }
                         }
@@ -97,13 +92,13 @@ public class Main {
                     case "3":
                         out.writeInt(Commands.DO_CLOSE_TODO_LIST_1.getValue());
                         if (input.readBoolean()) {
-                            System.out.println("Programm sulgub!");
+                            System.out.println(TextColours.ANSI_RED + "Programm sulgub!" + TextColours.ANSI_RESET);
                             break label;
                         }
                         break;
                     //Vigane sisestus kasutaja loomisel või kasutajaga millegi tegemisel
                     default:
-                        System.out.println(ANSI_YELLOW + "Sisestage korrektne käsk (1, 2, 3)" + ANSI_RESET);
+                        System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (1, 2, 3)" + TextColours.ANSI_RESET);
                         break;
                 }
             }

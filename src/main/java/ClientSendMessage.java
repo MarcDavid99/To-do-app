@@ -5,10 +5,6 @@ import java.util.Scanner;
 
 public class ClientSendMessage {
 
-    // https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
     public static final String[] topicList = {"töö", "kodu", "vaba aeg", "kultuur", "söök"};
 
     public static void sendAddComment(DataOutputStream out) throws IOException {
@@ -26,7 +22,7 @@ public class ClientSendMessage {
                 return;
 
             } catch (NumberFormatException e) {
-                System.out.println(ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET);
             }
         }
 
@@ -43,7 +39,7 @@ public class ClientSendMessage {
                 out.writeInt(taskIndex);
                 return;
             } catch (NumberFormatException e) {
-                System.out.println(ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET);
             }
         }
     }
@@ -58,7 +54,7 @@ public class ClientSendMessage {
                 taskIndex = Integer.parseInt(line);
                 break;
             } catch (NumberFormatException e) {
-                System.out.println(ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET);
             }
         }
 
@@ -72,7 +68,7 @@ public class ClientSendMessage {
                 out.writeInt(days);
                 return;
             } catch (NumberFormatException e) {
-                System.out.println(ANSI_YELLOW + "Te ei sisestanud päevade arvu korrektselt." + ANSI_RESET);
+                System.out.println(TextColours.ANSI_YELLOW + "Te ei sisestanud päevade arvu korrektselt." + TextColours.ANSI_RESET);
             }
         }
     }
@@ -141,10 +137,10 @@ public class ClientSendMessage {
                     return;
                 }
                 else{
-                    System.out.println("\r\n" + ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + ANSI_RESET + "\r\n");
+                    System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\r\n" + ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + ANSI_RESET + "\r\n");
+                System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET + "\r\n");
             }
         }
     }
@@ -175,7 +171,7 @@ public class ClientSendMessage {
             if(Arrays.asList(topicList).contains(topic)){
                 break;
             }
-            System.out.println(ANSI_YELLOW + "Sellist teemat ei ole valikus. Proovi uuesti." + ANSI_RESET);
+            System.out.println(TextColours.ANSI_YELLOW + "Sellist teemat ei ole valikus. Proovi uuesti." + TextColours.ANSI_RESET);
             System.out.println();
         }
         return topic;
@@ -195,7 +191,7 @@ public class ClientSendMessage {
                 isPrivateTask = false;
                 break;
             }
-            System.out.println(ANSI_YELLOW + "Sisestus oli vigane, kirjutage (jah/ei)" + ANSI_RESET);
+            System.out.println(TextColours.ANSI_YELLOW + "Sisestus oli vigane, kirjutage (jah/ei)" + TextColours.ANSI_RESET);
         }
         return isPrivateTask;
     }
