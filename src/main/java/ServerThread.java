@@ -115,6 +115,9 @@ public class ServerThread implements Runnable {
         if (requestType == Commands.DO_DISPLAY_TASK_CERTAIN.getValue()) {
             displayCertainUserTasks(socketIn, socketOut);
         }
+        if (requestType == Commands.DO_DISPLAY_TASK_BY_TOPIC.getValue()){
+            displayTaskByTopic(socketIn,socketOut);
+        }
         if (requestType == Commands.DO_ADD_COMMENT.getValue()) {
             addComment(socketIn, socketOut);
         }
@@ -145,6 +148,8 @@ public class ServerThread implements Runnable {
         }
         return false;
     }
+
+
 
     private void followTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
@@ -316,6 +321,19 @@ public class ServerThread implements Runnable {
         socketOut.writeBoolean(false);
     }
 
+    private void displayTaskByTopic(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        String topic = socketIn.readUTF();
+        List<Task> todoListByTopic = new ArrayList<>();
+        for (Task task : currentUser.getToDoList()) {
+            if(task.getTaskTopic().equals(topic)){
+                todoListByTopic.add(task);
+            }
+        }
+        socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+        sendTasks(todoListByTopic, socketOut, true);
+        socketOut.writeBoolean(false);
+    }
+
     private void displayCertainUserTasks(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
         List<Task> todoList = new ArrayList<>();
@@ -402,6 +420,10 @@ public class ServerThread implements Runnable {
         socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
         sendTasks(suitableTasks, socketOut, false);
         socketOut.writeBoolean(false);
+    }
+
+    private void searchTasksByTopic(DataInputStream socketIn, DataOutputStream socketOut) throws IOException{
+
     }
 
     private void sendTasks(List<Task> list, DataOutputStream socketOut, boolean justShowToCurrentUser) throws IOException {

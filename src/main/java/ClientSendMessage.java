@@ -1,5 +1,6 @@
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.CoderMalfunctionError;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -101,42 +102,35 @@ public class ClientSendMessage {
 
     }
 
-    public static void sendSearchTasks(DataOutputStream out) throws IOException {
+    public static void sendDisplayTasks(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-        while(true){
+        while (true) {
             System.out.println("" +
-                    "Soovin ülesannet otsida kirjelduse järgi:     21" + "\r\n" +
-                    "Soovin ülesannet otsida kasutajanime järgi:   22" + "\r\n" +
-                    "Soovin ülesannet otsida tähtaja järgi:        23" + "\r\n");
+                    "Näita kõiki ülesandeid:        12" + "\r\n" +
+                    "Näita ülesandeid teema järgi:  32" + "\r\n");
             System.out.print("Valige sobiv tegevus: ");
-            String line = scanner.nextLine();
+            String choice = scanner.nextLine();
             try {
-                int command = Integer.parseInt(line);
-                if(command == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()){
-                    System.out.print("Sisestage kirjeldus, mille järgi te ülesannet/ülesandeid otsida soovite: ");
-                    String description = scanner.nextLine();
-                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue());
-                    out.writeUTF(description);
+                int command = Integer.parseInt(choice);
+                if (command == Commands.DO_DISPLAY_TASK.getValue()) {
+                    out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+                    return;
+                } else if (command == Commands.DO_DISPLAY_TASK_BY_TOPIC.getValue()) {
+                    String topic;
+                    System.out.print("Sisesta teema, mille järgi tahad ülesandeid vaadata: ");
+                    while (true) {
+
+                        topic = scanner.nextLine();
+                        if (Arrays.asList(topicList).contains(topic)){
+                            break;
+                        }
+                        System.out.print("Sellist teemat ei ole valikus, sisesta uuesti: ");
+                    }
+                    out.writeInt(Commands.DO_DISPLAY_TASK_BY_TOPIC.getValue());
+                    out.writeUTF(topic);
                     System.out.println();
                     return;
-                }
-                else if(command == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()){
-                    System.out.print("Sisestage kasutajanimi, kelle ülesannete seast te otsida soovite: ");
-                    String username = scanner.nextLine();
-                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue());
-                    out.writeUTF(username);
-                    System.out.println();
-                    return;
-                }
-                else if(command == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()){
-                    System.out.print("Sisestage kuupäev, mille järgi te ülesannet otsida soovite (kujul yyyy-MM-dd): ");
-                    String deadline = scanner.nextLine();
-                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue());
-                    out.writeUTF(deadline);
-                    System.out.println();
-                    return;
-                }
-                else{
+                } else {
                     System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
                 }
             } catch (NumberFormatException e) {
@@ -145,7 +139,48 @@ public class ClientSendMessage {
         }
     }
 
-    public static void sendFollowTask(DataOutputStream out) throws IOException{
+    public static void sendSearchTasks(DataOutputStream out) throws IOException {
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        while (true) {
+            System.out.println("" +
+                    "Soovin ülesannet otsida kirjelduse järgi:     21" + "\r\n" +
+                    "Soovin ülesannet otsida kasutajanime järgi:   22" + "\r\n" +
+                    "Soovin ülesannet otsida tähtaja järgi:        23" + "\r\n");
+            System.out.print("Valige sobiv tegevus: ");
+            String line = scanner.nextLine();
+            try {
+                int command = Integer.parseInt(line);
+                if (command == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()) {
+                    System.out.print("Sisestage kirjeldus, mille järgi te ülesannet/ülesandeid otsida soovite: ");
+                    String description = scanner.nextLine();
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue());
+                    out.writeUTF(description);
+                    System.out.println();
+                    return;
+                } else if (command == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()) {
+                    System.out.print("Sisestage kasutajanimi, kelle ülesannete seast te otsida soovite: ");
+                    String username = scanner.nextLine();
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue());
+                    out.writeUTF(username);
+                    System.out.println();
+                    return;
+                } else if (command == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
+                    System.out.print("Sisestage kuupäev, mille järgi te ülesannet otsida soovite (kujul yyyy-MM-dd): ");
+                    String deadline = scanner.nextLine();
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue());
+                    out.writeUTF(deadline);
+                    System.out.println();
+                    return;
+                } else {
+                    System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET + "\r\n");
+            }
+        }
+    }
+
+    public static void sendFollowTask(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         System.out.print("Sisesta uuesti kasutajanimi, kelle ülesannet jälgida tahad: ");
         String username = scanner.nextLine();
@@ -156,7 +191,7 @@ public class ClientSendMessage {
         out.writeUTF(taskIndex);
     }
 
-    public static String chooseTopic(){
+    public static String chooseTopic() {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         System.out.println("Võimalikud teemad, kuhu alla ülesanne kuuluda saab: ");
         int index = 1;
@@ -165,10 +200,10 @@ public class ClientSendMessage {
             System.out.println(index + ") " + currentTopic);
             index++;
         }
-        while(true){
+        while (true) {
             System.out.print("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
             topic = scanner.next();
-            if(Arrays.asList(topicList).contains(topic)){
+            if (Arrays.asList(topicList).contains(topic)) {
                 break;
             }
             System.out.println(TextColours.ANSI_YELLOW + "Sellist teemat ei ole valikus. Proovi uuesti." + TextColours.ANSI_RESET);
@@ -177,7 +212,7 @@ public class ClientSendMessage {
         return topic;
     }
 
-    public static boolean chooseIsPrivate(){
+    public static boolean chooseIsPrivate() {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         boolean isPrivateTask;
         while (true) {
@@ -186,8 +221,7 @@ public class ClientSendMessage {
             if (privacy.equals("jah")) {
                 isPrivateTask = true;
                 break;
-            }
-            else if (privacy.equals("ei")) {
+            } else if (privacy.equals("ei")) {
                 isPrivateTask = false;
                 break;
             }

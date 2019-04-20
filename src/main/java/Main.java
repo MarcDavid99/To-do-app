@@ -48,7 +48,7 @@ public class Main {
                                 System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET + "\r\n" +
                                         "Lisa ülesanne:                     11" + "\r\n" +
                                         "Vaata ülesandeid:                  12" + "\r\n" +
-                                        "Lisa üleasndele kommentaar:        13" + "\r\n" +
+                                        "Lisa ülesandele kommentaar:        13" + "\r\n" +
                                         "Muuda ülesande tähtaega:           14" + "\r\n" +
                                         "Märgi ülesanne lõpetatuks:         15" + "\r\n" +
                                         "Lisa ülesanne teisele kasutajale:  16" + "\r\n" +
@@ -64,9 +64,9 @@ public class Main {
                                     if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
                                         if (Arrays.asList(commandsThatNeedList).contains(command)) {
                                             if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
-                                                out.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
                                                 System.out.print("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
                                                 String username = scanner.nextLine();
+                                                out.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
                                                 out.writeUTF(username);
                                             } else {
                                                 out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
@@ -123,7 +123,7 @@ public class Main {
         if (command == Commands.DO_COMPLETE_TASK.getValue()) {
             ClientSendMessage.sendCompleteTask(out);
         } else if (command == Commands.DO_DISPLAY_TASK.getValue()) {
-            out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+            ClientSendMessage.sendDisplayTasks(out);
         } else if (command == Commands.DO_ADD_COMMENT.getValue()) {
             ClientSendMessage.sendAddComment(out);
         } else if (command == Commands.DO_PUSH_DEADLINE.getValue()) {
