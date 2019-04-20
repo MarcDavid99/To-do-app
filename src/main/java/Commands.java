@@ -1,6 +1,7 @@
 public enum Commands {
     //https://stackoverflow.com/questions/3990319/storing-integer-values-as-constants-in-enum-manner-in-java
     DO_CLOSE_TODO_LIST_1(3),
+    DO_DISPLAY_TASK_CERTAIN(10),
     DO_ADD_TASK(11),
     DO_DISPLAY_TASK(12),
     DO_ADD_COMMENT(13),

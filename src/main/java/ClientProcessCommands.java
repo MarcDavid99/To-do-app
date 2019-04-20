@@ -7,9 +7,9 @@ public class ClientProcessCommands {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
         if (tasksAmount == 0) {
-            System.out.println("Sul pole ühtegi aktiivset ülesannet. \r\n");
+            System.out.println("Pole ühtegi aktiivset ülesannet. \r\n");
         } else {
-            System.out.println(TextColours.ANSI_RED + "Sinu aktiivsed ülesanded:" + TextColours.ANSI_RESET);
+            System.out.println(TextColours.ANSI_RED + "Aktiivsed ülesanded:" + TextColours.ANSI_RESET);
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
@@ -61,12 +61,7 @@ public class ClientProcessCommands {
     }
 
     public static void processFollowTask(DataInputStream input) throws IOException {
-        int didItWork = input.readInt();
-        if (didItWork == 0) {
-            System.out.println(input.readUTF());
-        } else if (didItWork == 1) {
-            System.out.println("Ülesande jälgimine toimis.");
-        }
+        System.out.println(input.readUTF());
         System.out.println();
     }
 }

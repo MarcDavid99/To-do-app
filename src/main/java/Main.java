@@ -27,9 +27,9 @@ public class Main {
                 System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET);
                 System.out.print(
                         "Registreerimiseks kirjutage:       1" + "\r\n" +
-                        "Sisse logimiseks kirjutage:        2" + "\r\n" +
-                        "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
-                        "Valige sobiv tegevus: ");
+                                "Sisse logimiseks kirjutage:        2" + "\r\n" +
+                                "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
+                                "Valige sobiv tegevus: ");
                 Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
                 System.out.println();
@@ -43,8 +43,8 @@ public class Main {
                         //Kasutaja tuvastamise meetod
                         if (UserCreationVerification.userVerification(out, input, scanner)) {
                             while (true) {
-                                String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18","19"};
-                                String[] commandsThatNeedList = {"13", "14", "15"};
+                                String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18", "19"};
+                                String[] commandsThatNeedList = {"13", "14", "15", "18"};
                                 System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET + "\r\n" +
                                         "Lisa ülesanne:                     11" + "\r\n" +
                                         "Vaata ülesandeid:                  12" + "\r\n" +
@@ -63,13 +63,21 @@ public class Main {
                                     int commandInt = Integer.parseInt(command);
                                     if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
                                         if (Arrays.asList(commandsThatNeedList).contains(command)) {
-                                            out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+                                            if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
+                                                out.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
+                                                System.out.print("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
+                                                String username = scanner.nextLine();
+                                                out.writeUTF(username);
+                                            } else {
+                                                out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+                                            }
                                             //messageType loeb sisse, sest server saadab displayTasksi korral message type
                                             int messageType = input.readInt();
                                             ClientProcessCommands.processDisplayTasks(input);
                                             //loeb siin ikkagi sisse booleani, kuigi see pole oluline, aga ma ei hakka uut meetodit tegema
                                             //kui saab kasutada displayTasksi
                                             boolean notImportant = input.readBoolean();
+
                                         }
                                         //serverile vajaliku info saatmine
                                         commandToServer(out, commandInt);

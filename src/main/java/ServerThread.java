@@ -2,6 +2,7 @@ import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
+import javax.management.monitor.CounterMonitorMBean;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -111,6 +112,9 @@ public class ServerThread implements Runnable {
         if (requestType == Commands.DO_DISPLAY_TASK.getValue()) {
             displayTasks(socketOut);
         }
+        if (requestType == Commands.DO_DISPLAY_TASK_CERTAIN.getValue()) {
+            displayCertainUserTasks(socketIn, socketOut);
+        }
         if (requestType == Commands.DO_ADD_COMMENT.getValue()) {
             addComment(socketIn, socketOut);
         }
@@ -148,25 +152,34 @@ public class ServerThread implements Runnable {
 
         for (User user : allUsers) {
             if (user.getUsername().equals(username)) {
-                if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) { //taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
-                    user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
-                    socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
-                    socketOut.writeInt(1);
-                    socketOut.writeBoolean(false);
-                } else {
-                    socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
-                    socketOut.writeInt(0);
+                try {
+                    if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) {//taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
+                        if(user.getToDoList().get(taskIndex-1).getTaskFollowers().contains(currentUser.getUserID())) {
+                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                            socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
+                            socketOut.writeBoolean(false);
+                        }else{
+                            user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
+                        }
+                        socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
+                        socketOut.writeUTF("Ülesande jälgimine toimis.");
+                        socketOut.writeBoolean(false);
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
                     socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
                     socketOut.writeBoolean(false);
                 }
             }
         }
-        if (!checkForUsernameInList(username)) {
-            socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
-            socketOut.writeInt(0);
+        if (!
+
+                checkForUsernameInList(username)) {
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sellist kasutajanime pole olemas.");
             socketOut.writeBoolean(false);
         }
+
     }
 
     private void saveNewUser(DataInputStream socketIn) throws IOException {
@@ -203,20 +216,6 @@ public class ServerThread implements Runnable {
         }
     }
 
-    //Vajab parandusi
-    private String readHashedPasswordFromFile(String username) throws Exception {
-        List<String> fileContent = Files.readAllLines(Path.of("users.txt"));
-        if (fileContent.size() == 1) { //kui fail on tühi
-            return argon2.hash(10, 65536, 1, allUsers.get(0).getPassword().toCharArray());
-        }
-        for (String user :
-                fileContent) {
-            if (user.contains(username)) {
-                return user.split(";;")[5];
-            }
-        }
-        return null;
-    }
 
     private boolean checkForUsernameInList(String username) throws IOException {
         boolean usernameAlreadyExists = false;
@@ -312,6 +311,19 @@ public class ServerThread implements Runnable {
 
     private void displayTasks(DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
+        socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+        sendTasks(todoList, socketOut, true);
+        socketOut.writeBoolean(false);
+    }
+
+    private void displayCertainUserTasks(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        String username = socketIn.readUTF();
+        List<Task> todoList = new ArrayList<>();
+        for (User user : allUsers) {
+            if (user.getUsername().equals(username)) {
+                todoList = user.getToDoList();
+            }
+        }
         socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
         sendTasks(todoList, socketOut, true);
         socketOut.writeBoolean(false);

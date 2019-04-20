@@ -102,6 +102,10 @@ public class Task {
         return comments;
     }
 
+    public List<String> getTaskFollowers() {
+        return taskFollowers;
+    }
+
     public Deadline getTaskDeadline() {
         return taskDeadline;
     }
