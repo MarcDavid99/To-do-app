@@ -1,5 +1,6 @@
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class ClientSendMessage {
@@ -8,6 +9,7 @@ public class ClientSendMessage {
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String[] topicList = {"töö", "kodu", "vaba aeg", "kultuur", "söök"};
 
     public static void sendAddComment(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
@@ -79,23 +81,12 @@ public class ClientSendMessage {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         System.out.print("Sisestage ülesande kirjeldus: ");
         String taskDescription = scanner.nextLine();
-        boolean isPrivateTask;
-        while (true) {
-            System.out.print("Kas soovite, et ülesanne oleks privaatne (jah/ei)? ");
-            String privacy = scanner.nextLine();
-            if (privacy.equals("jah")) {
-                isPrivateTask = true;
-                break;
-            }
-            else if (privacy.equals("ei")) {
-                isPrivateTask = false;
-                break;
-            }
-            System.out.println(ANSI_YELLOW + "Sisestus oli vigane, kirjutage (jah/ei)" + ANSI_RESET);
-        }
+        boolean isPrivateTask = chooseIsPrivate();
+        String topic = chooseTopic();
         out.writeInt(Commands.DO_ADD_TASK.getValue());
         out.writeUTF(taskDescription);
         out.writeBoolean(isPrivateTask);
+        out.writeUTF(topic);
     }
 
     public static void sendAddTaskToOtherUsers(DataOutputStream out) throws IOException {
@@ -104,9 +95,14 @@ public class ClientSendMessage {
         String enteredUsername = scanner.nextLine();
         System.out.print("Lisa ülesande kirjeldus: ");
         String description = scanner.nextLine();
+        boolean isPrivate = chooseIsPrivate();
+        String topic = chooseTopic();
         out.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
         out.writeUTF(enteredUsername);
         out.writeUTF(description);
+        out.writeBoolean(isPrivate);
+        out.writeUTF(topic);
+
     }
 
     public static void sendSearchTasks(DataOutputStream out) throws IOException {
@@ -162,5 +158,45 @@ public class ClientSendMessage {
         out.writeInt(Commands.DO_FOLLOW_TASK.getValue());
         out.writeUTF(username);
         out.writeUTF(taskIndex);
+    }
+
+    public static String chooseTopic(){
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        System.out.println("Võimalikud teemad, kuhu alla ülesanne kuuluda saab: ");
+        int index = 1;
+        String topic;
+        for (String currentTopic : topicList) {
+            System.out.println(index + ") " + currentTopic);
+            index++;
+        }
+        while(true){
+            System.out.print("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
+            topic = scanner.next();
+            if(Arrays.asList(topicList).contains(topic)){
+                break;
+            }
+            System.out.println(ANSI_YELLOW + "Sellist teemat ei ole valikus. Proovi uuesti." + ANSI_RESET);
+            System.out.println();
+        }
+        return topic;
+    }
+
+    public static boolean chooseIsPrivate(){
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        boolean isPrivateTask;
+        while (true) {
+            System.out.print("Kas soovite, et ülesanne oleks privaatne (jah/ei)? ");
+            String privacy = scanner.nextLine();
+            if (privacy.equals("jah")) {
+                isPrivateTask = true;
+                break;
+            }
+            else if (privacy.equals("ei")) {
+                isPrivateTask = false;
+                break;
+            }
+            System.out.println(ANSI_YELLOW + "Sisestus oli vigane, kirjutage (jah/ei)" + ANSI_RESET);
+        }
+        return isPrivateTask;
     }
 }

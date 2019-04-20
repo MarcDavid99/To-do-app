@@ -83,7 +83,7 @@ public class Main {
                                         out.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
                                     }
                                     if (input.readBoolean()) {
-                                        System.out.println("Programm sulgub!");
+                                        System.out.println("Programm sulgubm!");
                                         return;
                                     }
                                 }

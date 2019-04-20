@@ -264,11 +264,12 @@ public class ServerThread implements Runnable {
         String username = socketIn.readUTF();
         String description = socketIn.readUTF();
         boolean isPrivateTask = socketIn.readBoolean();
+        String topic = socketIn.readUTF();
         if (checkForUsernameInList(username)) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     String taskID = UUID.randomUUID().toString();
-                    user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID(), isPrivateTask));
+                    user.addTask(new Task(description, taskID, currentUser.getUserID(), user.getUserID(), isPrivateTask, topic));
                 }
             }
             socketOut.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
@@ -285,9 +286,9 @@ public class ServerThread implements Runnable {
     private void addTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String taskDescription = socketIn.readUTF();
         boolean isPrivateTask = socketIn.readBoolean();
+        String topic = socketIn.readUTF();
         String taskID = UUID.randomUUID().toString();
-        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID(), isPrivateTask));
-
+        currentUser.addTask(new Task(taskDescription, taskID, currentUser.getUserID(), currentUser.getUserID(), isPrivateTask, topic));
         socketOut.writeInt(Commands.DO_ADD_TASK.getValue());
         socketOut.writeUTF("Ülesanne loodud.");
         socketOut.writeBoolean(false);
@@ -297,7 +298,7 @@ public class ServerThread implements Runnable {
     private void displayTasks(DataOutputStream socketOut) throws IOException {
         List<Task> todoList = currentUser.getToDoList();
         socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
-        sendTasks(todoList, socketOut);
+        sendTasks(todoList, socketOut, true);
         socketOut.writeBoolean(false);
     }
 
@@ -325,27 +326,29 @@ public class ServerThread implements Runnable {
         for (User user : allUsers) {
             List<Task> todoList = user.getToDoList();
             for (Task task : todoList) {
-                if (task.getTaskDeadline().getDeadlineDate().toString().equals(deadline)) {
+                if (task.getTaskDeadline().getDeadlineDate().toString().equals(deadline) && !task.isPrivateTask()) {
                     suitableTasksArray.add(task);
                 }
             }
         }
 
         socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
-        sendTasks(suitableTasksArray, socketOut);
+        sendTasks(suitableTasksArray, socketOut, false);
 
         socketOut.writeBoolean(false);
     }
 
     private void searchTaskByUsername(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         String username = socketIn.readUTF();
-        List<Task> todoList;
+        List<Task> todoList = new ArrayList<>();
         if (checkForUsernameInList(username)) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
-                    todoList = user.getToDoList();
+                    for (Task task : user.getToDoList()) {
+                        todoList.add(task);
+                    }
                     socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
-                    sendTasks(todoList, socketOut);
+                    sendTasks(todoList, socketOut, false);
                     break;
                 }
             }
@@ -362,35 +365,34 @@ public class ServerThread implements Runnable {
 
         for (User user : allUsers) {
             for (Task task : user.getToDoList()) {
-                if (task.getTaskDescription().contains(description)) {
+                if (task.getTaskDescription().contains(description) && !task.isPrivateTask()) {
                     suitableTasks.add(task);
                 }
             }
         }
 
         socketOut.writeInt(Commands.DO_SEARCH_TASKS.getValue());
-        sendTasks(suitableTasks, socketOut);
+        sendTasks(suitableTasks, socketOut, false);
         socketOut.writeBoolean(false);
     }
 
-    private void sendTasks(List<Task> list, DataOutputStream socketOut) throws IOException {
+    private void sendTasks(List<Task> list, DataOutputStream socketOut, boolean justShowToCurrentUser) throws IOException {
         int messagesAmount = 0;
         for (Task task : list) {
-            if (!task.isPrivateTask()) {
+            if (!task.isPrivateTask() || justShowToCurrentUser) {
                 int commentsAmount = task.getComments().size();
                 messagesAmount += commentsAmount;
-                //+3, sest taski looja, täitja ja deadline
-                messagesAmount += 3;
+                //+4, sest taski looja, täitja, topic ja deadline
+                messagesAmount += 4;
             }
         }
         socketOut.writeInt(list.size() + messagesAmount);
         int taskNumber = 1;
 
         for (Task task : list) {
-            if (task.isPrivateTask()) {
+            if (task.isPrivateTask() && !justShowToCurrentUser) {
                 socketOut.writeUTF(taskNumber + ") ülesanne on privaatne");
-            }
-            else {
+            } else {
                 socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
                 if (task.getComments().size() == 1) {
                     socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
@@ -417,6 +419,7 @@ public class ServerThread implements Runnable {
                     }
                 }
                 socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
+                socketOut.writeUTF("   *Teema: " + task.getTaskTopic());
                 socketOut.writeUTF("   *Looja: " + taskCreator);
                 socketOut.writeUTF("   *Täitja: " + taskUser);
             }
