@@ -31,7 +31,11 @@ public class ServerThread implements Runnable {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("DEBUG: Uue kliendi jaoks luuakse uus thread");
 
-            readExistingUsersFromFile();
+            //readExistingUsersFromFile();
+
+            // Enne töötamist võetakse sctx-st värske allUsers list, mida
+            // värskendavad ServerThread ise ja DeadlineThread
+            allUsers = sctx.getAllUsers();
 
             boolean closeProgramme;
             while (true) {
@@ -44,6 +48,9 @@ public class ServerThread implements Runnable {
                 if (closeProgramme) {
 
                     System.out.println(allUsers);
+                    // Värskendab sctx-is olevat Userite listi
+                    sctx.setAllUsers(allUsers);
+                    // Värskendatakse faili sisu
                     writeExistingUsersToFile();
 
                     System.out.println("DEBUG: ServerThread lõpetab töö!" + "\r\n");
@@ -55,6 +62,7 @@ public class ServerThread implements Runnable {
         }
     }
 
+    /*
     private void readExistingUsersFromFile() throws IOException {
 
         if (new File("users.txt").exists() && new File("users.txt").length() > 0) {
@@ -72,6 +80,8 @@ public class ServerThread implements Runnable {
             }
         }
     }
+
+     */
 
     private void writeExistingUsersToFile() throws IOException {
 
@@ -164,7 +174,8 @@ public class ServerThread implements Runnable {
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
         allUsers.add(newUser);
-        writeExistingUsersToFile();
+        // Värskendab sctx-is olevat Userite listi
+        sctx.setAllUsers(allUsers);
     }
 
     private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
@@ -234,7 +245,8 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).addComments(comment, allUsers);
             socketOut.writeInt(Commands.DO_ADD_COMMENT.getValue());
             socketOut.writeUTF("Kommentaar lisatud.");
-            writeExistingUsersToFile();
+            // Värskendab sctx-is olevat Userite listi
+            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
@@ -252,7 +264,8 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).setDeadline(pushDeadline, allUsers);
             socketOut.writeInt(Commands.DO_PUSH_DEADLINE.getValue());
             socketOut.writeUTF("Tähtaeg edasi lükatud.");
-            writeExistingUsersToFile();
+            // Värskendab sctx-is olevat Userite listi
+            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
@@ -274,7 +287,8 @@ public class ServerThread implements Runnable {
             }
             socketOut.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
             socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
-            writeExistingUsersToFile();
+            // Värskendab sctx-is olevat Userite listi
+            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
@@ -292,7 +306,8 @@ public class ServerThread implements Runnable {
         socketOut.writeInt(Commands.DO_ADD_TASK.getValue());
         socketOut.writeUTF("Ülesanne loodud.");
         socketOut.writeBoolean(false);
-        writeExistingUsersToFile();
+        // Värskendab sctx-is olevat Userite listi
+        sctx.setAllUsers(allUsers);
     }
 
     private void displayTasks(DataOutputStream socketOut) throws IOException {
@@ -311,7 +326,8 @@ public class ServerThread implements Runnable {
             todoList.remove(indeks);
             socketOut.writeInt(Commands.DO_COMPLETE_TASK.getValue());
             socketOut.writeUTF("Ülesanne edukalt eemaldatud");
-            writeExistingUsersToFile();
+            // Värskendab sctx-is olevat Userite listi
+            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");

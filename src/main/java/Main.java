@@ -20,6 +20,10 @@ public class Main {
 
             label:
             while (true) {
+                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------" + TextColours.ANSI_RESET);
+                System.out.println(TextColours.CYAN_BOLD_BRIGHT + "|   TO DO LIST   |" + TextColours.ANSI_RESET);
+                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------" + TextColours.ANSI_RESET + "\r\n");
+
                 System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET);
                 System.out.print(
                         "Registreerimiseks kirjutage:       1" + "\r\n" +

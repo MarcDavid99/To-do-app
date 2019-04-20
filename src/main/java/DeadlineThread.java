@@ -22,8 +22,6 @@ public class DeadlineThread implements Runnable {
         long timeSlept;
 
 
-        // TODO: Kuigi DeadlineThreadis märgitakse taski juurde, et see on täidetud, ei tea ükski teine klass sellest
-
         while (true) {
             List<User> allUsersToCheck = sctx.getAllUsers();
             for (User user : allUsersToCheck) {
@@ -78,7 +76,7 @@ public class DeadlineThread implements Runnable {
                     start = System.currentTimeMillis();
                     Thread.sleep(timeOfSleep);
                     timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
-                    //timeOfSleep = 10000; //testväärtus
+                    // timeOfSleep = 10000; //testväärtus
                     System.out.println("DEBUG: DeadlineThread ärkab");
                     break;
 

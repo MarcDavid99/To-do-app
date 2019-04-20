@@ -43,7 +43,6 @@ public class Deadline{
     public boolean isDeadlineApproaching() {
         // TODO: Mõelda, kas anda kasutajale valik mitu päeva varem ta hoiatust soovib
         if (DAYS.between(LocalDate.now(),deadlineDate) < 7) {
-            System.out.println("DEBUG: Tuleks saata tähtaja meeldetuletuse meil!");
             return true;
         }
         return false;
