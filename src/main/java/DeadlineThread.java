@@ -15,8 +15,8 @@ public class DeadlineThread implements Runnable {
 
         System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread");
 
-        long timeOfSleep = sleepAmount; // 3 tundi millisekundites
-        // long timeOfSleep = 30000;        //30 sekundit (Testväärtus)
+        //long timeOfSleep = sleepAmount; // 3 tundi millisekundites
+        long timeOfSleep = 30000;        //30 sekundit (Testväärtus)
         long start = 0; // vajab algväärtust
         long end;
         long timeSlept;
@@ -77,8 +77,8 @@ public class DeadlineThread implements Runnable {
                 while (timeOfSleep > 0) {
                     start = System.currentTimeMillis();
                     Thread.sleep(timeOfSleep);
-                    timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
-                    // timeOfSleep = 30000; //testväärtus
+                    //timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
+                    timeOfSleep = 30000; //testväärtus
                     System.out.println("DEBUG: DeadlineThread ärkab");
                     break;
 
