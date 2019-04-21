@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -70,6 +71,12 @@ public class DeadlineThread implements Runnable {
             }
             // Värskendab sctx-s hoiustatavat userite listi
             sctx.setAllUsers(allUsersToCheck);
+            try {
+                sctx.writeExistingUsersToFile();
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             System.out.println("DEBUG: DeadlineThread jääb magama");
             // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
