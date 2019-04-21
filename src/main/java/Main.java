@@ -1,6 +1,5 @@
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,18 +17,21 @@ public class Main {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream());
              DataInputStream input = new DataInputStream(socket.getInputStream())) {
 
+            System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------------------------" + TextColours.ANSI_RESET);
+            System.out.println(TextColours.CYAN_BOLD_BRIGHT + "|            TO DO LIST            |" + TextColours.ANSI_RESET);
+            System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------------------------" + TextColours.ANSI_RESET + "\r\n");
+
             label:
             while (true) {
-                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------" + TextColours.ANSI_RESET);
-                System.out.println(TextColours.CYAN_BOLD_BRIGHT + "|   TO DO LIST   |" + TextColours.ANSI_RESET);
-                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------" + TextColours.ANSI_RESET + "\r\n");
 
-                System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET);
+                System.out.println(TextColours.ANSI_RED + "Erinevad võimalused" + TextColours.ANSI_RESET);
                 System.out.print(
-                        "Registreerimiseks kirjutage:       1" + "\r\n" +
-                                "Sisse logimiseks kirjutage:        2" + "\r\n" +
-                                "Programmi sulgemiseks kirjutage:   3" + "\r\n" +
-                                "Valige sobiv tegevus: ");
+                                "Registreerimiseks kirjutage:        1" + "\r\n" +
+                                "Sisse logimiseks kirjutage:         2" + "\r\n" +
+                                "Programmi sulgemiseks kirjutage:    3" + "\r\n");
+                System.out.println(
+                                "-------------------------------------");
+                System.out.print("Valige sobiv tegevus: ");
                 Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                 String initialCommand = scanner.nextLine();
                 System.out.println();
@@ -45,7 +47,7 @@ public class Main {
                             while (true) {
                                 String[] possibleCommands = {"11", "12", "13", "14", "15", "16", "17", "18", "19"};
                                 String[] commandsThatNeedList = {"13", "14", "15", "18"};
-                                System.out.println(TextColours.ANSI_RED + "Erinevad võimalused: " + TextColours.ANSI_RESET + "\r\n" +
+                                System.out.println(TextColours.ANSI_RED + "Erinevad võimalused" + TextColours.ANSI_RESET + "\r\n" +
                                         "Lisa ülesanne:                     11" + "\r\n" +
                                         "Vaata ülesandeid:                  12" + "\r\n" +
                                         "Lisa ülesandele kommentaar:        13" + "\r\n" +
@@ -55,6 +57,8 @@ public class Main {
                                         "Otsi ülesannet:                    17" + "\r\n" +
                                         "Jälgi mingit ülesannet:            18" + "\r\n" +
                                         "Sulge programm:                    19");
+                                System.out.println(
+                                        "-------------------------------------");
 
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();

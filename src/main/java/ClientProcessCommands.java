@@ -3,13 +3,15 @@ import java.io.IOException;
 
 public class ClientProcessCommands {
 
+    // TODO: Interface Commandide jaoks
+
     public static void processDisplayTasks(DataInputStream input) throws IOException {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
         if (tasksAmount == 0) {
             System.out.println("Pole ühtegi aktiivset ülesannet. \r\n");
         } else {
-            System.out.println(TextColours.ANSI_RED + "Aktiivsed ülesanded:" + TextColours.ANSI_RESET);
+            System.out.println(TextColours.ANSI_RED + "Aktiivsed ülesanded" + TextColours.ANSI_RESET);
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }
@@ -52,7 +54,7 @@ public class ClientProcessCommands {
         if (tasksAmount == 0) {
             System.out.println("Ei leitud sinu otsingule vastavaid ülesandeid. \r\n");
         } else {
-            System.out.println(TextColours.ANSI_RED + "Leitud ülesanded:" + TextColours.ANSI_RESET);
+            System.out.println(TextColours.ANSI_RED + "Leitud ülesanded" + TextColours.ANSI_RESET);
             for (int i = 0; i < tasksAmount; i++) {
                 System.out.println(input.readUTF());
             }

@@ -1,6 +1,5 @@
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

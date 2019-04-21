@@ -16,11 +16,13 @@ public class DeadlineThread implements Runnable {
         System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread");
 
         long timeOfSleep = sleepAmount; // 3 tundi millisekundites
-        //long timeOfSleep = 10000;        //10 sekundit (Testväärtus)
+        // long timeOfSleep = 30000;        //30 sekundit (Testväärtus)
         long start = 0; // vajab algväärtust
         long end;
         long timeSlept;
 
+        // TODO: Synchronized plokid selleks, et andmete listi erinevates kohtades
+        // TODO: muteerimisel midagi kaotsi ei läheks
 
         while (true) {
             List<User> allUsersToCheck = sctx.getAllUsers();
@@ -76,7 +78,7 @@ public class DeadlineThread implements Runnable {
                     start = System.currentTimeMillis();
                     Thread.sleep(timeOfSleep);
                     timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
-                    // timeOfSleep = 10000; //testväärtus
+                    // timeOfSleep = 30000; //testväärtus
                     System.out.println("DEBUG: DeadlineThread ärkab");
                     break;
 

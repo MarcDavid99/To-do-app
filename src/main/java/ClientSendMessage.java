@@ -1,12 +1,13 @@
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.charset.CoderMalfunctionError;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class ClientSendMessage {
 
     public static final String[] topicList = {"töö", "kodu", "vaba aeg", "kultuur", "söök"};
+
+    // TODO: Interface Commandide jaoks
 
     public static void sendAddComment(DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
@@ -60,7 +61,8 @@ public class ClientSendMessage {
         }
 
         while (true) {
-            System.out.print("Sisestage päevade arv, mille võrra soovite tähtaega edasi lükata: ");
+            System.out.println("Kui soovite tähtaega ette poole nihutada, kirjutage negatiivne arv, kui soovite edasi lükata, kirjutage positiivne arv.");
+            System.out.print("Sisestage päevade arv, mille võrra soovite tähtaega muuta: ");
             String line = scanner.nextLine();
             try {
                 int days = Integer.parseInt(line);

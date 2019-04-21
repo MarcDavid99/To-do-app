@@ -1,12 +1,8 @@
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
-
-import javax.management.monitor.CounterMonitorMBean;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +28,8 @@ public class ServerThread implements Runnable {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("DEBUG: Uue kliendi jaoks luuakse uus thread");
 
-            //readExistingUsersFromFile();
+            // TODO: Synchronized plokid selleks, et andmete listi erinevates kohtades
+            // TODO: muteerimisel midagi kaotsi ei läheks
 
             // Enne töötamist võetakse sctx-st värske allUsers list, mida
             // värskendavad ServerThread ise ja DeadlineThread
@@ -43,16 +40,10 @@ public class ServerThread implements Runnable {
                 System.out.println("DEBUG: ServerThread teeb tööd");
                 closeProgramme = detectClientRequest(input, out);
 
-                // Värskendab sctx-is olevat Userite listi
-                sctx.setAllUsers(allUsers);
-
                 if (closeProgramme) {
-
                     System.out.println(allUsers);
-                    // Värskendab sctx-is olevat Userite listi
-                    sctx.setAllUsers(allUsers);
                     // Värskendatakse faili sisu
-                    writeExistingUsersToFile();
+                    sctx.writeExistingUsersToFile();
 
                     System.out.println("DEBUG: ServerThread lõpetab töö!" + "\r\n");
                     break;
@@ -84,6 +75,7 @@ public class ServerThread implements Runnable {
 
      */
 
+    /*
     private void writeExistingUsersToFile() throws IOException {
 
         Path pathToFile = Path.of("users.txt");
@@ -91,6 +83,10 @@ public class ServerThread implements Runnable {
         String jsonAllUsers = gson.toJson(allUsers);
         Files.writeString(pathToFile, jsonAllUsers);
     }
+
+     */
+
+
 
     private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
 
@@ -149,51 +145,11 @@ public class ServerThread implements Runnable {
         return false;
     }
 
-
-
-    private void followTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        String username = socketIn.readUTF();
-        int taskIndex = Integer.parseInt(socketIn.readUTF());
-
-        for (User user : allUsers) {
-            if (user.getUsername().equals(username)) {
-                try {
-                    if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) {//taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
-                        if(user.getToDoList().get(taskIndex-1).getTaskFollowers().contains(currentUser.getUserID())) {
-                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                            socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
-                            socketOut.writeBoolean(false);
-                        }else{
-                            user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
-                        }
-                        socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
-                        socketOut.writeUTF("Ülesande jälgimine toimis.");
-                        socketOut.writeBoolean(false);
-                    }
-                } catch (IndexOutOfBoundsException e) {
-                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                    socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
-                    socketOut.writeBoolean(false);
-                }
-            }
-        }
-        if (!
-
-                checkForUsernameInList(username)) {
-            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-            socketOut.writeUTF("Sellist kasutajanime pole olemas.");
-            socketOut.writeBoolean(false);
-        }
-
-    }
-
     private void saveNewUser(DataInputStream socketIn) throws IOException {
         String json = socketIn.readUTF();
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
         allUsers.add(newUser);
-        // Värskendab sctx-is olevat Userite listi
-        sctx.setAllUsers(allUsers);
     }
 
     private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
@@ -233,7 +189,43 @@ public class ServerThread implements Runnable {
     }
 
 
-    // TODO: listiga seotud meetodid
+    // TODO: Interface Commandide jaoks
+
+    private void followTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        String username = socketIn.readUTF();
+        int taskIndex = Integer.parseInt(socketIn.readUTF());
+
+        for (User user : allUsers) {
+            if (user.getUsername().equals(username)) {
+                try {
+                    if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) {//taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
+                        if(user.getToDoList().get(taskIndex-1).getTaskFollowers().contains(currentUser.getUserID())) {
+                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                            socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
+                            socketOut.writeBoolean(false);
+                        }else{
+                            user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
+                        }
+                        socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
+                        socketOut.writeUTF("Ülesande jälgimine toimis.");
+                        socketOut.writeBoolean(false);
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                    socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
+                    socketOut.writeBoolean(false);
+                }
+            }
+        }
+        if (!
+
+                checkForUsernameInList(username)) {
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+            socketOut.writeUTF("Sellist kasutajanime pole olemas.");
+            socketOut.writeBoolean(false);
+        }
+
+    }
 
     private boolean closeTodoList(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
         socketOut.writeBoolean(true);
@@ -249,8 +241,6 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).addComments(comment, allUsers);
             socketOut.writeInt(Commands.DO_ADD_COMMENT.getValue());
             socketOut.writeUTF("Kommentaar lisatud.");
-            // Värskendab sctx-is olevat Userite listi
-            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
@@ -268,8 +258,6 @@ public class ServerThread implements Runnable {
             todoList.get(indeks).setDeadline(pushDeadline, allUsers);
             socketOut.writeInt(Commands.DO_PUSH_DEADLINE.getValue());
             socketOut.writeUTF("Tähtaeg edasi lükatud.");
-            // Värskendab sctx-is olevat Userite listi
-            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
@@ -291,8 +279,6 @@ public class ServerThread implements Runnable {
             }
             socketOut.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
             socketOut.writeUTF("Kasutajale " + username + " on lisatud ülesanne kirjeldusega " + description);
-            // Värskendab sctx-is olevat Userite listi
-            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud kasutajanime ei eksisteeri, proovi uuesti.");
@@ -310,8 +296,6 @@ public class ServerThread implements Runnable {
         socketOut.writeInt(Commands.DO_ADD_TASK.getValue());
         socketOut.writeUTF("Ülesanne loodud.");
         socketOut.writeBoolean(false);
-        // Värskendab sctx-is olevat Userite listi
-        sctx.setAllUsers(allUsers);
     }
 
     private void displayTasks(DataOutputStream socketOut) throws IOException {
@@ -356,8 +340,6 @@ public class ServerThread implements Runnable {
             todoList.remove(indeks);
             socketOut.writeInt(Commands.DO_COMPLETE_TASK.getValue());
             socketOut.writeUTF("Ülesanne edukalt eemaldatud");
-            // Värskendab sctx-is olevat Userite listi
-            sctx.setAllUsers(allUsers);
         } else {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sisestatud järjekorranumbriga ülesannet sinu todo listis ei leidu.");
