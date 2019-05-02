@@ -409,53 +409,24 @@ public class ServerThread implements Runnable {
     }
 
     private void sendTasks(List<Task> list, DataOutputStream socketOut, boolean justShowToCurrentUser) throws IOException {
-        int messagesAmount = 0;
+        socketOut.writeInt(list.size());
+        socketOut.writeBoolean(justShowToCurrentUser);
         for (Task task : list) {
-            if (!task.isPrivateTask() || justShowToCurrentUser) {
-                int commentsAmount = task.getComments().size();
-                messagesAmount += commentsAmount;
-                //+4, sest taski looja, täitja, topic ja deadline
-                messagesAmount += 4;
-            }
-        }
-        socketOut.writeInt(list.size() + messagesAmount);
-        int taskNumber = 1;
-
-        for (Task task : list) {
-            if (task.isPrivateTask() && !justShowToCurrentUser) {
-                socketOut.writeUTF(taskNumber + ") ülesanne on privaatne");
-            } else {
-                socketOut.writeUTF(taskNumber + ") " + task.getTaskDescription());
-                if (task.getComments().size() == 1) {
-                    socketOut.writeUTF("   *Kommentaar: " + task.getComments().get(0));
-                } else {
-                    int commentNumber = 1;
-                    for (String comment : task.getComments()) {
-                        if (commentNumber == 1) {
-                            socketOut.writeUTF("   *Kommentaarid:" + "\r\n" +
-                                    "      " + commentNumber + ". " + comment);
-                        } else {
-                            socketOut.writeUTF("      " + commentNumber + ". " + comment);
-                        }
-                        commentNumber += 1;
-                    }
+            String taskCreator = "";
+            String taskUser = "";
+            for (User user : allUsers) {
+                if (user.getUserID().equals(task.getTaskCreatorID())) {
+                    taskCreator = user.getUsername();
                 }
-                String taskCreator = "";
-                String taskUser = "";
-                for (User user : allUsers) {
-                    if (user.getUserID().equals(task.getTaskCreatorID())) {
-                        taskCreator = user.getUsername();
-                    }
-                    if (user.getUserID().equals(task.getTaskUserID())) {
-                        taskUser = user.getUsername();
-                    }
+                if (user.getUserID().equals(task.getTaskUserID())) {
+                    taskUser = user.getUsername();
                 }
-                socketOut.writeUTF("   *Tähtaeg: " + task.getTaskDeadline().getDeadlineDate());
-                socketOut.writeUTF("   *Teema: " + task.getTaskTopic());
-                socketOut.writeUTF("   *Looja: " + taskCreator);
-                socketOut.writeUTF("   *Täitja: " + taskUser);
             }
-            taskNumber += 1;
+            Gson gson = new Gson();
+            String jsonTask = gson.toJson(task);
+            socketOut.writeUTF(jsonTask);
+            socketOut.writeUTF(taskCreator);
+            socketOut.writeUTF(taskUser);
         }
     }
 }

@@ -89,7 +89,6 @@ public class Main {
                                         //serverilt saadud info vastuvõtmine
                                         int serverMessageType = input.readInt();
                                         processServerMessageType(input, serverMessageType);
-
                                     } else {
                                         out.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
                                     }
