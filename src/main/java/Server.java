@@ -9,8 +9,6 @@ public class Server {
         try (ServerSocket ss = new ServerSocket(1337)) {
             System.out.println("DEBUG: Server alustab tööd" + "\r\n");
 
-            // TODO: Synchronized plokid selleks, et andmete listi erinevates kohtades
-            // TODO: muteerimisel midagi kaotsi ei läheks
             List<User> starterUserList = ServerContext.readExistingUsersFromFile();
             ServerContext serverContext = new ServerContext(starterUserList);
 
