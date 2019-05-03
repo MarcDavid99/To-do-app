@@ -39,7 +39,7 @@ public class Task {
         taskFollowers.add(userId);
     }
 
-    public void setDeadline(int deadlineAmountInDays, List<User> allUsers) {
+    public void setDeadline(int deadlineAmountInDays, List<User> allUsers) throws Exception {
         String subject = "The deadline of a task you are following has been adjusted";
         String mailBody = "Hello!\r\n\r\n" +
                 "The following task's deadline has been adjusted: " + this.getTaskDescription() +
@@ -49,7 +49,7 @@ public class Task {
         this.taskDeadline.setDeadline(deadlineAmountInDays);
     }
 
-    public void setTaskFinished(List<User> allUsers) {
+    public void setTaskFinished(List<User> allUsers) throws Exception {
         String subject = "A task you are following has been marked as completed.";
         String mailBody = "Hello!\r\n\r\n" +
                 "The following task has been set as finished: " + this.getTaskDescription() +
@@ -114,7 +114,7 @@ public class Task {
         return isPrivateTask;
     }
 
-    public void addComments(String comment, List<User> allUsers) {
+    public void addComments(String comment, List<User> allUsers) throws Exception{
         String subject = "A comment was added to a task you are following.";
         String mailbody = "Hello!\r\n\r\n" +
                 "A comment was added to the following task: " + this.getTaskDescription() +
@@ -132,7 +132,7 @@ public class Task {
         return isFinished;
     }
 
-    public void sendMailOnChanges(List<User> allUsers, String mailbody, String subject) {
+    public void sendMailOnChanges(List<User> allUsers, String mailbody, String subject) throws Exception {
         for (String userId : taskFollowers) {
             for (User currentUser : allUsers) {
                 if (currentUser.getUserID().equals(userId)) {

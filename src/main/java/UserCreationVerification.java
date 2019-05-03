@@ -9,17 +9,7 @@ import java.util.UUID;
 
 public class UserCreationVerification {
 
-    static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws IOException {
-
-        /*Console console = System.console();
-        if(console != null){
-            String firstName = console.readLine("Sisestage oma eesnimi: ");
-            String lastName = console.readLine("Sisestage oma perenimi: ");
-            String username = console.readLine("Sisestage soovitud kasutajanimi: ");
-            String mailAddress = console.readLine("Sisestage soovitud meiliaadress: ");
-            char[] pswd = console.readPassword("Sisestage soovitud salasõna: ");
-            String password = new String(pswd);
-        }*/
+    static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
 
         String firstName;
         String lastName;

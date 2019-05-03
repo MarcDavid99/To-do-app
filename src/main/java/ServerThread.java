@@ -211,7 +211,7 @@ public class ServerThread implements Runnable {
         return true;
     }
 
-    private void addComment(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void addComment(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         List<Task> todoList = currentUser.getToDoList();
 
         int indeks = socketIn.readInt() - 1;
@@ -230,7 +230,7 @@ public class ServerThread implements Runnable {
         socketOut.writeBoolean(false);
     }
 
-    private void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         List<Task> todoList = currentUser.getToDoList();
 
         int indeks = socketIn.readInt() - 1;
@@ -319,7 +319,7 @@ public class ServerThread implements Runnable {
     }
 
 
-    private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+    private void completeTask(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         List<Task> todoList = currentUser.getToDoList();
         int indeks = socketIn.readInt() - 1;
         if (indeks >= 0 && indeks < todoList.size()) {

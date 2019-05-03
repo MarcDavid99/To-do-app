@@ -1,4 +1,7 @@
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -12,9 +15,11 @@ public class DeadlineThread implements Runnable {
 
     final private long sleepAmount = TimeUnit.HOURS.toMillis(3);
 
+    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
     public void run() {
 
-        System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread");
+        System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread; aeg: " + dateFormat.format(new Date()));
 
         //long timeOfSleep = sleepAmount; // 3 tundi millisekundites
         long timeOfSleep = 30000;        //30 sekundit (Testväärtus)
@@ -46,7 +51,12 @@ public class DeadlineThread implements Runnable {
                                         "Thank you for using our to-do app!";
 
                                 SendMail remindCurrentTaskOwner = new SendMail();
-                                remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
+                                try {
+                                    remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
+                                }
+                                catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
 
                                 task.setRemindedOfPassedDeadline(true);
                             }
@@ -63,7 +73,12 @@ public class DeadlineThread implements Runnable {
                                         "Thank you for using our to-do app!";
 
                                 SendMail remindCurrentTaskOwner = new SendMail();
-                                remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
+                                try {
+                                    remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
+                                }
+                                catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
 
                                 task.setRemindedOfApproachingDeadline(true);
                             }
@@ -79,7 +94,7 @@ public class DeadlineThread implements Runnable {
                 }
             }
 
-            System.out.println("DEBUG: DeadlineThread jääb magama");
+            System.out.println("DEBUG: DeadlineThread jääb magama; aeg: " + dateFormat.format(new Date()));
             // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
             try {
                 while (timeOfSleep > 0) {
@@ -87,7 +102,7 @@ public class DeadlineThread implements Runnable {
                     Thread.sleep(timeOfSleep);
                     //timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
                     timeOfSleep = 30000; //testväärtus
-                    System.out.println("DEBUG: DeadlineThread ärkab");
+                    System.out.println("DEBUG: DeadlineThread ärkab; aeg: " + dateFormat.format(new Date()));
                     break;
 
                 }
