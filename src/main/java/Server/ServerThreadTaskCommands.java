@@ -1,4 +1,7 @@
+package Server;
+
 import com.google.gson.Gson;
+
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -6,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import shared.*;
 
 public class ServerThreadTaskCommands {
 

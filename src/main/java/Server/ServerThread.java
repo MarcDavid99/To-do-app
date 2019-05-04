@@ -1,3 +1,5 @@
+package Server;
+
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
@@ -5,7 +7,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import shared.*;
 
 public class ServerThread implements Runnable {
 
@@ -32,7 +34,7 @@ public class ServerThread implements Runnable {
             // TODO: muteerimisel midagi kaotsi ei läheks
 
             // Enne töötamist võetakse sctx-st värske allUsers list, mida
-            // värskendavad ServerThread ise ja DeadlineThread
+            // värskendavad Server.ServerThread ise ja Server.DeadlineThread
 
             synchronized (sctx) {
                 allUsers = sctx.getAllUsers();
@@ -40,7 +42,7 @@ public class ServerThread implements Runnable {
 
             boolean closeProgramme;
             while (true) {
-                System.out.println("DEBUG: ServerThread teeb tööd");
+                System.out.println("DEBUG: Server.ServerThread teeb tööd");
                 closeProgramme = detectClientRequest(input, out, sctx, allUsers, currentUser);
 
                 if (closeProgramme) {
@@ -50,7 +52,7 @@ public class ServerThread implements Runnable {
                         sctx.writeExistingUsersToFile();
                     }
 
-                    System.out.println("DEBUG: ServerThread lõpetab töö!" + "\r\n");
+                    System.out.println("DEBUG: Server.ServerThread lõpetab töö!" + "\r\n");
                     break;
                 }
             }

@@ -1,3 +1,8 @@
+package shared;
+
+import Server.SendMail;
+import Server.User;
+
 import java.util.ArrayList;
 import java.util.List;
 

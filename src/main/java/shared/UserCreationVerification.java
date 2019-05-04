@@ -1,5 +1,12 @@
+package shared;
+
+import Server.SendMail;
+import Server.User;
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
+import shared.Commands;
+import shared.TextColours;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,7 +16,7 @@ import java.util.UUID;
 
 public class UserCreationVerification {
 
-    static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
+    public static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
 
         String firstName;
         String lastName;
@@ -97,7 +104,7 @@ public class UserCreationVerification {
         }
     }
 
-    static boolean userVerification(DataOutputStream socketOut, DataInputStream input, Scanner scanner) throws IOException {
+    public static boolean userVerification(DataOutputStream socketOut, DataInputStream input, Scanner scanner) throws IOException {
         System.out.print("Sisestage oma kasutajanimi: ");
         String existingUsername = scanner.nextLine();
         System.out.print("Sisestage oma salasõna: ");

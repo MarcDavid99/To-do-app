@@ -1,3 +1,5 @@
+package Server;
+
 import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +10,7 @@ import java.util.List;
 
 public class ServerContext {
 
-    // Klass, mille abil DeadlineThread.java pääseb ligi ServerThread.java-s olevale List<User> allUsers-ile
+    // Klass, mille abil Server.DeadlineThread.java pääseb ligi Server.ServerThread.java-s olevale List<Server.User> allUsers-ile
 
     public List<User> allUsers;
 

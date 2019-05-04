@@ -1,3 +1,5 @@
+package client;
+
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import java.io.DataInputStream;
@@ -6,6 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Scanner;
+import shared.*;
 
 public class Main {
 

@@ -1,9 +1,15 @@
+package Server;
+
+
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import shared.*;
+
 
 public class DeadlineThread implements Runnable {
 
@@ -19,7 +25,7 @@ public class DeadlineThread implements Runnable {
 
     public void run() {
 
-        System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread; aeg: " + dateFormat.format(new Date()));
+        System.out.println("DEBUG: Alustab shared.Deadline-de kontrollimise thread; aeg: " + dateFormat.format(new Date()));
 
         //long timeOfSleep = sleepAmount; // 3 tundi millisekundites
         long timeOfSleep = 30000;        //30 sekundit (Testväärtus)
@@ -45,8 +51,8 @@ public class DeadlineThread implements Runnable {
                                 String mailBody = "Hello!" +
                                         "\r\n" + "\r\n" +
                                         "Your task's deadline has passed" + "\r\n" +
-                                        "Task description: " + task.getTaskDescription() + "\r\n" +
-                                        "Deadline: " + currentDeadline.dateToString() +
+                                        "shared.Task description: " + task.getTaskDescription() + "\r\n" +
+                                        "shared.Deadline: " + currentDeadline.dateToString() +
                                         "\r\n" + "\r\n" +
                                         "Thank you for using our to-do app!";
 
@@ -67,8 +73,8 @@ public class DeadlineThread implements Runnable {
                                 String mailBody = "Hello!" +
                                         "\r\n" + "\r\n" +
                                         "Your task's deadline is approaching soon." + "\r\n" +
-                                        "Task description: " + task.getTaskDescription() + "\r\n" +
-                                        "Deadline: " + currentDeadline.dateToString() +
+                                        "shared.Task description: " + task.getTaskDescription() + "\r\n" +
+                                        "shared.Deadline: " + currentDeadline.dateToString() +
                                         "\r\n" + "\r\n" +
                                         "Thank you for using our to-do app!";
 
@@ -94,7 +100,7 @@ public class DeadlineThread implements Runnable {
                 }
             }
 
-            System.out.println("DEBUG: DeadlineThread jääb magama; aeg: " + dateFormat.format(new Date()));
+            System.out.println("DEBUG: Server.DeadlineThread jääb magama; aeg: " + dateFormat.format(new Date()));
             // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
             try {
                 while (timeOfSleep > 0) {
@@ -102,7 +108,7 @@ public class DeadlineThread implements Runnable {
                     Thread.sleep(timeOfSleep);
                     //timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
                     timeOfSleep = 30000; //testväärtus
-                    System.out.println("DEBUG: DeadlineThread ärkab; aeg: " + dateFormat.format(new Date()));
+                    System.out.println("DEBUG: Server.DeadlineThread ärkab; aeg: " + dateFormat.format(new Date()));
                     break;
 
                 }

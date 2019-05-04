@@ -1,3 +1,5 @@
+package shared;
+
 public enum Commands {
     //https://stackoverflow.com/questions/3990319/storing-integer-values-as-constants-in-enum-manner-in-java
     DO_CLOSE_TODO_LIST_1(3),
