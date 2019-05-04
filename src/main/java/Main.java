@@ -63,9 +63,13 @@ public class Main {
                                 System.out.print("Valige sobiv tegevus: ");
                                 String command = scanner.nextLine();
                                 System.out.println();
+
                                 if (Arrays.asList(possibleCommands).contains(command)) {
                                     int commandInt = Integer.parseInt(command);
+
                                     if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
+
+                                        int messageType = 0;
                                         if (Arrays.asList(commandsThatNeedList).contains(command)) {
                                             if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
                                                 System.out.print("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
@@ -76,19 +80,21 @@ public class Main {
                                                 out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
                                             }
                                             //messageType loeb sisse, sest server saadab displayTasksi korral message type
-                                            int messageType = input.readInt();
-                                            ClientProcessCommands.processDisplayTasks(input);
+                                            messageType = input.readInt();
+                                            ClientProcessCommands.displayTasks(input, "Ülesanded:");
                                             //loeb siin ikkagi sisse booleani, kuigi see pole oluline, aga ma ei hakka uut meetodit tegema
                                             //kui saab kasutada displayTasksi
                                             boolean notImportant = input.readBoolean();
 
                                         }
-                                        //serverile vajaliku info saatmine
-                                        commandToServer(out, commandInt);
+                                        if(messageType == Commands.ERROR_OCCURED.getValue()) {
+                                            System.out.println(input.readUTF());
+                                            System.out.println();
+                                        }
+                                        else {
+                                            processServerMessageType(input, out, commandInt);
+                                        }
 
-                                        //serverilt saadud info vastuvõtmine
-                                        int serverMessageType = input.readInt();
-                                        processServerMessageType(input, serverMessageType);
                                     } else {
                                         out.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
                                     }
@@ -121,46 +127,26 @@ public class Main {
 
     }
 
+    private static void processServerMessageType(DataInputStream input, DataOutputStream out, int command) throws IOException {
 
-    private static void commandToServer(DataOutputStream out, int command) throws IOException {
         if (command == Commands.DO_COMPLETE_TASK.getValue()) {
-            ClientSendMessage.sendCompleteTask(out);
+            ClientProcessCommands.processCompleteTask(input, out);
         } else if (command == Commands.DO_DISPLAY_TASK.getValue()) {
-            ClientSendMessage.sendDisplayTasks(out);
+            ClientProcessCommands.processDisplayTasks(input, out);
         } else if (command == Commands.DO_ADD_COMMENT.getValue()) {
-            ClientSendMessage.sendAddComment(out);
+            ClientProcessCommands.processAddComment(input, out);
         } else if (command == Commands.DO_PUSH_DEADLINE.getValue()) {
-            ClientSendMessage.sendPushDeadline(out);
+            ClientProcessCommands.processPushDeadline(input, out);
         } else if (command == Commands.DO_ADD_TASK.getValue()) {
-            ClientSendMessage.sendAddTask(out);
+            ClientProcessCommands.processAddTask(input, out);
         } else if (command == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
-            ClientSendMessage.sendAddTaskToOtherUsers(out);
-        } else if (command == Commands.DO_SEARCH_TASKS.getValue()) {
-            ClientSendMessage.sendSearchTasks(out);
-        } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
-            ClientSendMessage.sendFollowTask(out);
-        }
-    }
-
-    private static void processServerMessageType(DataInputStream input, int command) throws IOException {
-        if (command == Commands.DO_COMPLETE_TASK.getValue()) {
-            ClientProcessCommands.processCompleteTask(input);
-        } else if (command == Commands.DO_DISPLAY_TASK.getValue()) {
-            ClientProcessCommands.processDisplayTasks(input);
-        } else if (command == Commands.DO_ADD_COMMENT.getValue()) {
-            ClientProcessCommands.processAddComment(input);
-        } else if (command == Commands.DO_PUSH_DEADLINE.getValue()) {
-            ClientProcessCommands.processPushDeadline(input);
-        } else if (command == Commands.DO_ADD_TASK.getValue()) {
-            ClientProcessCommands.processAddTask(input);
-        } else if (command == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
-            ClientProcessCommands.processAddTaskToOtherUsers(input);
+            ClientProcessCommands.processAddTaskToOtherUsers(input, out);
         } else if (command == Commands.ERROR_OCCURED.getValue()) {
-            ClientProcessCommands.processErrorOccured(input);
+            ClientProcessCommands.processErrorOccured(input, out);
         } else if (command == Commands.DO_SEARCH_TASKS.getValue()) {
-            ClientProcessCommands.processShowSearchedTasks(input);
+            ClientProcessCommands.processShowSearchedTasks(input, out);
         } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
-            ClientProcessCommands.processFollowTask(input);
+            ClientProcessCommands.processFollowTask(input, out);
         }
     }
 }

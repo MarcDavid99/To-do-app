@@ -196,9 +196,7 @@ public class ServerThread implements Runnable {
                 }
             }
         }
-        if (!
-
-                checkForUsernameInList(username)) {
+        if (!checkForUsernameInList(username)) {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sellist kasutajanime pole olemas.");
             socketOut.writeBoolean(false);
