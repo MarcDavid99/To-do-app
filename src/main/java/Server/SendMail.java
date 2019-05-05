@@ -16,9 +16,7 @@ import javax.mail.internet.MimeMessage;
 public class SendMail {
 
     // Config failist username ja passwordi lugemine
-    public String[] getPropValues() throws IOException {
-        String[] usernameAndPassword = new String[2];
-
+    public Properties getPropValues() throws IOException {
         Properties properties = new Properties();
         String propertiesFileName = "config.properties";
 
@@ -30,26 +28,15 @@ public class SendMail {
             else {
                 throw new FileNotFoundException("Property file " + propertiesFileName + " was not found!");
             }
-
-            String username = properties.getProperty("user");
-            String password = properties.getProperty("pw");
-
-            usernameAndPassword[0] = username;
-            usernameAndPassword[1] = password;
         }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return usernameAndPassword;
+        return properties;
     }
 
     public boolean sendMail(String recieverEmail, String subject, String mailBody) throws Exception {
 
-        String[] userAndPw = getPropValues();
-
-        final String username = userAndPw[0];
-        final String password = userAndPw[1];
+        Properties properties = getPropValues();
+        final String username = properties.getProperty("user");
+        final String password = properties.getProperty("pw");
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
