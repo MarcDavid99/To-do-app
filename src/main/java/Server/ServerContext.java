@@ -50,10 +50,11 @@ public class ServerContext {
     }
 
     public void writeExistingUsersToFile() throws IOException {
-
-        Path pathToFile = Path.of("users.txt");
-        Gson gson = new Gson();
-        String jsonAllUsers = gson.toJson(allUsers);
-        Files.writeString(pathToFile, jsonAllUsers);
+        synchronized (this) {
+            Path pathToFile = Path.of("users.txt");
+            Gson gson = new Gson();
+            String jsonAllUsers = gson.toJson(allUsers);
+            Files.writeString(pathToFile, jsonAllUsers);
+        }
     }
 }

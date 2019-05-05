@@ -29,6 +29,7 @@ public class ServerThreadTaskCommands {
         String username = socketIn.readUTF();
         int taskIndex = Integer.parseInt(socketIn.readUTF());
 
+        // TODO: Syncrhonized plokk optimiseerida
         synchronized (sctx) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {

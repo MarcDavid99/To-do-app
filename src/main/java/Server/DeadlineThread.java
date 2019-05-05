@@ -1,11 +1,11 @@
 package Server;
 
-
-
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import shared.*;
@@ -25,7 +25,7 @@ public class DeadlineThread implements Runnable {
 
     public void run() {
 
-        System.out.println("DEBUG: Alustab shared.Deadline-de kontrollimise thread; aeg: " + dateFormat.format(new Date()));
+        System.out.println("DEBUG: Alustab Deadline-de kontrollimise thread; aeg: " + dateFormat.format(new Date()));
 
         //long timeOfSleep = sleepAmount; // 3 tundi millisekundites
         long timeOfSleep = 30000;        //30 sekundit (Testväärtus)
@@ -33,71 +33,88 @@ public class DeadlineThread implements Runnable {
         long end;
         long timeSlept;
 
-        // TODO: Synchronized plokid selleks, et andmete listi erinevates kohtades
-        // TODO: muteerimisel midagi kaotsi ei läheks
+        List<TaskToRemind> listOfTasksToRemind = new ArrayList<>();
 
         while (true) {
+
             synchronized (sctx) {
                 List<User> allUsersToCheck = sctx.getAllUsers();
                 for (User user : allUsersToCheck) {
                     List<Task> currentUserTaskList = user.getToDoList();
-
                     for (Task task : currentUserTaskList) {
                         Deadline currentDeadline = task.getTaskDeadline();
-
                         if (currentDeadline.isPastDeadline()) {
                             if (!task.isRemindedOfPassedDeadline()) {
                                 String mailSubject = "Reminder that your task's deadline has passed!";
-                                String mailBody = "Hello!" +
+                                String mailBody = "Hello, " + user.getUsername() + "!" +
                                         "\r\n" + "\r\n" +
                                         "Your task's deadline has passed" + "\r\n" +
-                                        "shared.Task description: " + task.getTaskDescription() + "\r\n" +
-                                        "shared.Deadline: " + currentDeadline.dateToString() +
+                                        "Task description: " + task.getTaskDescription() + "\r\n" +
+                                        "Deadline: " + currentDeadline.dateToString() +
                                         "\r\n" + "\r\n" +
                                         "Thank you for using our to-do app!";
 
-                                SendMail remindCurrentTaskOwner = new SendMail();
-                                try {
-                                    remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
-                                }
-                                catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                                task.setRemindedOfPassedDeadline(true);
+                                listOfTasksToRemind.add(new TaskToRemind(user.getMailAdress(), mailSubject, mailBody, user, task, false, true));
                             }
                         }
                         if (currentDeadline.isDeadlineApproaching()) {
                             if (!task.isRemindedOfApproachingDeadline()) {
                                 String mailSubject = "Reminder of your task in our To-Do List!";
-                                String mailBody = "Hello!" +
+                                String mailBody = "Hello, " + user.getUsername() + "!" +
                                         "\r\n" + "\r\n" +
                                         "Your task's deadline is approaching soon." + "\r\n" +
-                                        "shared.Task description: " + task.getTaskDescription() + "\r\n" +
-                                        "shared.Deadline: " + currentDeadline.dateToString() +
+                                        "Task description: " + task.getTaskDescription() + "\r\n" +
+                                        "Deadline: " + currentDeadline.dateToString() +
                                         "\r\n" + "\r\n" +
                                         "Thank you for using our to-do app!";
 
-                                SendMail remindCurrentTaskOwner = new SendMail();
-                                try {
-                                    remindCurrentTaskOwner.sendMail(user.getMailAdress(), mailSubject, mailBody);
-                                }
-                                catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                                task.setRemindedOfApproachingDeadline(true);
+                                listOfTasksToRemind.add(new TaskToRemind(user.getMailAdress(), mailSubject, mailBody, user, task, true, false));
                             }
                         }
                     }
                 }
-                // Värskendab sctx-s hoiustatavat userite listi
-                sctx.setAllUsers(allUsersToCheck);
-                try {
-                    sctx.writeExistingUsersToFile();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            }
+
+            SendMail sendMail = new SendMail();
+            Iterator<TaskToRemind> iter = listOfTasksToRemind.iterator();
+            while (iter.hasNext()) {
+                TaskToRemind taskToRemind = iter.next();
+                if (taskToRemind.isPastDeadline()) {
+                    User currentUser = taskToRemind.getUser();
+                    String mailSubject = taskToRemind.getSubject();
+                    String mailBody = taskToRemind.getBody();
+                    try {
+                        sendMail.sendMail(currentUser.getMailAdress(), mailSubject, mailBody);
+                        synchronized (sctx) {
+                            Task currentTask = taskToRemind.getTask();
+                            currentTask.setRemindedOfPassedDeadline(true); // märgitakse true kui meil on päriselt välja saadetud
+                        }
+                        iter.remove();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
+                if (taskToRemind.isApproachingDeadline()) {
+                    User currentUser = taskToRemind.getUser();
+                    String mailSubject = taskToRemind.getSubject();
+                    String mailBody = taskToRemind.getBody();
+                    try {
+                        sendMail.sendMail(currentUser.getMailAdress(), mailSubject, mailBody);
+                        synchronized (sctx) {
+                            Task currentTask = taskToRemind.getTask();
+                            currentTask.setRemindedOfApproachingDeadline(true); // märgitakse true kui meil on päriselt välja saadetud
+                        }
+                        iter.remove();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+
+            try {
+                sctx.writeExistingUsersToFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
 
             System.out.println("DEBUG: Server.DeadlineThread jääb magama; aeg: " + dateFormat.format(new Date()));

@@ -48,9 +48,7 @@ public class ServerThread implements Runnable {
                 if (closeProgramme) {
 
                     // Värskendatakse faili sisu
-                    synchronized (sctx) {
-                        sctx.writeExistingUsersToFile();
-                    }
+                    sctx.writeExistingUsersToFile();
 
                     System.out.println("DEBUG: Server.ServerThread lõpetab töö!" + "\r\n");
                     break;
@@ -132,6 +130,8 @@ public class ServerThread implements Runnable {
         String password = socketIn.readUTF();
         boolean responseSent = false;
 
+
+        // TODO: Synchronized plokk optimiseerida
         synchronized (sctx) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
