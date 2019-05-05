@@ -170,7 +170,7 @@ public class ClientProcessCommands {
         System.out.println();
     }
 
-    public static void processErrorOccured(DataInputStream input, DataOutputStream out) throws IOException {
+    public static void processErrorOccured(DataInputStream input) throws IOException {
         System.out.println(input.readUTF());
         System.out.println();
     }
@@ -179,9 +179,9 @@ public class ClientProcessCommands {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
             System.out.println("" +
-                    "Soovin ülesannet otsida kirjelduse järgi:     21" + "\r\n" +
-                    "Soovin ülesannet otsida kasutajanime järgi:   22" + "\r\n" +
-                    "Soovin ülesannet otsida tähtaja järgi:        23" + "\r\n");
+                    "Soovin ülesannet otsida kirjelduse järgi:     22" + "\r\n" +
+                    "Soovin ülesannet otsida kasutajanime järgi:   23" + "\r\n" +
+                    "Soovin ülesannet otsida tähtaja järgi:        24" + "\r\n");
             System.out.print("Valige sobiv tegevus: ");
             String line = scanner.nextLine();
             try {
@@ -217,8 +217,7 @@ public class ClientProcessCommands {
 
         int commandType = input.readInt();
         if(commandType == Commands.ERROR_OCCURED.getValue()){
-            System.out.println(input.readUTF());
-            System.out.println();
+            processErrorOccured(input);
         }
         else{
             displayTasks(input, "Leitud ülesanded: ");
@@ -278,7 +277,7 @@ public class ClientProcessCommands {
         return isPrivateTask;
     }
 
-    public static void displayTasks(DataInputStream input, String sõnum) throws IOException {
+    public static void displayTasks(DataInputStream input, String messageToShow) throws IOException {
         //task listi kuvamine kasutajale
         int tasksAmount = input.readInt();
         boolean isForCurrentUser = input.readBoolean();
@@ -286,7 +285,7 @@ public class ClientProcessCommands {
         if (tasksAmount == 0) {
             System.out.println("Ei ole ülesandeid, mida kuvada \r\n");
         } else {
-            System.out.println(TextColours.ANSI_RED + sõnum + TextColours.ANSI_RESET);
+            System.out.println(TextColours.ANSI_RED + messageToShow + TextColours.ANSI_RESET);
             for (int i = 0; i < tasksAmount; i++) {
                 Gson gson = new Gson();
                 String json = input.readUTF();

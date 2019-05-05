@@ -15,7 +15,7 @@ import shared.*;
 
 public class ServerThreadTaskCommands {
 
-    public static boolean checkForUsernameInList(String username , ServerContext sctx, List<User> allUsers) throws IOException {
+    public static boolean checkForUsernameInList(String username, ServerContext sctx, List<User> allUsers) throws IOException {
         boolean usernameAlreadyExists = false;
         synchronized (sctx) {
             for (User user : allUsers) {
@@ -27,7 +27,7 @@ public class ServerThreadTaskCommands {
         return usernameAlreadyExists;
     }
 
-    public static void followTask(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
+    public static void followTask(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
         String username = socketIn.readUTF();
         int taskIndex = Integer.parseInt(socketIn.readUTF());
 
@@ -36,14 +36,18 @@ public class ServerThreadTaskCommands {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     try {
-                        if (user.getToDoList().contains(user.getToDoList().get(taskIndex - 1))) {//taskIndex - 1 sest kasutaja saadab inimkeeles mitmenda taskiga tegemist on.
-                            if (user.getToDoList().get(taskIndex - 1).getTaskFollowers().contains(currentUser.getUserID())) {
-                                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                                socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
-                                socketOut.writeBoolean(false);
-                            } else {
-                                user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
-                            }
+                        if (user.getToDoList().get(taskIndex - 1).getTaskFollowers().contains(currentUser.getUserID())) {
+                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                            socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
+                            socketOut.writeBoolean(false);
+                        }
+                        else if(user.getToDoList().get(taskIndex - 1).isPrivateTask() && !currentUser.getUserID().equals(user.getUserID())) {
+                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                            socketOut.writeUTF("Ülesande jälgimine pole võimalik, sest see on privaatne.");
+                            socketOut.writeBoolean(false);
+                        }
+                        else{
+                            user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
                             socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
                             socketOut.writeUTF("Ülesande jälgimine toimis.");
                             socketOut.writeBoolean(false);
@@ -69,7 +73,7 @@ public class ServerThreadTaskCommands {
         return true;
     }
 
-    public static void addComment(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
+    public static void addComment(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
         List<Task> todoList = currentUser.getToDoList();
 
         int indeks = socketIn.readInt() - 1;
@@ -88,7 +92,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
+    public static void pushDeadline(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
         List<Task> todoList = currentUser.getToDoList();
 
         int indeks = socketIn.readInt() - 1;
@@ -106,7 +110,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
+    public static void addTaskToOtherUser(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
         String username = socketIn.readUTF();
         String description = socketIn.readUTF();
         boolean isPrivateTask = socketIn.readBoolean();
@@ -152,7 +156,7 @@ public class ServerThreadTaskCommands {
         String topic = socketIn.readUTF();
         List<Task> todoListByTopic = new ArrayList<>();
         for (Task task : currentUser.getToDoList()) {
-            if(task.getTaskTopic().equals(topic)){
+            if (task.getTaskTopic().equals(topic)) {
                 todoListByTopic.add(task);
             }
         }
@@ -161,7 +165,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void displayCertainUserTasks(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
+    public static void displayCertainUserTasks(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
         String username = socketIn.readUTF();
         List<Task> todoList = new ArrayList<>();
 
@@ -172,10 +176,10 @@ public class ServerThreadTaskCommands {
                 }
             }
         }
-        if(!checkForUsernameInList(username,sctx,allUsers)){
+        if (!checkForUsernameInList(username, sctx, allUsers)) {
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sellise kasutajanimega kasutajat ei leidu.");
-        }else {
+        } else {
             socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
             sendTasks(todoList, socketOut, true, sctx, allUsers);
             socketOut.writeBoolean(false);
@@ -183,7 +187,7 @@ public class ServerThreadTaskCommands {
     }
 
 
-    public static void completeTask(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
+    public static void completeTask(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
         List<Task> todoList = currentUser.getToDoList();
         int indeks = socketIn.readInt() - 1;
         if (indeks >= 0 && indeks < todoList.size()) {
@@ -200,7 +204,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void searchTaskByDeadline(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers) throws IOException {
+    public static void searchTaskByDeadline(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers) throws IOException {
         String deadline = socketIn.readUTF();
         List<Task> suitableTasksArray = new ArrayList<>();
 
@@ -221,7 +225,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void searchTaskByUsername(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers) throws IOException {
+    public static void searchTaskByUsername(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers) throws IOException {
         String username = socketIn.readUTF();
         List<Task> todoList = new ArrayList<>();
         if (checkForUsernameInList(username, sctx, allUsers)) {
@@ -242,7 +246,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void searchTaskByDescription(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers) throws IOException {
+    public static void searchTaskByDescription(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers) throws IOException {
         List<Task> suitableTasks = new ArrayList<>();
         String description = socketIn.readUTF();
 
@@ -261,7 +265,7 @@ public class ServerThreadTaskCommands {
         socketOut.writeBoolean(false);
     }
 
-    public static void sendTasks(List<Task> list, DataOutputStream socketOut, boolean justShowToCurrentUser , ServerContext sctx, List<User> allUsers) throws IOException {
+    public static void sendTasks(List<Task> list, DataOutputStream socketOut, boolean justShowToCurrentUser, ServerContext sctx, List<User> allUsers) throws IOException {
         socketOut.writeInt(list.size());
         socketOut.writeBoolean(justShowToCurrentUser);
         for (Task task : list) {
