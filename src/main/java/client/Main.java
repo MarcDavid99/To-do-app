@@ -83,8 +83,14 @@ public class Main {
                                             } else {
                                                 out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
                                             }
+
                                             //messageType loeb sisse, sest server saadab displayTasksi korral message type
                                             messageType = input.readInt();
+                                            if(messageType == Commands.ERROR_OCCURED.getValue()) {
+                                                System.out.println(input.readUTF());
+                                                System.out.println();
+                                                continue;
+                                            }
                                             ClientProcessCommands.displayTasks(input, "Ülesanded:");
                                             //loeb siin ikkagi sisse booleani, kuigi see pole oluline, aga ma ei hakka uut meetodit tegema
                                             //kui saab kasutada displayTasksi

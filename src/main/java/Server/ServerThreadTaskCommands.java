@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 import shared.*;
 
 public class ServerThreadTaskCommands {
@@ -162,6 +164,7 @@ public class ServerThreadTaskCommands {
     public static void displayCertainUserTasks(DataInputStream socketIn, DataOutputStream socketOut , ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
         String username = socketIn.readUTF();
         List<Task> todoList = new ArrayList<>();
+
         synchronized (sctx) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
@@ -169,9 +172,14 @@ public class ServerThreadTaskCommands {
                 }
             }
         }
-        socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
-        sendTasks(todoList, socketOut, true, sctx, allUsers);
-        socketOut.writeBoolean(false);
+        if(!checkForUsernameInList(username,sctx,allUsers)){
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+            socketOut.writeUTF("Sellise kasutajanimega kasutajat ei leidu.");
+        }else {
+            socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+            sendTasks(todoList, socketOut, true, sctx, allUsers);
+            socketOut.writeBoolean(false);
+        }
     }
 
 
