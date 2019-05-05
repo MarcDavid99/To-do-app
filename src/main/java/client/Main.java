@@ -17,7 +17,7 @@ import shared.*;
 public class Main {
 
     private static Argon2 argon2 = Argon2Factory.create();
-    private static String usernameForFollowTask = "";
+
 
     public static void main(String[] args) throws Exception {
         label1:
@@ -89,6 +89,7 @@ public class Main {
                                         if (possibleCommands.contains(commandInt)) {
                                             if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue() && commandInt != Commands.DO_LOG_OUT.getValue()) {
                                                 int messageType = 0;
+                                                String usernameForFollowTask = "";
                                                 if (commandsThatNeedList.contains(commandInt)) {
                                                     if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
                                                         // kuvatakse soovitud kasutajanime tasklist, et saaks valida sealt ülesande, mida jälgida
