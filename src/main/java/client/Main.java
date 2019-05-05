@@ -13,6 +13,7 @@ import shared.*;
 public class Main {
 
     private static Argon2 argon2 = Argon2Factory.create();
+    private static String usernameForFollowTask = "";
 
     public static void main(String[] args) throws Exception {
 
@@ -76,9 +77,9 @@ public class Main {
                                         if (Arrays.asList(commandsThatNeedList).contains(command)) {
                                             if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
                                                 System.out.print("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
-                                                String username = scanner.nextLine();
+                                                usernameForFollowTask = scanner.nextLine();
                                                 out.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
-                                                out.writeUTF(username);
+                                                out.writeUTF(usernameForFollowTask);
                                             } else {
                                                 out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
                                             }
@@ -95,7 +96,7 @@ public class Main {
                                             System.out.println();
                                         }
                                         else {
-                                            processServerMessageType(input, out, commandInt);
+                                            processServerMessageType(input, out, commandInt,usernameForFollowTask);
                                         }
 
                                     } else {
@@ -130,7 +131,7 @@ public class Main {
 
     }
 
-    private static void processServerMessageType(DataInputStream input, DataOutputStream out, int command) throws IOException {
+    private static void processServerMessageType(DataInputStream input, DataOutputStream out, int command, String username) throws IOException {
 
         if (command == Commands.DO_COMPLETE_TASK.getValue()) {
             ClientProcessCommands.processCompleteTask(input, out);
@@ -149,7 +150,7 @@ public class Main {
         } else if (command == Commands.DO_SEARCH_TASKS.getValue()) {
             ClientProcessCommands.processShowSearchedTasks(input, out);
         } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
-            ClientProcessCommands.processFollowTask(input, out);
+            ClientProcessCommands.processFollowTask(input, out, username);
         }
     }
 }

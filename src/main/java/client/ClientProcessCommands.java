@@ -225,10 +225,9 @@ public class ClientProcessCommands {
         }
     }
 
-    public static void processFollowTask(DataInputStream input, DataOutputStream out) throws IOException {
+    public static void processFollowTask(DataInputStream input, DataOutputStream out,String username) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-        System.out.print("Sisesta uuesti kasutajanimi, kelle ülesannet jälgida tahad: ");
-        String username = scanner.nextLine();
+
         System.out.print("Sisesta ülesande indeks, mida soovid jälgida: ");
         String taskIndex = scanner.nextLine();
         out.writeInt(Commands.DO_FOLLOW_TASK.getValue());
