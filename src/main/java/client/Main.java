@@ -6,6 +6,7 @@ import de.mkammerer.argon2.Argon2Factory;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +21,19 @@ public class Main {
 
 
     public static void main(String[] args) throws Exception {
+        String address;
+        int port = 1337;
+        if(args.length == 0){
+            address = "localhost";
+
+        }else{
+            address = args[0];
+
+        }
+
         label1:
         while(true){
-            try (Socket socket = new Socket("localhost", 1337);
+            try (Socket socket = new Socket(address,port);
                  DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                  DataInputStream input = new DataInputStream(socket.getInputStream())) {
 
