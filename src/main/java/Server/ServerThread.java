@@ -128,29 +128,32 @@ public class ServerThread implements Runnable {
     private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
         String username = socketIn.readUTF();
         String password = socketIn.readUTF();
-        boolean responseSent = false;
+        boolean usernameExists = false;
 
 
-        // TODO: Synchronized plokk optimiseerida
         synchronized (sctx) {
+
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
-                    if (argon2.verify(user.getPassword(), password)) { // Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
-                        currentUser = user;
-                        socketOut.writeInt(Commands.DO_CONFIRM_LOGIN.getValue()); // kui sisselogimine õnnestub
-                        socketOut.writeUTF("Olete sisselogitud.");
-                        responseSent = true;
-                    } else {
-                        socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // kui sisselogimine ei õnnestu
-                        socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti.");
-                        responseSent = true;
-                    }
+                    usernameExists = true;
+                    currentUser = user;
                 }
             }
-            if (!responseSent) {
-                socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // sisselogimine ei õnnestunud
-                socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti.");
+        }
+
+        if (usernameExists) { // Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
+            if (argon2.verify(currentUser.getPassword(), password)) {
+                socketOut.writeInt(Commands.DO_CONFIRM_LOGIN.getValue()); // kui sisselogimine õnnestub
+                socketOut.writeUTF("Olete sisselogitud.");
             }
+            else {
+                socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // kui sisselogimine ei õnnestu
+                socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti." + "\r\n");
+            }
+        }
+        else  {
+            socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // sisselogimine ei õnnestunud
+            socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti." + "\r\n");
         }
     }
 }
