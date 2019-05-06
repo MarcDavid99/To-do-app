@@ -31,7 +31,7 @@ public class ServerThreadTaskCommands {
         String username = socketIn.readUTF();
         int taskIndex = Integer.parseInt(socketIn.readUTF());
         boolean tryToFollowTask = false;
-        
+
         synchronized (sctx) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
@@ -52,6 +52,13 @@ public class ServerThreadTaskCommands {
                     socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
                     socketOut.writeBoolean(false);
                 }
+                /*
+
+                // TODO: Kui tahad jälgida mingi teise kasutaja ülesannet, mida ta on privaatseks märkinud, näed sa
+                // TODO: seda ikka sama moodi nagu see oleks avalik task ja followimise korral ei ütle, et midagi
+                // TODO: valesti oleks
+
+                 */
                 else if(currentUser.getToDoList().get(taskIndex - 1).isPrivateTask() && !currentUser.getUserID().equals(currentUser.getUserID())) {
                     socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
                     socketOut.writeUTF("Ülesande jälgimine pole võimalik, sest see on privaatne.");
