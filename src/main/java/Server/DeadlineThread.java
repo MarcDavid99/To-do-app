@@ -79,14 +79,14 @@ public class DeadlineThread implements Runnable {
             Iterator<TaskToRemind> iter = listOfTasksToRemind.iterator();
             while (iter.hasNext()) {
                 TaskToRemind taskToRemind = iter.next();
-                if (taskToRemind.isPastDeadline()) {
-                    User currentUser = taskToRemind.getUser();
-                    String mailSubject = taskToRemind.getSubject();
-                    String mailBody = taskToRemind.getBody();
+                if (taskToRemind.pastDeadline) {
+                    User currentUser = taskToRemind.user;
+                    String mailSubject = taskToRemind.subject;
+                    String mailBody = taskToRemind.body;
                     try {
                         sendMail.sendMail(currentUser.getMailAdress(), mailSubject, mailBody);
                         synchronized (sctx) {
-                            Task currentTask = taskToRemind.getTask();
+                            Task currentTask = taskToRemind.task;
                             currentTask.setRemindedOfPassedDeadline(true); // märgitakse true kui meil on päriselt välja saadetud
                         }
                         iter.remove();
@@ -94,14 +94,14 @@ public class DeadlineThread implements Runnable {
                         throw new RuntimeException(e);
                     }
                 }
-                if (taskToRemind.isApproachingDeadline()) {
-                    User currentUser = taskToRemind.getUser();
-                    String mailSubject = taskToRemind.getSubject();
-                    String mailBody = taskToRemind.getBody();
+                if (taskToRemind.approachingDeadline) {
+                    User currentUser = taskToRemind.user;
+                    String mailSubject = taskToRemind.subject;
+                    String mailBody = taskToRemind.body;
                     try {
                         sendMail.sendMail(currentUser.getMailAdress(), mailSubject, mailBody);
                         synchronized (sctx) {
-                            Task currentTask = taskToRemind.getTask();
+                            Task currentTask = taskToRemind.task;
                             currentTask.setRemindedOfApproachingDeadline(true); // märgitakse true kui meil on päriselt välja saadetud
                         }
                         iter.remove();
