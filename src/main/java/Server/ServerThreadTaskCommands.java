@@ -31,11 +31,12 @@ public class ServerThreadTaskCommands {
         String username = socketIn.readUTF();
         int taskIndex = Integer.parseInt(socketIn.readUTF());
         boolean tryToFollowTask = false;
+        User userWhoseTaskToFollow = null;
 
         synchronized (sctx) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
-                    currentUser = user;
+                    userWhoseTaskToFollow = user;
                     tryToFollowTask = true;
                 }
             }
@@ -47,25 +48,20 @@ public class ServerThreadTaskCommands {
         }
         else {  // kasutajanimi eksisteerib
             try {
-                if (currentUser.getToDoList().get(taskIndex - 1).getTaskFollowers().contains(currentUser.getUserID())) {
+                System.out.println(currentUser);
+                if (userWhoseTaskToFollow.getToDoList().get(taskIndex - 1).getTaskFollowers().contains(currentUser.getUserID())) {
                     socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
                     socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
                     socketOut.writeBoolean(false);
                 }
-                /*
 
-                // TODO: Kui tahad jälgida mingi teise kasutaja ülesannet, mida ta on privaatseks märkinud, näed sa
-                // TODO: seda ikka sama moodi nagu see oleks avalik task ja followimise korral ei ütle, et midagi
-                // TODO: valesti oleks
-
-                 */
-                else if(currentUser.getToDoList().get(taskIndex - 1).isPrivateTask() && !currentUser.getUserID().equals(currentUser.getUserID())) {
+                else if(userWhoseTaskToFollow.getToDoList().get(taskIndex - 1).isPrivateTask() && !userWhoseTaskToFollow.getUserID().equals(currentUser.getUserID())) {
                     socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
                     socketOut.writeUTF("Ülesande jälgimine pole võimalik, sest see on privaatne.");
                     socketOut.writeBoolean(false);
                 }
                 else{
-                    currentUser.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
+                    userWhoseTaskToFollow.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
                     socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
                     socketOut.writeUTF("Ülesande jälgimine toimis.");
                     socketOut.writeBoolean(false);
