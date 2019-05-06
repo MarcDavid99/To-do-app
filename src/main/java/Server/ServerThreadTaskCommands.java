@@ -30,40 +30,44 @@ public class ServerThreadTaskCommands {
     public static void followTask(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
         String username = socketIn.readUTF();
         int taskIndex = Integer.parseInt(socketIn.readUTF());
-
-        // TODO: Syncrhonized plokk optimiseerida
+        boolean tryToFollowTask = false;
+        
         synchronized (sctx) {
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
-                    try {
-                        if (user.getToDoList().get(taskIndex - 1).getTaskFollowers().contains(currentUser.getUserID())) {
-                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                            socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
-                            socketOut.writeBoolean(false);
-                        }
-                        else if(user.getToDoList().get(taskIndex - 1).isPrivateTask() && !currentUser.getUserID().equals(user.getUserID())) {
-                            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                            socketOut.writeUTF("Ülesande jälgimine pole võimalik, sest see on privaatne.");
-                            socketOut.writeBoolean(false);
-                        }
-                        else{
-                            user.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
-                            socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
-                            socketOut.writeUTF("Ülesande jälgimine toimis.");
-                            socketOut.writeBoolean(false);
-                        }
-                    } catch (IndexOutOfBoundsException e) {
-                        socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                        socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
-                        socketOut.writeBoolean(false);
-                    }
+                    currentUser = user;
+                    tryToFollowTask = true;
                 }
             }
         }
-        if (!checkForUsernameInList(username, sctx, allUsers)) {
+        if (!tryToFollowTask) { // kasutajanime ei eksisteeri
             socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
             socketOut.writeUTF("Sellist kasutajanime pole olemas.");
             socketOut.writeBoolean(false);
+        }
+        else {  // kasutajanimi eksisteerib
+            try {
+                if (currentUser.getToDoList().get(taskIndex - 1).getTaskFollowers().contains(currentUser.getUserID())) {
+                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                    socketOut.writeUTF("Seda ülesannet sa juba jälgid.");
+                    socketOut.writeBoolean(false);
+                }
+                else if(currentUser.getToDoList().get(taskIndex - 1).isPrivateTask() && !currentUser.getUserID().equals(currentUser.getUserID())) {
+                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                    socketOut.writeUTF("Ülesande jälgimine pole võimalik, sest see on privaatne.");
+                    socketOut.writeBoolean(false);
+                }
+                else{
+                    currentUser.getToDoList().get(taskIndex - 1).addFollower(currentUser.getUserID());
+                    socketOut.writeInt(Commands.DO_FOLLOW_TASK.getValue());
+                    socketOut.writeUTF("Ülesande jälgimine toimis.");
+                    socketOut.writeBoolean(false);
+                }
+            } catch (IndexOutOfBoundsException e) {
+                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                socketOut.writeUTF("Sellise indeksiga ülesannet ei eksisteeri.");
+                socketOut.writeBoolean(false);
+            }
         }
 
     }

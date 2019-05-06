@@ -30,12 +30,8 @@ public class ServerThread implements Runnable {
              DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("DEBUG: Uue kliendi jaoks luuakse uus thread");
 
-            // TODO: Synchronized plokid selleks, et andmete listi erinevates kohtades
-            // TODO: muteerimisel midagi kaotsi ei läheks
-
             // Enne töötamist võetakse sctx-st värske allUsers list, mida
             // värskendavad Server.ServerThread ise ja Server.DeadlineThread
-
             synchronized (sctx) {
                 allUsers = sctx.getAllUsers();
             }
@@ -46,10 +42,8 @@ public class ServerThread implements Runnable {
                 closeProgramme = detectClientRequest(input, out, sctx, allUsers, currentUser);
 
                 if (closeProgramme) {
-
                     // Värskendatakse faili sisu
                     sctx.writeExistingUsersToFile();
-
                     System.out.println("DEBUG: Server.ServerThread lõpetab töö!" + "\r\n");
                     break;
                 }
@@ -130,9 +124,7 @@ public class ServerThread implements Runnable {
         String password = socketIn.readUTF();
         boolean usernameExists = false;
 
-
         synchronized (sctx) {
-
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     usernameExists = true;
