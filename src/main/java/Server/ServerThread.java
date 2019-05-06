@@ -91,19 +91,22 @@ public class ServerThread implements Runnable {
             ServerThreadTaskCommands.addTaskToOtherUser(socketIn, socketOut, sctx, allUsers, currentUser);
         }
         if (requestType == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()) {
-            ServerThreadTaskCommands.searchTaskByDescription(socketIn, socketOut, sctx, allUsers);
+            ServerThreadTaskCommands.searchTaskByDescription(socketIn, socketOut, sctx, allUsers, currentUser);
         }
         if (requestType == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()) {
-            ServerThreadTaskCommands.searchTaskByUsername(socketIn, socketOut, sctx, allUsers);
+            ServerThreadTaskCommands.searchTaskByUsername(socketIn, socketOut, sctx, allUsers, currentUser);
         }
         if (requestType == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
-            ServerThreadTaskCommands.searchTaskByDeadline(socketIn, socketOut, sctx, allUsers);
+            ServerThreadTaskCommands.searchTaskByDeadline(socketIn, socketOut, sctx, allUsers, currentUser);
         }
         if (requestType == Commands.DO_FOLLOW_TASK.getValue()) {
             ServerThreadTaskCommands.followTask(socketIn, socketOut, sctx, allUsers, currentUser);
         }
         if (requestType == Commands.DO_DELETE_USER.getValue()) {
             ServerThreadTaskCommands.deleteUser(socketIn, socketOut, sctx, allUsers, currentUser);
+        }
+        if(requestType == Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue()){
+            ServerThreadTaskCommands.searchTaskByTopic(socketIn, socketOut, currentUser, sctx, allUsers);
         }
         if (requestType == Commands.DO_CLOSE_TODO_LIST_1.getValue() || requestType == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
             return ServerThreadTaskCommands.closeTodoList(socketIn, socketOut);

@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
+
 import shared.*;
 
 public class ClientProcessCommands {
@@ -35,7 +36,7 @@ public class ClientProcessCommands {
                     while (true) {
 
                         topic = scanner.nextLine();
-                        if (Arrays.asList(topicList).contains(topic)){
+                        if (Arrays.asList(topicList).contains(topic)) {
                             break;
                         }
                         System.out.print("Sellist teemat ei ole valikus, sisesta uuesti: ");
@@ -62,7 +63,7 @@ public class ClientProcessCommands {
         System.out.print("Sisestage ülesande kirjeldus: ");
         String taskDescription = scanner.nextLine();
         boolean isPrivateTask = chooseIsPrivate();
-        String topic = chooseTopic();
+        String topic = chooseTopic("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
         out.writeInt(Commands.DO_ADD_TASK.getValue());
         out.writeUTF(taskDescription);
         out.writeBoolean(isPrivateTask);
@@ -134,7 +135,7 @@ public class ClientProcessCommands {
         System.out.print("Lisa ülesande kirjeldus: ");
         String description = scanner.nextLine();
         boolean isPrivate = chooseIsPrivate();
-        String topic = chooseTopic();
+        String topic = chooseTopic("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
         out.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
         out.writeUTF(enteredUsername);
         out.writeUTF(description);
@@ -181,7 +182,8 @@ public class ClientProcessCommands {
             System.out.println("" +
                     "Soovin ülesannet otsida kirjelduse järgi:     22" + "\r\n" +
                     "Soovin ülesannet otsida kasutajanime järgi:   23" + "\r\n" +
-                    "Soovin ülesannet otsida tähtaja järgi:        24" + "\r\n");
+                    "Soovin ülesannet otsida tähtaja järgi:        24" + "\r\n" +
+                    "Soovin ülesannet otsida teema järgi:          25" + "\r\n");
             System.out.print("Valige sobiv tegevus: ");
             String line = scanner.nextLine();
             try {
@@ -207,6 +209,12 @@ public class ClientProcessCommands {
                     out.writeUTF(deadline);
                     System.out.println();
                     break;
+                } else if (command == Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue()) {
+                    String topic = chooseTopic("Sisestage, mis teema all olevaid ülesandeid soovite otsida (sõnadega, mitte järjekorranumbri abil): ");
+                    out.writeInt(Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue());
+                    out.writeUTF(topic);
+                    System.out.println();
+                    break;
                 } else {
                     System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
                 }
@@ -216,15 +224,14 @@ public class ClientProcessCommands {
         }
 
         int commandType = input.readInt();
-        if(commandType == Commands.ERROR_OCCURED.getValue()){
+        if (commandType == Commands.ERROR_OCCURED.getValue()) {
             processErrorOccured(input);
-        }
-        else{
+        } else {
             displayTasks(input, "Leitud ülesanded: ");
         }
     }
 
-    public static void processFollowTask(DataInputStream input, DataOutputStream out,String username) throws IOException {
+    public static void processFollowTask(DataInputStream input, DataOutputStream out, String username) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
 
         System.out.print("Sisesta ülesande indeks, mida soovid jälgida: ");
@@ -238,7 +245,7 @@ public class ClientProcessCommands {
         System.out.println();
     }
 
-    public static String chooseTopic() {
+    public static String chooseTopic(String messageToShow) {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         System.out.println("Võimalikud teemad, kuhu alla ülesanne kuuluda saab: ");
         int index = 1;
@@ -248,7 +255,7 @@ public class ClientProcessCommands {
             index++;
         }
         while (true) {
-            System.out.print("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
+            System.out.print(messageToShow);
             topic = scanner.next();
             if (Arrays.asList(topicList).contains(topic)) {
                 break;
