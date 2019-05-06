@@ -63,7 +63,6 @@ public class ServerThread implements Runnable {
             verifyClient(socketIn, socketOut);
         }
         if (requestType == Commands.DO_CHECK_FOR_USERNAME.getValue()) {
-
             boolean checkUsername = ServerThreadTaskCommands.checkForUsernameInList(socketIn.readUTF(), sctx, allUsers);
             socketOut.writeBoolean(checkUsername);
         }
@@ -100,9 +99,11 @@ public class ServerThread implements Runnable {
         if (requestType == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
             ServerThreadTaskCommands.searchTaskByDeadline(socketIn, socketOut, sctx, allUsers);
         }
-
         if (requestType == Commands.DO_FOLLOW_TASK.getValue()) {
             ServerThreadTaskCommands.followTask(socketIn, socketOut, sctx, allUsers, currentUser);
+        }
+        if (requestType == Commands.DO_DELETE_USER.getValue()) {
+            ServerThreadTaskCommands.deleteUser(socketIn, socketOut, sctx, allUsers, currentUser);
         }
         if (requestType == Commands.DO_CLOSE_TODO_LIST_1.getValue() || requestType == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
             return ServerThreadTaskCommands.closeTodoList(socketIn, socketOut);

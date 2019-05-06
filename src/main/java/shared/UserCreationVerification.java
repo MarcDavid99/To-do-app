@@ -4,9 +4,6 @@ import Server.SendMail;
 import Server.User;
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
-import shared.Commands;
-import shared.TextColours;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -109,7 +106,6 @@ public class UserCreationVerification {
         String existingUsername = scanner.nextLine();
         System.out.print("Sisestage oma salasõna: ");
         String existingPassword = scanner.nextLine();
-
 
         socketOut.writeInt(Commands.DO_VERIFY_CLIENT.getValue());
         socketOut.writeUTF(existingUsername);

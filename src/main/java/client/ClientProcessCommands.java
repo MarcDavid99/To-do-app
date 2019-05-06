@@ -319,4 +319,21 @@ public class ClientProcessCommands {
             System.out.println();
         }
     }
+
+    public static void processDeleteUser(DataInputStream input, DataOutputStream out) throws IOException {
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+
+        System.out.print("Sisestage kasutajanimi, mida soovite kustutada: ");
+        String username = scanner.nextLine();
+        System.out.print("Sisestage kasutaja password: ");
+        String password = scanner.nextLine();
+
+        out.writeInt(Commands.DO_DELETE_USER.getValue());
+        out.writeUTF(username);
+        out.writeUTF(password);
+
+        int commandType = input.readInt();
+        System.out.println(input.readUTF());
+        System.out.println();
+    }
 }

@@ -19,7 +19,6 @@ public class Main {
 
     private static Argon2 argon2 = Argon2Factory.create();
 
-
     public static void main(String[] args) throws Exception {
         String address;
         int port = 1337;
@@ -46,7 +45,7 @@ public class Main {
 
                     System.out.println(TextColours.ANSI_RED + "Erinevad võimalused" + TextColours.ANSI_RESET);
                     System.out.print(
-                            "Registreerimiseks kirjutage:        1" + "\r\n" +
+                                    "Registreerimiseks kirjutage:        1" + "\r\n" +
                                     "Sisse logimiseks kirjutage:         2" + "\r\n" +
                                     "Programmi sulgemiseks kirjutage:    3" + "\r\n");
                     System.out.println(
@@ -70,7 +69,7 @@ public class Main {
                                             Commands.DO_PUSH_DEADLINE.getValue(), Commands.DO_COMPLETE_TASK.getValue(),
                                             Commands.DO_ADD_TASK_TO_OTHER_USER.getValue(), Commands.DO_SEARCH_TASKS.getValue(),
                                             Commands.DO_FOLLOW_TASK.getValue(), Commands.DO_CLOSE_TODO_LIST_2.getValue(),
-                                            Commands.DO_LOG_OUT.getValue()));
+                                            Commands.DO_LOG_OUT.getValue(), Commands.DO_DELETE_USER.getValue()));
 
                                     List<Integer> commandsThatNeedList = new ArrayList<>(Arrays.asList(Commands.DO_ADD_COMMENT.getValue(),
                                             Commands.DO_PUSH_DEADLINE.getValue(), Commands.DO_COMPLETE_TASK.getValue(),
@@ -87,6 +86,8 @@ public class Main {
                                             "Jälgi mingit ülesannet:            18" + "\r\n" +
                                             "Sulge programm:                    19" + "\r\n" +
                                             "Logi välja:                        20");
+                                           //Kustuta kasutaja:                5482 // tavakasutajale seda ei kuvata, aga meil on see võimalus olemas
+                                                                                   // kui tahame võime tavakasutajale ka kuvada?
                                     System.out.println(
                                             "-------------------------------------");
 
@@ -96,11 +97,10 @@ public class Main {
 
                                     try {
                                         int commandInt = Integer.parseInt(command);
-
+                                        String usernameForFollowTask = "";
                                         if (possibleCommands.contains(commandInt)) {
                                             if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue() && commandInt != Commands.DO_LOG_OUT.getValue()) {
                                                 int messageType = 0;
-                                                String usernameForFollowTask = "";
                                                 if (commandsThatNeedList.contains(commandInt)) {
                                                     if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
                                                         // kuvatakse soovitud kasutajanime tasklist, et saaks valida sealt ülesande, mida jälgida
@@ -139,12 +139,17 @@ public class Main {
                                                 }
                                             }
                                         } else {
-                                            // valiti käsk, mida pole valikus
-                                            System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)" + TextColours.ANSI_RESET);
+                                            if (commandInt == 5482) { // kasutaja kustutamine
+                                                processServerMessageType(input, out, commandInt, usernameForFollowTask);
+                                            }
+                                            else {
+                                                // valiti käsk, mida pole valikus
+                                                System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18, 19, 20)" + TextColours.ANSI_RESET);
+                                            }
                                         }
                                     } catch (NumberFormatException e) {
                                         // ei sisestatud täisarvu
-                                        System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18)" + TextColours.ANSI_RESET);
+                                        System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18, 19, 20)" + TextColours.ANSI_RESET);
                                     }
                                 }
                             }
@@ -186,6 +191,8 @@ public class Main {
             ClientProcessCommands.processShowSearchedTasks(input, out);
         } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
             ClientProcessCommands.processFollowTask(input, out, username);
+        } else if (command == Commands.DO_DELETE_USER.getValue()) {
+            ClientProcessCommands.processDeleteUser(input, out);
         }
     }
 }

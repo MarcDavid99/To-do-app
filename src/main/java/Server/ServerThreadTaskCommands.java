@@ -9,11 +9,61 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import shared.*;
 
 public class ServerThreadTaskCommands {
+
+    public static void deleteUser(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
+        String username = socketIn.readUTF();
+        String password = socketIn.readUTF();
+        Argon2 argon2 = Argon2Factory.create();
+
+        boolean usernameExists = false;
+        boolean passwordMatches = false;
+        boolean deletingYourself = false;
+
+        synchronized (sctx) {
+            User userToDelete = allUsers.get(0);
+            for (User user : allUsers) {
+                if (user.getUsername().equals(username)) {
+                    if (user.equals(currentUser)) {
+                        deletingYourself = true;
+                        break;
+                    }
+                    usernameExists = true;
+                    if (argon2.verify(user.getPassword(), password)) {
+                        userToDelete = user;
+                        passwordMatches = true;
+                        break;
+                    }
+                }
+            }
+            if (deletingYourself) {
+                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                socketOut.writeUTF("Iseennast ei või kustutada!");
+            }
+            else {
+                if (usernameExists && passwordMatches) {
+                    allUsers.remove(userToDelete);
+                    sctx.setAllUsers(allUsers);
+                    sctx.writeExistingUsersToFile();
+                    socketOut.writeInt(Commands.DO_DELETE_USER.getValue());
+                    socketOut.writeUTF("Kasutaja on edukalt kustutatud!");
+                } else {
+                    if (usernameExists) {
+                        socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                        socketOut.writeUTF("Password on ebakorrektne!");
+                    } else {
+                        socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                        socketOut.writeUTF("Sellist kasutajat ei leidu!");
+                    }
+                }
+            }
+        }
+        socketOut.writeBoolean(false);
+    }
 
     public static boolean checkForUsernameInList(String username, ServerContext sctx, List<User> allUsers) throws IOException {
         boolean usernameAlreadyExists = false;

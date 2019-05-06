@@ -23,7 +23,8 @@ public enum Commands {
     DO_VERIFY_CLIENT(92),
     DO_CONFIRM_LOGIN(93),
     DO_NOT_CONFIRM_LOGIN(94),
-    DO_CHECK_FOR_USERNAME(95);
+    DO_CHECK_FOR_USERNAME(95),
+    DO_DELETE_USER(5482); // "salajane" value
 
     private final int value;
 
