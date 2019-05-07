@@ -10,29 +10,17 @@ import java.util.List;
 
 public class ServerContext {
 
-    // Klass, mille abil Server.DeadlineThread.java pääseb ligi Server.ServerThread.java-s olevale List<Server.User> allUsers-ile
-
-    public List<User> allUsers;
+    public final List<User> allUsers;
 
     public ServerContext(List<User> allUsers) {
-
         this.allUsers = allUsers;
     }
 
     public List<User> getAllUsers() {
-
         return allUsers;
     }
 
-    public void setAllUsers(List<User> allUsers) {
-
-        this.allUsers = allUsers;
-    }
-
-    // Algselt ServerThreadi meetod, mis loeb serveri kävitamisel info
-    // (kirjutamine toimub nüüd alles kliendi ehk serverthreadi sulgemisel)
     public static List<User> readExistingUsersFromFile() throws IOException {
-
         List<User> usersFromFile = new ArrayList<>();
         Path pathToFile = Path.of("users.txt");
 
@@ -45,7 +33,6 @@ public class ServerContext {
         else if (!Files.exists(pathToFile)) {
             Files.createFile(pathToFile);
         }
-
         return usersFromFile;
     }
 
