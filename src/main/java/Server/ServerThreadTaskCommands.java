@@ -24,42 +24,63 @@ public class ServerThreadTaskCommands {
         boolean usernameExists = false;
         boolean passwordMatches = false;
         boolean deletingYourself = false;
-
+        User[] userToDelete = new User[1]; // vajalik selleks, et eri synchronized plokkide vahel seda Userit kasutada
         synchronized (sctx) {
-            User userToDelete = allUsers.get(0);
+            userToDelete[0] = allUsers.get(0);
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     if (user.equals(currentUser)) {
                         deletingYourself = true;
                         break;
                     }
-                    usernameExists = true;
-                    if (argon2.verify(user.getPassword(), password)) {
-                        userToDelete = user;
-                        passwordMatches = true;
+                    else {
+                        usernameExists = true;
+                        userToDelete[0] = user;
                         break;
                     }
                 }
             }
+        }
+
+        if (argon2.verify(userToDelete[0].getPassword(), password)) {
+            passwordMatches = true;
+        }
+
+        boolean userAlreadyDeleted = false;
+        if (usernameExists && passwordMatches && !deletingYourself) { // kasutajanimi ja password klapivad ja ei kustutata iseennast
+            synchronized (sctx) {
+                if (allUsers.contains(userToDelete[0])) { // kasutaja on veel kasutajate listis
+                    allUsers.remove(userToDelete[0]);
+                    sctx.writeExistingUsersToFile();
+                }
+                else { // kasutaja on juba kustutatud
+                    userAlreadyDeleted = true;
+                }
+            }
+            if (userAlreadyDeleted) { // kasutaja on juba kustutatud
+                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                socketOut.writeUTF("Kasutaja on juba kustutatud!");
+            }
+            else { // kasutaja kustutati ära
+                socketOut.writeInt(Commands.DO_DELETE_USER.getValue());
+                socketOut.writeUTF("Kasutaja on edukalt kustutatud!");
+            }
+        }
+        else { // kasutajanimi või password oli vale või üritati ennast kustutada
             if (deletingYourself) {
                 socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
                 socketOut.writeUTF("Iseennast ei või kustutada!");
-            } else {
-                if (usernameExists && passwordMatches) {
-                    allUsers.remove(userToDelete);
-                    sctx.setAllUsers(allUsers);
-                    sctx.writeExistingUsersToFile();
-                    socketOut.writeInt(Commands.DO_DELETE_USER.getValue());
-                    socketOut.writeUTF("Kasutaja on edukalt kustutatud!");
-                } else {
-                    if (usernameExists) {
-                        socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                        socketOut.writeUTF("Password on ebakorrektne!");
-                    } else {
-                        socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                        socketOut.writeUTF("Sellist kasutajat ei leidu!");
-                    }
+            }
+            else { // ei üritatud ennast kustutada
+                if (usernameExists) { // kasutajanimi eksisteeris
+                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                    socketOut.writeUTF("Password on ebakorrektne!");
                 }
+                else { // kõik antud info oli vale
+                    socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                    socketOut.writeUTF("Sellist kasutajat ei leidu!");
+                }
+
             }
         }
         socketOut.writeBoolean(false);

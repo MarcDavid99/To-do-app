@@ -143,6 +143,7 @@ public class ServerThread implements Runnable {
                 socketOut.writeUTF("Olete sisselogitud.");
             }
             else {
+                usernameExists = false;
                 socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // kui sisselogimine ei õnnestu
                 socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti." + "\r\n");
             }
