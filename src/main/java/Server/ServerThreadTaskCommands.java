@@ -24,9 +24,9 @@ public class ServerThreadTaskCommands {
         boolean usernameExists = false;
         boolean passwordMatches = false;
         boolean deletingYourself = false;
-        User[] userToDelete = new User[1]; // vajalik selleks, et eri synchronized plokkide vahel seda Userit kasutada
+        User userToDelete = null;
         synchronized (sctx) {
-            userToDelete[0] = allUsers.get(0);
+            userToDelete = allUsers.get(0);
             for (User user : allUsers) {
                 if (user.getUsername().equals(username)) {
                     if (user.equals(currentUser)) {
@@ -35,22 +35,22 @@ public class ServerThreadTaskCommands {
                     }
                     else {
                         usernameExists = true;
-                        userToDelete[0] = user;
+                        userToDelete = user;
                         break;
                     }
                 }
             }
         }
 
-        if (argon2.verify(userToDelete[0].getPassword(), password)) {
+        if (argon2.verify(userToDelete.getPassword(), password)) {
             passwordMatches = true;
         }
 
         boolean userAlreadyDeleted = false;
         if (usernameExists && passwordMatches && !deletingYourself) { // kasutajanimi ja password klapivad ja ei kustutata iseennast
             synchronized (sctx) {
-                if (allUsers.contains(userToDelete[0])) { // kasutaja on veel kasutajate listis
-                    allUsers.remove(userToDelete[0]);
+                if (allUsers.contains(userToDelete)) { // kasutaja on veel kasutajate listis
+                    allUsers.remove(userToDelete);
                     sctx.writeExistingUsersToFile();
                 }
                 else { // kasutaja on juba kustutatud
