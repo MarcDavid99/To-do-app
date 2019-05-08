@@ -18,7 +18,7 @@ public class TextColours {
     public static final String ANSI_YELLOW = "\u001B[33m";  // YELLOW       <--- Hoiatused ja vigased sisendid
     public static final String ANSI_GREEN = "\033[0;32m";   // GREEN
     public static final String ANSI_BLUE = "\033[0;34m";    // BLUE
-    public static final String ANSI_PURPLE = "\033[0;35m";  // PURPLE
+    public static final String ANSI_PURPLE = "\033[0;35m";  // PURPLE       <---- Lisamärkused
     public static final String ANSI_CYAN = "\033[0;36m";    // CYAN
     public static final String ANSI_WHITE = "\033[0;37m";   // WHITE
     public static final String ANSI_BLACK = "\033[0;30m";   // BLACK

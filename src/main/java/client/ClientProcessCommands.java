@@ -1,6 +1,5 @@
 package client;
 
-
 import com.google.gson.Gson;
 
 import java.io.DataInputStream;
@@ -17,7 +16,7 @@ public class ClientProcessCommands {
 
     public static final String[] topicList = {"töö", "kodu", "vaba aeg", "kultuur", "söök"};
 
-    public static void processDisplayTasks(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processDisplayTasks(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
             System.out.println("" +
@@ -25,6 +24,9 @@ public class ClientProcessCommands {
                     "Näita ülesandeid teema järgi:  32" + "\r\n");
             System.out.print("Valige sobiv tegevus: ");
             String choice = scanner.nextLine();
+            if(backToMainMenu(choice)){
+                return true;
+            }
             try {
                 int command = Integer.parseInt(choice);
                 if (command == Commands.DO_DISPLAY_TASK.getValue()) {
@@ -34,8 +36,10 @@ public class ClientProcessCommands {
                     String topic;
                     System.out.print("Sisesta teema, mille järgi tahad ülesandeid vaadata: ");
                     while (true) {
-
                         topic = scanner.nextLine();
+                        if(backToMainMenu(topic)){
+                            return true;
+                        }
                         if (Arrays.asList(topicList).contains(topic)) {
                             break;
                         }
@@ -56,14 +60,21 @@ public class ClientProcessCommands {
         int commandType = input.readInt();
 
         displayTasks(input, "Sinu ülesanded: ");
+        return false;
     }
 
-    public static void processAddTask(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processAddTask(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         System.out.print("Sisestage ülesande kirjeldus: ");
         String taskDescription = scanner.nextLine();
+        if(backToMainMenu(taskDescription)){
+            return true;
+        }
         boolean isPrivateTask = chooseIsPrivate();
         String topic = chooseTopic("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
+        if(topic == null){
+            return true;
+        }
         out.writeInt(Commands.DO_ADD_TASK.getValue());
         out.writeUTF(taskDescription);
         out.writeBoolean(isPrivateTask);
@@ -71,15 +82,18 @@ public class ClientProcessCommands {
 
         int commandType = input.readInt();
         System.out.println(input.readUTF());
-        System.out.println();
+        return false;
     }
 
-    public static void processPushDeadline(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processPushDeadline(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         int taskIndex;
         while (true) {
             System.out.print("Sisestage ülesande järjekorranumber, mille tähtaega te muuta soovite: ");
             String line = scanner.nextLine();
+            if(backToMainMenu(line)){
+                return true;
+            }
             try {
                 taskIndex = Integer.parseInt(line);
                 break;
@@ -92,6 +106,9 @@ public class ClientProcessCommands {
             System.out.println("Kui soovite tähtaega ette poole nihutada, kirjutage negatiivne arv, kui soovite edasi lükata, kirjutage positiivne arv.");
             System.out.print("Sisestage päevade arv, mille võrra soovite tähtaega muuta: ");
             String line = scanner.nextLine();
+            if(backToMainMenu(line)){
+                return true;
+            }
             try {
                 int days = Integer.parseInt(line);
                 out.writeInt(Commands.DO_PUSH_DEADLINE.getValue());
@@ -105,14 +122,17 @@ public class ClientProcessCommands {
 
         int commandType = input.readInt();
         System.out.println(input.readUTF());
-        System.out.println();
+        return false;
     }
 
-    public static void processCompleteTask(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processCompleteTask(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
             System.out.print("Sisestage ülesande järjekorranumber, mida te eemaldada soovite: ");
             String line = scanner.nextLine();
+            if(backToMainMenu(line)){
+                return true;
+            }
             try {
                 int taskIndex = Integer.parseInt(line);
                 out.writeInt(Commands.DO_COMPLETE_TASK.getValue());
@@ -125,17 +145,26 @@ public class ClientProcessCommands {
 
         int commandType = input.readInt();
         System.out.println(input.readUTF());
-        System.out.println();
+        return false;
     }
 
-    public static void processAddTaskToOtherUsers(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processAddTaskToOtherUsers(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-        System.out.print("Sisestage kasutaja nimi, kellele tahate ülesande lisada: ");
+        System.out.print("Sisestage kasutajanimi, kellele tahate ülesande lisada: ");
         String enteredUsername = scanner.nextLine();
+        if(backToMainMenu(enteredUsername)){
+            return true;
+        }
         System.out.print("Lisa ülesande kirjeldus: ");
         String description = scanner.nextLine();
+        if(backToMainMenu(description)){
+            return true;
+        }
         boolean isPrivate = chooseIsPrivate();
         String topic = chooseTopic("Sisestage, mis teema alla see ülesanne kuulub (sõnadega, mitte järjekorranumbri abil): ");
+        if(topic == null){
+            return true;
+        }
         out.writeInt(Commands.DO_ADD_TASK_TO_OTHER_USER.getValue());
         out.writeUTF(enteredUsername);
         out.writeUTF(description);
@@ -144,18 +173,24 @@ public class ClientProcessCommands {
 
         int commandType = input.readInt();
         System.out.println(input.readUTF());
-        System.out.println();
+        return false;
     }
 
-    public static void processAddComment(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processAddComment(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
             System.out.print("Sisestage ülesande järjekorranumber, millele te kommentaari lisada soovite: ");
             String line = scanner.nextLine();
+            if(backToMainMenu(line)){
+                return true;
+            }
             try {
                 int taskIndex = Integer.parseInt(line);
                 System.out.print("Sisestage kommentaar: ");
                 String comment = scanner.next();
+                if(backToMainMenu(comment)){
+                     return true;
+                }
                 out.writeInt(Commands.DO_ADD_COMMENT.getValue());
                 out.writeInt(taskIndex);
                 out.writeUTF(comment);
@@ -168,7 +203,7 @@ public class ClientProcessCommands {
 
         int commandType = input.readInt();
         System.out.println(input.readUTF());
-        System.out.println();
+        return false;
     }
 
     public static void processErrorOccured(DataInputStream input) throws IOException {
@@ -176,7 +211,7 @@ public class ClientProcessCommands {
         System.out.println();
     }
 
-    public static void processShowSearchedTasks(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processShowSearchedTasks(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
         while (true) {
             System.out.println("" +
@@ -191,6 +226,9 @@ public class ClientProcessCommands {
                 if (command == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()) {
                     System.out.print("Sisestage kirjeldus, mille järgi te ülesannet/ülesandeid otsida soovite: ");
                     String description = scanner.nextLine();
+                    if(backToMainMenu(description)){
+                        return true;
+                    }
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue());
                     out.writeUTF(description);
                     System.out.println();
@@ -198,6 +236,9 @@ public class ClientProcessCommands {
                 } else if (command == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()) {
                     System.out.print("Sisestage kasutajanimi, kelle ülesannete seast te otsida soovite: ");
                     String username = scanner.nextLine();
+                    if(backToMainMenu(username)){
+                        return true;
+                    }
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue());
                     out.writeUTF(username);
                     System.out.println();
@@ -205,15 +246,20 @@ public class ClientProcessCommands {
                 } else if (command == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
                     System.out.print("Sisestage kuupäev, mille järgi te ülesannet otsida soovite (kujul yyyy-MM-dd): ");
                     String deadline = scanner.nextLine();
+                    if(backToMainMenu(deadline)){
+                        return true;
+                    }
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue());
                     out.writeUTF(deadline);
                     System.out.println();
                     break;
                 } else if (command == Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue()) {
                     String topic = chooseTopic("Sisestage, mis teema all olevaid ülesandeid soovite otsida (sõnadega, mitte järjekorranumbri abil): ");
+                    if(topic == null){
+                        return true;
+                    }
                     out.writeInt(Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue());
                     out.writeUTF(topic);
-                    System.out.println();
                     break;
                 } else {
                     System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
@@ -222,27 +268,36 @@ public class ClientProcessCommands {
                 System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET + "\r\n");
             }
         }
-
         int commandType = input.readInt();
         if (commandType == Commands.ERROR_OCCURED.getValue()) {
             processErrorOccured(input);
         } else {
             displayTasks(input, "Leitud ülesanded: ");
         }
+        return false;
     }
 
-    public static void processFollowTask(DataInputStream input, DataOutputStream out, String username) throws IOException {
+    public static boolean processFollowTask(DataInputStream input, DataOutputStream out, String username) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
-
         System.out.print("Sisesta ülesande indeks, mida soovid jälgida: ");
         String taskIndex = scanner.nextLine();
-        out.writeInt(Commands.DO_FOLLOW_TASK.getValue());
-        out.writeUTF(username);
-        out.writeUTF(taskIndex);
+        if(backToMainMenu(taskIndex)){
+            return true;
+        }
+        try{
+            int index = Integer.parseInt(taskIndex);
+            out.writeInt(Commands.DO_FOLLOW_TASK.getValue());
+            out.writeUTF(username);
+            out.writeInt(index);
 
-        int commandType = input.readInt();
-        System.out.println(input.readUTF());
-        System.out.println();
+            int commandType = input.readInt();
+            System.out.println(input.readUTF());
+        }
+        catch (NumberFormatException e){
+            System.out.println(TextColours.ANSI_YELLOW + "Te ei sisastanud indeksit õigel kujul." + TextColours.ANSI_RESET);
+            return true;
+        }
+        return false;
     }
 
     public static String chooseTopic(String messageToShow) {
@@ -257,6 +312,9 @@ public class ClientProcessCommands {
         while (true) {
             System.out.print(messageToShow);
             topic = scanner.next();
+            if(topic.equals("")){
+                return null;
+            }
             if (Arrays.asList(topicList).contains(topic)) {
                 break;
             }
@@ -327,13 +385,19 @@ public class ClientProcessCommands {
         }
     }
 
-    public static void processDeleteUser(DataInputStream input, DataOutputStream out) throws IOException {
+    public static boolean processDeleteUser(DataInputStream input, DataOutputStream out) throws IOException {
         Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
 
         System.out.print("Sisestage kasutajanimi, mida soovite kustutada: ");
         String username = scanner.nextLine();
+        if(backToMainMenu(username)){
+            return true;
+        }
         System.out.print("Sisestage kasutaja password: ");
         String password = scanner.nextLine();
+        if(backToMainMenu(password)){
+            return true;
+        }
 
         out.writeInt(Commands.DO_DELETE_USER.getValue());
         out.writeUTF(username);
@@ -342,5 +406,10 @@ public class ClientProcessCommands {
         int commandType = input.readInt();
         System.out.println(input.readUTF());
         System.out.println();
+        return false;
+    }
+
+    public static boolean backToMainMenu(String string){
+       return string.equals("");
     }
 }

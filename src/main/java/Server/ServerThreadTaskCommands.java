@@ -100,7 +100,7 @@ public class ServerThreadTaskCommands {
 
     public static void followTask(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws IOException {
         String username = socketIn.readUTF();
-        int taskIndex = Integer.parseInt(socketIn.readUTF());
+        int taskIndex = socketIn.readInt();
         boolean tryToFollowTask = false;
         User userWhoseTaskToFollow = null;
 
