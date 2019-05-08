@@ -68,8 +68,8 @@ public class ServerThreadTaskCommands {
         }
         else { // kasutajanimi või password oli vale või üritati ennast kustutada
             if (deletingYourself) {
-                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                socketOut.writeUTF("Iseennast ei või kustutada!");
+                socketOut.writeInt(Commands.DO_CLOSE_TODO_LIST_1.getValue()); // Main ei oska sellega tegelikult midagi peale hakata, aga tuleb saata ikka
+                socketOut.writeUTF("Kustutasite oma kasutaja, teie sessioon katkeb sulgub!");
             }
             else { // ei üritatud ennast kustutada
                 if (usernameExists) { // kasutajanimi eksisteeris
@@ -83,7 +83,16 @@ public class ServerThreadTaskCommands {
 
             }
         }
-        socketOut.writeBoolean(false);
+        if (deletingYourself) {
+            synchronized (sctx) {
+                allUsers.remove(userToDelete);
+                sctx.writeExistingUsersToFile();
+            }
+            socketOut.writeBoolean(true); // Sulge to do list
+        }
+        else {
+            socketOut.writeBoolean(false); // Ära sulge
+        }
     }
 
     public static boolean checkForUsernameInList(String username, ServerContext sctx, List<User> allUsers) throws IOException {

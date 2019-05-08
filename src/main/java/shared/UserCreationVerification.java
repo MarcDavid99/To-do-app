@@ -56,6 +56,7 @@ public class UserCreationVerification {
             mailAddress = scanner.nextLine();
             System.out.print("Sisestage soovitud salasõna: ");
             password = scanner.nextLine();
+            System.out.println("Oodake mõned sekundid, kuni teie meiliaadressile tuleb kinnituskood.");
             String hashedPassword = argon2.hash(10, 65536, 1, password);
             if (isRequiredPassword(password)) {
                 //genereeritakse suvaline täisarv
@@ -69,7 +70,7 @@ public class UserCreationVerification {
                                 "Your verification code is: " + verificationCode + "." +
                                 "\r\n" + "\r\n" +
                                 "Thank you for using our to-do app!")) {
-                    System.out.print("Sisestage meiliaadressile saadetud verification code: ");
+                    System.out.print("Sisestage meiliaadressile saadetud kinnituskood: ");
                     try {
                         String inputCode = scanner.nextLine();
                         if (inputCode.equals(verificationCode)) {

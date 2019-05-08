@@ -87,8 +87,7 @@ public class Main {
                                             "Jälgi mingit ülesannet:            18" + "\r\n" +
                                             "Sulge programm:                    19" + "\r\n" +
                                             "Logi välja:                        20");
-                                    //Kustuta kasutaja:                5482 // tavakasutajale seda ei kuvata, aga meil on see võimalus olemas
-                                    // kui tahame võime tavakasutajale ka kuvada?
+                                            //Kustuta kasutaja:               5482 // tavakasutajale seda ei kuvata, aga meil on see võimalus olemas
                                     System.out.println(
                                             "-------------------------------------");
 
