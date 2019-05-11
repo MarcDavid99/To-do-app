@@ -43,7 +43,7 @@ public class Main {
                 while (true) {
 
                     System.out.println(TextColours.ANSI_RED + "Erinevad võimalused" + TextColours.ANSI_RESET);
-                    System.out.print(
+                    System.out.println(
                             "Registreerimiseks kirjutage:        1" + "\r\n" +
                                     "Sisse logimiseks kirjutage:         2" + "\r\n" +
                                     "Programmi sulgemiseks kirjutage:    3" + "\r\n" +

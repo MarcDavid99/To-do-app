@@ -20,7 +20,7 @@ public class UserCreationVerification {
         String username;
         String mailAddress;
         String password;
-        
+
         while (true) {
             System.out.print("Sisestage oma eesnimi(2-40 tähemärki): ");
             firstName = scanner.nextLine();

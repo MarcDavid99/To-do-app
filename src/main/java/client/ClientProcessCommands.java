@@ -20,7 +20,7 @@ public class ClientProcessCommands {
             System.out.println("" +
                     "Näita kõiki ülesandeid:        12" + "\r\n" +
                     "Näita ülesandeid teema järgi:  32" + "\r\n" +
-                    "---------------------------------" + "\r\n");
+                    "---------------------------------");
             System.out.print("Valige sobiv tegevus: ");
             String choice = scanner.nextLine();
             if (backToMainMenu(choice)) {
@@ -218,7 +218,7 @@ public class ClientProcessCommands {
                     "Soovin ülesannet otsida kasutajanime järgi:   23" + "\r\n" +
                     "Soovin ülesannet otsida tähtaja järgi:        24" + "\r\n" +
                     "Soovin ülesannet otsida teema järgi:          25" + "\r\n" +
-                    "------------------------------------------------" + "\r\n");
+                    "------------------------------------------------");
             System.out.print("Valige sobiv tegevus: ");
             String choice = scanner.nextLine();
             if (backToMainMenu(choice)) {
@@ -227,7 +227,7 @@ public class ClientProcessCommands {
             try {
                 int command = Integer.parseInt(choice);
                 if (command == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()) {
-                    System.out.print("Sisestage kirjeldus, mille järgi te ülesannet/ülesandeid otsida soovite: ");
+                    System.out.print("Sisestage kirjeldus, mille järgi ülesandeid otsida soovite: ");
                     String description = scanner.nextLine();
                     if (backToMainMenu(description)) {
                         return true;
@@ -247,7 +247,7 @@ public class ClientProcessCommands {
                     System.out.println();
                     break;
                 } else if (command == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
-                    System.out.print("Sisestage kuupäev, mille järgi te ülesannet otsida soovite (kujul yyyy-MM-dd): ");
+                    System.out.print("Sisestage kuupäev, mille järgi ülesandeid otsida soovite (kujul yyyy-MM-dd): ");
                     String deadline = scanner.nextLine();
                     if (backToMainMenu(deadline)) {
                         return true;
@@ -257,7 +257,7 @@ public class ClientProcessCommands {
                     System.out.println();
                     break;
                 } else if (command == Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue()) {
-                    String topic = chooseTopic("Sisestage, mis teema all olevaid ülesandeid soovite otsida (sõnadega, mitte järjekorranumbri abil): ");
+                    String topic = chooseTopic("Sisestage teema, mille järgi ülesandeid otsida soovite: ");
                     if (topic == null) {
                         return true;
                     }
@@ -265,7 +265,7 @@ public class ClientProcessCommands {
                     socketOut.writeUTF(topic);
                     break;
                 } else {
-                    System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Teie valitud ülesanne ei ole valikus. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
+                    System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Sellist valikut ei ole. Proovige uuesti." + TextColours.ANSI_RESET + "\r\n");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("\r\n" + TextColours.ANSI_YELLOW + "Te ei sisestanud järjekorranumbrit õigel kujul." + TextColours.ANSI_RESET + "\r\n");
