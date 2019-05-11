@@ -54,8 +54,7 @@ public class User {
     }
 
     public void setNewPassword(String newPassword){
-        Argon2 argon2 = Argon2Factory.create();
-        this.password = argon2.hash(10,65536,1,newPassword);
+        this.password = newPassword;
     }
 
     public List<Task> getToDoList() {

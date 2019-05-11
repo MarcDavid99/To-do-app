@@ -35,20 +35,21 @@ public class Main {
                  DataInputStream socketIn = new DataInputStream(socket.getInputStream());
                  DataOutputStream socketOut = new DataOutputStream(socket.getOutputStream())) {
 
-                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------------------------" + TextColours.ANSI_RESET);
-                System.out.println(TextColours.CYAN_BOLD_BRIGHT + "|            TO DO LIST            |" + TextColours.ANSI_RESET);
-                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------------------------" + TextColours.ANSI_RESET + "\r\n");
+                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ------------------------------------" + TextColours.ANSI_RESET);
+                System.out.println(TextColours.CYAN_BOLD_BRIGHT + "|             TO DO LIST             |" + TextColours.ANSI_RESET);
+                System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ------------------------------------" + TextColours.ANSI_RESET + "\r\n");
 
                 label2:
                 while (true) {
 
                     System.out.println(TextColours.ANSI_RED + "Erinevad võimalused" + TextColours.ANSI_RESET);
                     System.out.println(
-                            "Registreerimiseks kirjutage:        1" + "\r\n" +
-                                    "Sisse logimiseks kirjutage:         2" + "\r\n" +
-                                    "Programmi sulgemiseks kirjutage:    3" + "\r\n" +
+                                    "Registreeri:                        1" + "\r\n" +
+                                    "Logi sisse:                         2" + "\r\n" +
+                                    "Vaheta parooli:                     3" + "\r\n" +
+                                    "Sulge programm:                     4" + "\r\n" +
                                     "-------------------------------------");
-                    System.out.print("Valige sobiv tegevus: ");
+                    System.out.print("Valige tegevus: ");
                     Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                     String initialCommand = scanner.nextLine();
                     System.out.println();
@@ -56,11 +57,11 @@ public class Main {
                     switch (initialCommand) {
                         case "1":
                             //Kasutaja loomise meetod
-                            UserCreationVerification.userCreation(argon2, socketIn, socketOut, scanner);
+                            UserMethodsClient.userCreation(argon2, socketIn, socketOut, scanner);
                             break;
                         case "2":
                             //Kasutaja tuvastamise meetod
-                            if (UserCreationVerification.userVerification(socketOut, socketIn, scanner)) {
+                            if (UserMethodsClient.userVerification(socketOut, socketIn, scanner)) {
                                 while (true) {
                                     List<Integer> possibleCommands = new ArrayList<>(Arrays.asList(Commands.DO_ADD_TASK.getValue(),
                                             Commands.DO_DISPLAY_TASK.getValue(), Commands.DO_ADD_COMMENT.getValue(),
@@ -88,7 +89,7 @@ public class Main {
                                             "-------------------------------------");
                                     //Kustuta kasutaja:               5482 // tavakasutajale seda ei kuvata, aga meil on see võimalus olemas
 
-                                    System.out.print("Valige sobiv tegevus: ");
+                                    System.out.print("Valige tegevus: ");
                                     String command = scanner.nextLine();
                                     System.out.println();
                                     boolean backToMainMenu = false;
@@ -133,7 +134,11 @@ public class Main {
                                 }
                             }
                             break;
-                        case "3":
+                        case "3" :
+                            UserMethodsClient.changePassword(socketOut, socketIn, argon2);
+                            System.out.println();
+                            break;
+                        case "4":
                             socketOut.writeInt(Commands.DO_CLOSE_TODO_LIST_1.getValue());
                             if (socketIn.readBoolean()) {
                                 System.out.println(TextColours.ANSI_RED + "Programm sulgub!" + TextColours.ANSI_RESET);
@@ -178,7 +183,7 @@ public class Main {
         int messageType = 0;
         if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
             // kuvatakse soovitud kasutajanime tasklist, et saaks valida sealt ülesande, mida jälgida
-            System.out.print("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
+            System.out.print("Kasutajanimi, kelle ülesannet jälgida tahad: ");
             usernameForFollowTask = scanner.nextLine();
             socketOut.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
             socketOut.writeUTF(usernameForFollowTask);

@@ -12,7 +12,7 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.UUID;
 
-public class UserCreationVerification {
+public class UserMethodsClient {
 
     public static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
         String firstName;
@@ -22,7 +22,7 @@ public class UserCreationVerification {
         String password;
 
         while (true) {
-            System.out.print("Sisestage oma eesnimi(2-40 tähemärki): ");
+            System.out.print("Eesnimi(2-40 tähemärki): ");
             firstName = scanner.nextLine();
             if (firstName.length() >= 2 && firstName.length() <= 40) {
                 break;
@@ -31,7 +31,7 @@ public class UserCreationVerification {
             }
         }
         while (true) {
-            System.out.print("Sisestage oma perenimi(2-40 tähemärki): ");
+            System.out.print("Perenimi(2-40 tähemärki): ");
             lastName = scanner.nextLine();
             if (lastName.length() >= 2 && lastName.length() <= 40) {
                 break;
@@ -40,7 +40,7 @@ public class UserCreationVerification {
             }
         }
         while (true) {
-            System.out.print("Sisestage soovitud kasutajanimi(5-20 tähemärki): ");
+            System.out.print("Kasutajanimi(5-20 tähemärki): ");
             username = scanner.nextLine();
             if (username.length() >= 5 && username.length() <= 20) {
                 if (!checkIfUsernameExists(socketIn, socketOut, username)) {
@@ -53,9 +53,9 @@ public class UserCreationVerification {
             }
         }
         while (true) {
-            System.out.print("Sisestage soovitud meiliaadress: ");
+            System.out.print("Meiliaadress: ");
             mailAddress = scanner.nextLine();
-            System.out.print("Sisestage soovitud salasõna: ");
+            System.out.print("Salasõna: ");
             password = scanner.nextLine();
             System.out.println("Oodake mõned sekundid, kuni teie meiliaadressile tuleb kinnituskood.");
             String hashedPassword = argon2.hash(10, 65536, 1, password);
@@ -71,28 +71,23 @@ public class UserCreationVerification {
                                 "Your verification code is: " + verificationCode + "." +
                                 "\r\n" + "\r\n" +
                                 "Thank you for using our to-do app!")) {
-                    System.out.print("Sisestage meiliaadressile saadetud kinnituskood: ");
-                    try {
-                        String inputCode = scanner.nextLine();
-                        if (inputCode.equals(verificationCode)) {
+                    System.out.print("Meiliaadressile saadetud kinnituskood: ");
+                    String inputCode = scanner.nextLine();
+                    if (inputCode.equals(verificationCode)) {
 
-                            String userID = UUID.randomUUID().toString();
-                            User newUser = new User(userID, firstName, lastName, username, mailAddress, hashedPassword);
+                        String userID = UUID.randomUUID().toString();
+                        User newUser = new User(userID, firstName, lastName, username, mailAddress, hashedPassword);
 
-                            System.out.println("Kasutaja " + username + " on edukalt loodud!");
-                            System.out.println();
+                        System.out.println("Kasutaja " + username + " on edukalt loodud!");
+                        System.out.println();
 
-                            socketOut.writeInt(Commands.DO_SAVE_NEW_USER.getValue());
-                            Gson gsonUser = new Gson();
-                            String jsonUser = gsonUser.toJson(newUser);
-                            socketOut.writeUTF(jsonUser);
-                            break;
-                        } else {
-                            System.out.println(TextColours.ANSI_YELLOW + "Sisestatud kood ei ole õige, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
-                        }
-
-                    } catch (NumberFormatException e) {
-                        System.out.println(TextColours.ANSI_YELLOW + "Sisestasite koodi valesti." + TextColours.ANSI_RESET);
+                        socketOut.writeInt(Commands.DO_SAVE_NEW_USER.getValue());
+                        Gson gsonUser = new Gson();
+                        String jsonUser = gsonUser.toJson(newUser);
+                        socketOut.writeUTF(jsonUser);
+                        break;
+                    } else {
+                        System.out.println(TextColours.ANSI_YELLOW + "Sisestatud kood ei ole õige, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
                     }
                 } else {
                     System.out.println(TextColours.ANSI_YELLOW + "Sisestatud meiliaadressile meili saatmine ebaõnnestus, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
@@ -104,9 +99,9 @@ public class UserCreationVerification {
     }
 
     public static boolean userVerification(DataOutputStream socketOut, DataInputStream input, Scanner scanner) throws IOException {
-        System.out.print("Sisestage oma kasutajanimi: ");
+        System.out.print("Kasutajanimi: ");
         String existingUsername = scanner.nextLine();
-        System.out.print("Sisestage oma salasõna: ");
+        System.out.print("Salasõna: ");
         String existingPassword = scanner.nextLine();
 
         socketOut.writeInt(Commands.DO_VERIFY_CLIENT.getValue());
@@ -118,7 +113,6 @@ public class UserCreationVerification {
         if (type == Commands.DO_CONFIRM_LOGIN.getValue()) {
             String message = input.readUTF();
             System.out.println(message);
-            System.out.println();
             return true;
         }
         if (type == Commands.DO_NOT_CONFIRM_LOGIN.getValue()) {
@@ -136,7 +130,47 @@ public class UserCreationVerification {
         return socketIn.readBoolean();
     }
 
-    private static String generateVerificationCode() {
+    public static void changePassword(DataOutputStream socketOut, DataInputStream socketIn, Argon2 argon2) throws IOException {
+        Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
+        System.out.print("Kasutajanimi: ");
+        String username = scanner.nextLine();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+        socketOut.writeInt(Commands.DO_TRY_CHANGE_PASSWORD.getValue());
+        socketOut.writeUTF(username);
+        socketOut.writeUTF(email);
+        int messageType = socketIn.readInt();
+        if (messageType == Commands.ERROR_OCCURED.getValue()) {
+            System.out.println(socketIn.readUTF());
+        }
+        else {
+            String verificationCode = socketIn.readUTF();
+            System.out.print("Meiliaadressile saadetud kinnituskood: ");
+            String inputCode = scanner.nextLine();
+            if(inputCode.equals(verificationCode)){
+                while (true) {
+                    System.out.print("Uus parool: ");
+                    String newPassword = scanner.nextLine();
+                    if (isRequiredPassword(newPassword)) {
+                        String hashedPassword = argon2.hash(10, 65536, 1, newPassword);
+                        socketOut.writeInt(Commands.DO_CHANGE_PASSWORD.getValue());
+                        socketOut.writeUTF(username);
+                        socketOut.writeUTF(hashedPassword);
+                        messageType = socketIn.readInt();
+                        System.out.println(socketIn.readUTF());
+                        break;
+                    } else {
+                        System.out.println("Parool peab olema vähemalt 8 tähemärki pikk. Proovi uuesti.");
+                    }
+                }
+            }
+            else {
+                System.out.println("Sisestasite vale kinnituskoodi.");
+            }
+        }
+    }
+
+    public static String generateVerificationCode() {
         String possibleCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder verificationCode = new StringBuilder();
         Random random = new Random();

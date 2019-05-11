@@ -111,7 +111,58 @@ public class ServerThread implements Runnable {
         if (requestType == Commands.DO_CLOSE_TODO_LIST_1.getValue() || requestType == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
             return ServerThreadTaskCommands.closeTodoList(socketIn, socketOut);
         }
+        if (requestType == Commands.DO_TRY_CHANGE_PASSWORD.getValue()) {
+            doTryChangePassword(socketIn, socketOut);
+        }
+        if (requestType == Commands.DO_CHANGE_PASSWORD.getValue()) {
+            doChangePassword(socketIn, socketOut);
+        }
         return false;
+    }
+
+    private void doTryChangePassword(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
+        String username = socketIn.readUTF();
+        String email = socketIn.readUTF();
+        if (ServerThreadTaskCommands.checkForUsernameInList(username, this)) {
+            SendMail sendMail = new SendMail();
+            String verificationCode = UserMethodsClient.generateVerificationCode();
+            if (sendMail.sendMail(email,
+                    "Changing your To Do List account's password",
+                    "Hello!" +
+                            "\r\n" + "\r\n" +
+                            "Your verification code is: " + verificationCode + "." +
+                            "\r\n" + "\r\n" +
+                            "Thank you for using our to-do app!")) {
+                socketOut.writeInt(Commands.DO_TRY_CHANGE_PASSWORD.getValue());
+                socketOut.writeUTF(verificationCode);
+            }
+            else {
+                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+                socketOut.writeUTF("Emaili saatmine ebaõnnestus.");
+            }
+        } else {
+            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
+            socketOut.writeUTF("Sellist kasutajat ei eksisteeri.");
+        }
+    }
+
+    private void doChangePassword(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
+        String username = socketIn.readUTF();
+        String hashedPassword = socketIn.readUTF();
+        User currentUser = null;
+        synchronized (sctx) {
+            for (User user : allUsers) {
+                if (user.getUsername().equals(username)) {
+                    currentUser = user;
+                    break;
+                }
+            }
+            currentUser.setNewPassword(hashedPassword);
+            currentUser = null;
+        }
+
+        socketOut.writeInt(Commands.DO_CHANGE_PASSWORD.getValue());
+        socketOut.writeUTF("Parool sai edukalt muudetud.");
     }
 
     private void saveNewUser(DataInputStream socketIn) throws IOException {
