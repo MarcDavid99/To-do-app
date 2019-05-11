@@ -20,31 +20,30 @@ public class SendMail {
         Properties properties = new Properties();
         String propertiesFileName = "config.properties";
 
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName)){
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propertiesFileName)) {
 
             if (inputStream != null) {
                 properties.load(inputStream);
-            }
-            else {
+            } else {
                 throw new FileNotFoundException("Property file " + propertiesFileName + " was not found!");
             }
         }
         return properties;
     }
 
-    public boolean sendMail(String recieverEmail, String subject, String mailBody) throws Exception {
+    public boolean sendMail(String recipientsEmail, String subject, String mailBody) throws Exception {
 
-        Properties properties = getPropValues();
-        final String username = properties.getProperty("user");
-        final String password = properties.getProperty("pw");
+        Properties emailProperties = getPropValues();
+        final String username = emailProperties.getProperty("user");
+        final String password = emailProperties.getProperty("pw");
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", "smtp.gmail.com");
+        properties.put("mail.smtp.port", "587");
 
-        Session session = Session.getInstance(props,
+        Session session = Session.getInstance(properties,
                 new javax.mail.Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(username, password);
@@ -52,11 +51,10 @@ public class SendMail {
                 });
 
         try {
-
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress("todolistreminderOOP@gmail.com"));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(recieverEmail));
+                    InternetAddress.parse(recipientsEmail));
             message.setSubject(subject);
             message.setText(mailBody);
 

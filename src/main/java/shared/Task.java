@@ -40,7 +40,6 @@ public class Task {
     }
 
     public void addFollower(String userId) {
-
         taskFollowers.add(userId);
     }
 
@@ -119,7 +118,7 @@ public class Task {
         return isPrivateTask;
     }
 
-    public void addComments(String comment, List<User> allUsers) throws Exception{
+    public void addComments(String comment, List<User> allUsers) throws Exception {
         String subject = "A comment was added to a task you are following.";
         String mailbody = "Hello!\r\n\r\n" +
                 "A comment was added to the following task: " + this.getTaskDescription() +

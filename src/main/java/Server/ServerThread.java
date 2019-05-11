@@ -3,31 +3,32 @@ package Server;
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
 import shared.*;
 
 public class ServerThread implements Runnable {
 
     private final Socket socket;
-    private final ServerContext sctx;
-    private User currentUser;
+    public final ServerContext sctx;
+    public User currentUser;
     private Argon2 argon2 = Argon2Factory.create();
 
-    private List<User> allUsers = new ArrayList<>();
+    public List<User> allUsers = new ArrayList<>();
 
     public ServerThread(Socket socket, ServerContext sctx) {
-
         this.socket = socket;
         this.sctx = sctx;
     }
 
     public void run() {
         try (socket;
-             DataInputStream input = new DataInputStream(socket.getInputStream());
-             DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
+             DataInputStream socketIn = new DataInputStream(socket.getInputStream());
+             DataOutputStream socketOut = new DataOutputStream(socket.getOutputStream())) {
             System.out.println("DEBUG: Uue kliendi jaoks luuakse uus thread");
 
             // Enne töötamist võetakse sctx-st värske allUsers list, mida
@@ -35,16 +36,15 @@ public class ServerThread implements Runnable {
             synchronized (sctx) {
                 allUsers = sctx.getAllUsers();
             }
-
             boolean closeProgramme;
             while (true) {
-                System.out.println("DEBUG: Server.ServerThread teeb tööd");
-                closeProgramme = detectClientRequest(input, out, sctx, allUsers, currentUser);
+                System.out.println("DEBUG: ServerThread teeb tööd");
+                closeProgramme = detectClientRequest(socketIn, socketOut);
 
                 if (closeProgramme) {
                     // Värskendatakse faili sisu
                     sctx.writeExistingUsersToFile();
-                    System.out.println("DEBUG: Server.ServerThread lõpetab töö!" + "\r\n");
+                    System.out.println("DEBUG: ServerThread lõpetab töö!" + "\r\n");
                     break;
                 }
             }
@@ -53,7 +53,7 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut, ServerContext sctx, List<User> allUsers, User currentUser) throws Exception {
+    private boolean detectClientRequest(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
 
         int requestType = socketIn.readInt();
         if (requestType == Commands.DO_SAVE_NEW_USER.getValue()) {
@@ -63,50 +63,50 @@ public class ServerThread implements Runnable {
             verifyClient(socketIn, socketOut);
         }
         if (requestType == Commands.DO_CHECK_FOR_USERNAME.getValue()) {
-            boolean checkUsername = ServerThreadTaskCommands.checkForUsernameInList(socketIn.readUTF(), sctx, allUsers);
+            boolean checkUsername = ServerThreadTaskCommands.checkForUsernameInList(socketIn.readUTF(), this);
             socketOut.writeBoolean(checkUsername);
         }
         if (requestType == Commands.DO_ADD_TASK.getValue()) {
-            ServerThreadTaskCommands.addTask(socketIn, socketOut, currentUser);
+            ServerThreadTaskCommands.addTask(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_DISPLAY_TASK.getValue()) {
-            ServerThreadTaskCommands.displayTasks(socketOut, currentUser, sctx, allUsers);
+            ServerThreadTaskCommands.displayTasks(socketOut, this);
         }
         if (requestType == Commands.DO_DISPLAY_TASK_CERTAIN.getValue()) {
-            ServerThreadTaskCommands.displayCertainUserTasks(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.displayCertainUserTasks(socketIn, socketOut, this);
         }
-        if (requestType == Commands.DO_DISPLAY_TASK_BY_TOPIC.getValue()){
-            ServerThreadTaskCommands.displayTaskByTopic(socketIn,socketOut, currentUser, sctx, allUsers);
+        if (requestType == Commands.DO_DISPLAY_TASK_BY_TOPIC.getValue()) {
+            ServerThreadTaskCommands.displayTaskByTopic(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_ADD_COMMENT.getValue()) {
-            ServerThreadTaskCommands.addComment(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.addComment(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_PUSH_DEADLINE.getValue()) {
-            ServerThreadTaskCommands.pushDeadline(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.pushDeadline(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_COMPLETE_TASK.getValue()) {
-            ServerThreadTaskCommands.completeTask(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.completeTask(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
-            ServerThreadTaskCommands.addTaskToOtherUser(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.addTaskToOtherUser(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_SEARCH_TASKS_BY_DESCRIPTION.getValue()) {
-            ServerThreadTaskCommands.searchTaskByDescription(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.searchTaskByDescription(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_SEARCH_TASKS_BY_USERNAME.getValue()) {
-            ServerThreadTaskCommands.searchTaskByUsername(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.searchTaskByUsername(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_SEARCH_TASKS_BY_DEADLINE.getValue()) {
-            ServerThreadTaskCommands.searchTaskByDeadline(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.searchTaskByDeadline(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_FOLLOW_TASK.getValue()) {
-            ServerThreadTaskCommands.followTask(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.followTask(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_DELETE_USER.getValue()) {
-            ServerThreadTaskCommands.deleteUser(socketIn, socketOut, sctx, allUsers, currentUser);
+            ServerThreadTaskCommands.deleteUser(socketIn, socketOut, this);
         }
-        if(requestType == Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue()){
-            ServerThreadTaskCommands.searchTaskByTopic(socketIn, socketOut, currentUser, sctx, allUsers);
+        if (requestType == Commands.DO_SEARCH_TASKS_BY_TOPIC.getValue()) {
+            ServerThreadTaskCommands.searchTaskByTopic(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_CLOSE_TODO_LIST_1.getValue() || requestType == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
             return ServerThreadTaskCommands.closeTodoList(socketIn, socketOut);
@@ -118,6 +118,7 @@ public class ServerThread implements Runnable {
         String json = socketIn.readUTF();
         Gson gson = new Gson();
         User newUser = gson.fromJson(json, User.class);
+
         synchronized (sctx) {
             allUsers.add(newUser);
         }
@@ -141,15 +142,13 @@ public class ServerThread implements Runnable {
             if (argon2.verify(currentUser.getPassword(), password)) {
                 socketOut.writeInt(Commands.DO_CONFIRM_LOGIN.getValue()); // kui sisselogimine õnnestub
                 socketOut.writeUTF("Olete sisselogitud.");
-            }
-            else {
+            } else {
                 usernameExists = false;
                 currentUser = null;
                 socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // kui sisselogimine ei õnnestu
                 socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti." + "\r\n");
             }
-        }
-        else  {
+        } else {
             socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // sisselogimine ei õnnestunud
             socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti." + "\r\n");
         }

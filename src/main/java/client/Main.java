@@ -3,11 +3,9 @@ package client;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Proxy;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +20,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         String address;
-        int port = 1337;
+        int port = 1335;
         if (args.length == 0) {
             address = "localhost";
 
@@ -34,8 +32,8 @@ public class Main {
         label1:
         while (true) {
             try (Socket socket = new Socket(address, port);
-                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                 DataInputStream input = new DataInputStream(socket.getInputStream())) {
+                 DataInputStream socketIn = new DataInputStream(socket.getInputStream());
+                 DataOutputStream socketOut = new DataOutputStream(socket.getOutputStream())) {
 
                 System.out.println(TextColours.CYAN_BOLD_BRIGHT + " ----------------------------------" + TextColours.ANSI_RESET);
                 System.out.println(TextColours.CYAN_BOLD_BRIGHT + "|            TO DO LIST            |" + TextColours.ANSI_RESET);
@@ -48,9 +46,8 @@ public class Main {
                     System.out.print(
                             "Registreerimiseks kirjutage:        1" + "\r\n" +
                                     "Sisse logimiseks kirjutage:         2" + "\r\n" +
-                                    "Programmi sulgemiseks kirjutage:    3" + "\r\n");
-                    System.out.println(
-                            "-------------------------------------");
+                                    "Programmi sulgemiseks kirjutage:    3" + "\r\n" +
+                                    "-------------------------------------");
                     System.out.print("Valige sobiv tegevus: ");
                     Scanner scanner = new Scanner(System.in).useDelimiter("\\n");
                     String initialCommand = scanner.nextLine();
@@ -59,11 +56,11 @@ public class Main {
                     switch (initialCommand) {
                         case "1":
                             //Kasutaja loomise meetod
-                            UserCreationVerification.userCreation(argon2, input, out, scanner);
+                            UserCreationVerification.userCreation(argon2, socketIn, socketOut, scanner);
                             break;
                         case "2":
                             //Kasutaja tuvastamise meetod
-                            if (UserCreationVerification.userVerification(out, input, scanner)) {
+                            if (UserCreationVerification.userVerification(socketOut, socketIn, scanner)) {
                                 while (true) {
                                     List<Integer> possibleCommands = new ArrayList<>(Arrays.asList(Commands.DO_ADD_TASK.getValue(),
                                             Commands.DO_DISPLAY_TASK.getValue(), Commands.DO_ADD_COMMENT.getValue(),
@@ -76,7 +73,8 @@ public class Main {
                                             Commands.DO_PUSH_DEADLINE.getValue(), Commands.DO_COMPLETE_TASK.getValue(),
                                             Commands.DO_FOLLOW_TASK.getValue()));
 
-                                    System.out.println(TextColours.ANSI_RED + "\r\nErinevad võimalused" + TextColours.ANSI_RESET + "\r\n" +
+                                    System.out.println(TextColours.ANSI_RED + "\r\n" +
+                                            "Erinevad võimalused" + TextColours.ANSI_RESET + "\r\n" +
                                             "Lisa ülesanne:                     11" + "\r\n" +
                                             "Vaata ülesandeid:                  12" + "\r\n" +
                                             "Lisa ülesandele kommentaar:        13" + "\r\n" +
@@ -86,10 +84,9 @@ public class Main {
                                             "Otsi ülesannet:                    17" + "\r\n" +
                                             "Jälgi mingit ülesannet:            18" + "\r\n" +
                                             "Sulge programm:                    19" + "\r\n" +
-                                            "Logi välja:                        20");
-                                            //Kustuta kasutaja:               5482 // tavakasutajale seda ei kuvata, aga meil on see võimalus olemas
-                                    System.out.println(
+                                            "Logi välja:                        20" + "\r\n" +
                                             "-------------------------------------");
+                                    //Kustuta kasutaja:               5482 // tavakasutajale seda ei kuvata, aga meil on see võimalus olemas
 
                                     System.out.print("Valige sobiv tegevus: ");
                                     String command = scanner.nextLine();
@@ -101,19 +98,19 @@ public class Main {
                                         if (possibleCommands.contains(commandInt)) {
                                             if (commandInt != Commands.DO_CLOSE_TODO_LIST_2.getValue() && commandInt != Commands.DO_LOG_OUT.getValue()) {
                                                 if (commandsThatNeedList.contains(commandInt)) {
-                                                    usernameForFollowTask = showTaskListBeforeCommand(commandInt, scanner, out, input, usernameForFollowTask);
+                                                    usernameForFollowTask = showTaskListBeforeCommand(socketIn, socketOut, commandInt, scanner, usernameForFollowTask);
                                                     if (usernameForFollowTask == null) {
                                                         continue;
                                                     }
                                                 }
                                                 System.out.println(TextColours.ANSI_PURPLE + "Kui soovite mingil hetkel tagasi peamenüüsse, siis vajutage sisestusel ainult ENTER-it." + TextColours.ANSI_RESET);
-                                                backToMainMenu = processServerMessageType(input, out, commandInt, usernameForFollowTask);
+                                                backToMainMenu = processServerMessageType(socketIn, socketOut, commandInt, usernameForFollowTask);
 
                                             } else {
-                                                out.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
+                                                socketOut.writeInt(Commands.DO_CLOSE_TODO_LIST_2.getValue());
                                             }
                                             if (!backToMainMenu) {
-                                                if (input.readBoolean()) {
+                                                if (socketIn.readBoolean()) {
                                                     if (commandInt == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
                                                         System.out.println(TextColours.ANSI_RED + "Programm sulgub!" + TextColours.ANSI_RESET);
                                                         return;
@@ -123,7 +120,7 @@ public class Main {
                                             }
                                         } else {
                                             if (commandInt == 5482) { // kasutaja kustutamine
-                                                processServerMessageType(input, out, commandInt, usernameForFollowTask);
+                                                processServerMessageType(socketIn, socketOut, commandInt, usernameForFollowTask);
                                             } else {
                                                 // valiti käsk, mida pole valikus
                                                 System.out.println(TextColours.ANSI_YELLOW + "Sisestage korrektne käsk (11, 12, 13, 14, 15, 16, 17, 18, 19, 20)" + TextColours.ANSI_RESET);
@@ -137,8 +134,8 @@ public class Main {
                             }
                             break;
                         case "3":
-                            out.writeInt(Commands.DO_CLOSE_TODO_LIST_1.getValue());
-                            if (input.readBoolean()) {
+                            socketOut.writeInt(Commands.DO_CLOSE_TODO_LIST_1.getValue());
+                            if (socketIn.readBoolean()) {
                                 System.out.println(TextColours.ANSI_RED + "Programm sulgub!" + TextColours.ANSI_RESET);
                                 break label1;
                             }
@@ -153,52 +150,52 @@ public class Main {
         }
     }
 
-    private static boolean processServerMessageType(DataInputStream input, DataOutputStream out, int command, String username) throws IOException {
+    private static boolean processServerMessageType(DataInputStream socketIn, DataOutputStream socketOut, int command, String username) throws IOException {
 
         if (command == Commands.DO_COMPLETE_TASK.getValue()) {
-            return ClientProcessCommands.processCompleteTask(input, out);
+            return ClientProcessCommands.processCompleteTask(socketIn, socketOut);
         } else if (command == Commands.DO_DISPLAY_TASK.getValue()) {
-            return ClientProcessCommands.processDisplayTasks(input, out);
+            return ClientProcessCommands.processDisplayTasks(socketIn, socketOut);
         } else if (command == Commands.DO_ADD_COMMENT.getValue()) {
-            return ClientProcessCommands.processAddComment(input, out);
+            return ClientProcessCommands.processAddComment(socketIn, socketOut);
         } else if (command == Commands.DO_PUSH_DEADLINE.getValue()) {
-            return ClientProcessCommands.processPushDeadline(input, out);
+            return ClientProcessCommands.processPushDeadline(socketIn, socketOut);
         } else if (command == Commands.DO_ADD_TASK.getValue()) {
-            return ClientProcessCommands.processAddTask(input, out);
+            return ClientProcessCommands.processAddTask(socketIn, socketOut);
         } else if (command == Commands.DO_ADD_TASK_TO_OTHER_USER.getValue()) {
-            return ClientProcessCommands.processAddTaskToOtherUsers(input, out);
+            return ClientProcessCommands.processAddTaskToOtherUsers(socketIn, socketOut);
         } else if (command == Commands.DO_SEARCH_TASKS.getValue()) {
-            return ClientProcessCommands.processShowSearchedTasks(input, out);
+            return ClientProcessCommands.processShowSearchedTasks(socketIn, socketOut);
         } else if (command == Commands.DO_FOLLOW_TASK.getValue()) {
-            return ClientProcessCommands.processFollowTask(input, out, username);
+            return ClientProcessCommands.processFollowTask(socketIn, socketOut, username);
         } else if (command == Commands.DO_DELETE_USER.getValue()) {
-            return ClientProcessCommands.processDeleteUser(input, out);
+            return ClientProcessCommands.processDeleteUser(socketIn, socketOut);
         }
         return false;
     }
 
-    public static String showTaskListBeforeCommand(int commandInt, Scanner scanner, DataOutputStream out, DataInputStream input, String usernameForFollowTask) throws IOException {
+    public static String showTaskListBeforeCommand(DataInputStream socketIn, DataOutputStream socketOut, int commandInt, Scanner scanner, String usernameForFollowTask) throws IOException {
         int messageType = 0;
         if (commandInt == (Commands.DO_FOLLOW_TASK.getValue())) {
             // kuvatakse soovitud kasutajanime tasklist, et saaks valida sealt ülesande, mida jälgida
             System.out.print("Sisesta kasutajanimi, kelle ülesannet jälgida tahad: ");
             usernameForFollowTask = scanner.nextLine();
-            out.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
-            out.writeUTF(usernameForFollowTask);
+            socketOut.writeInt(Commands.DO_DISPLAY_TASK_CERTAIN.getValue());
+            socketOut.writeUTF(usernameForFollowTask);
         } else {
-            out.writeInt(Commands.DO_DISPLAY_TASK.getValue());
+            socketOut.writeInt(Commands.DO_DISPLAY_TASK.getValue());
         }
 
         //messageType loeb sisse, sest server saadab displayTasksi korral message type
-        messageType = input.readInt();
+        messageType = socketIn.readInt();
         if (messageType == Commands.ERROR_OCCURED.getValue()) {
-            ClientProcessCommands.processErrorOccured(input);
+            ClientProcessCommands.processErrorOccured(socketIn);
             return null;
         }
-        ClientProcessCommands.displayTasks(input, "Ülesanded:");
+        ClientProcessCommands.displayTasks(socketIn, "Ülesanded:");
         //loeb siin ikkagi sisse booleani, kuigi see pole oluline, aga ma ei hakka uut meetodit tegema
         //kui saab kasutada displayTasksi
-        boolean notImportant = input.readBoolean();
+        boolean notImportant = socketIn.readBoolean();
         return usernameForFollowTask;
     }
 }

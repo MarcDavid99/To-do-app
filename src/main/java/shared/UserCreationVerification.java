@@ -4,6 +4,7 @@ import Server.SendMail;
 import Server.User;
 import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,12 +15,12 @@ import java.util.UUID;
 public class UserCreationVerification {
 
     public static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
-
         String firstName;
         String lastName;
         String username;
         String mailAddress;
         String password;
+        
         while (true) {
             System.out.print("Sisestage oma eesnimi(2-40 tähemärki): ");
             firstName = scanner.nextLine();

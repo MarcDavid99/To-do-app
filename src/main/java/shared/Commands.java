@@ -32,5 +32,8 @@ public enum Commands {
     Commands(int newValue) {
         value = newValue;
     }
-    public int getValue(){return value;}
+
+    public int getValue() {
+        return value;
+    }
 }

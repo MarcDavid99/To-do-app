@@ -5,8 +5,7 @@ import java.time.LocalDate;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
-
-public class Deadline{
+public class Deadline {
 
     //Kasutatud lingid: https://stackoverflow.com/questions/27005861/calculate-days-between-two-dates-in-java-8
     //http://tutorials.jenkov.com/java-date-time/localdate.html
@@ -15,13 +14,12 @@ public class Deadline{
     private LocalDate deadlineDate;
 
 
-    public void setDeadline(int deadlineAmount){
+    public void setDeadline(int deadlineAmount) {
         //deadlineAmount = deadline päevade arv
-        if(deadlineDate == null) {
+        if (deadlineDate == null) {
             LocalDate dateOnCreation = LocalDate.now();
             deadlineDate = dateOnCreation.plusDays(deadlineAmount);
-        }
-        else {
+        } else {
             deadlineDate = deadlineDate.plusDays(deadlineAmount);
         }
     }
@@ -30,27 +28,25 @@ public class Deadline{
         return deadlineDate;
     }
 
-    public boolean isPastDeadline(){
+    public boolean isPastDeadline() {
         LocalDate dateToCheck = LocalDate.now();
-        if (dateToCheck.isEqual(deadlineDate)){
+        if (dateToCheck.isEqual(deadlineDate)) {
             return false;
-        }else if (dateToCheck.isAfter(deadlineDate)){
+        } else if (dateToCheck.isAfter(deadlineDate)) {
             return true; //on üle deadline
-        }
-        else{
+        } else {
             return false;
         }
     }
 
     public boolean isDeadlineApproaching() {
-        // TODO: Mõelda, kas anda kasutajale valik mitu päeva varem ta hoiatust soovib
-        if (DAYS.between(LocalDate.now(),deadlineDate) < 7) {
+        if (DAYS.between(LocalDate.now(), deadlineDate) < 7) {
             return true;
         }
         return false;
     }
 
-    public String dateToString(){
+    public String dateToString() {
         //Teeb selle Date'i loetavaks inimeste jaoks.
         return deadlineDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }

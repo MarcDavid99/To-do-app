@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import shared.*;
 
 
@@ -36,7 +37,6 @@ public class DeadlineThread implements Runnable {
         List<TaskToRemind> listOfTasksToRemind = new ArrayList<>();
 
         while (true) {
-
             synchronized (sctx) {
                 List<User> allUsersToCheck = sctx.getAllUsers();
                 for (User user : allUsersToCheck) {
@@ -117,7 +117,7 @@ public class DeadlineThread implements Runnable {
                 throw new RuntimeException(e);
             }
 
-            System.out.println("DEBUG: Server.DeadlineThread jääb magama; aeg: " + dateFormat.format(new Date()));
+            System.out.println("DEBUG: DeadlineThread jääb magama; aeg: " + dateFormat.format(new Date()));
             // Inspiratsioon: https://stackoverflow.com/questions/3797941/how-to-make-a-thread-sleep-for-specific-amount-of-time-in-java
             try {
                 while (timeOfSleep > 0) {
@@ -125,7 +125,7 @@ public class DeadlineThread implements Runnable {
                     Thread.sleep(timeOfSleep);
                     //timeOfSleep = sleepAmount; // thread katkestab sleepi, aga teab et järgmine kord kestab sleep jälle 3600000 ms
                     timeOfSleep = 30000; //testväärtus
-                    System.out.println("DEBUG: Server.DeadlineThread ärkab; aeg: " + dateFormat.format(new Date()));
+                    System.out.println("DEBUG: DeadlineThread ärkab; aeg: " + dateFormat.format(new Date()));
                     break;
 
                 }

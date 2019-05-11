@@ -1,6 +1,7 @@
 package Server;
 
 import com.google.gson.Gson;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,8 +30,7 @@ public class ServerContext {
             jsonAllUsers = Files.readString(pathToFile);
             Gson gson = new Gson();
             usersFromFile = gson.fromJson(jsonAllUsers, UserList.class);
-        }
-        else if (!Files.exists(pathToFile)) {
+        } else if (!Files.exists(pathToFile)) {
             Files.createFile(pathToFile);
         }
         return usersFromFile;
