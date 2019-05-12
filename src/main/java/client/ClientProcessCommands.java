@@ -56,7 +56,7 @@ public class ClientProcessCommands {
             }
         }
 
-        int commandType = socketIn.readInt();
+       int commandType = socketIn.readInt();
 
         displayTasks(socketIn, "Sinu ülesanded: ");
         return false;

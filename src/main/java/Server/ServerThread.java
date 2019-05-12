@@ -57,10 +57,10 @@ public class ServerThread implements Runnable {
 
         int requestType = socketIn.readInt();
         if (requestType == Commands.DO_SAVE_NEW_USER.getValue()) {
-            saveNewUser(socketIn);
+            UserMethodsServer.saveNewUser(socketIn, sctx, allUsers);
         }
         if (requestType == Commands.DO_VERIFY_CLIENT.getValue()) {
-            verifyClient(socketIn, socketOut);
+            currentUser = UserMethodsServer.verifyClient(socketIn, socketOut, sctx, currentUser, argon2, allUsers);
         }
         if (requestType == Commands.DO_CHECK_FOR_USERNAME.getValue()) {
             boolean checkUsername = ServerThreadTaskCommands.checkForUsernameInList(socketIn.readUTF(), this);
@@ -112,96 +112,13 @@ public class ServerThread implements Runnable {
             return ServerThreadTaskCommands.closeTodoList(socketIn, socketOut);
         }
         if (requestType == Commands.DO_TRY_CHANGE_PASSWORD.getValue()) {
-            doTryChangePassword(socketIn, socketOut);
+            UserMethodsServer.doTryChangePassword(socketIn, socketOut, this);
         }
         if (requestType == Commands.DO_CHANGE_PASSWORD.getValue()) {
-            doChangePassword(socketIn, socketOut);
+            UserMethodsServer.doChangePassword(socketIn,socketOut,sctx,allUsers);
         }
         return false;
     }
 
-    private void doTryChangePassword(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
-        String username = socketIn.readUTF();
-        String email = socketIn.readUTF();
-        if (ServerThreadTaskCommands.checkForUsernameInList(username, this)) {
-            SendMail sendMail = new SendMail();
-            String verificationCode = UserMethodsClient.generateVerificationCode();
-            if (sendMail.sendMail(email,
-                    "Changing your To Do List account's password",
-                    "Hello!" +
-                            "\r\n" + "\r\n" +
-                            "Your verification code is: " + verificationCode + "." +
-                            "\r\n" + "\r\n" +
-                            "Thank you for using our to-do app!")) {
-                socketOut.writeInt(Commands.DO_TRY_CHANGE_PASSWORD.getValue());
-                socketOut.writeUTF(verificationCode);
-            }
-            else {
-                socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-                socketOut.writeUTF("Emaili saatmine ebaõnnestus.");
-            }
-        } else {
-            socketOut.writeInt(Commands.ERROR_OCCURED.getValue());
-            socketOut.writeUTF("Sellist kasutajat ei eksisteeri.");
-        }
-    }
 
-    private void doChangePassword(DataInputStream socketIn, DataOutputStream socketOut) throws IOException {
-        String username = socketIn.readUTF();
-        String hashedPassword = socketIn.readUTF();
-        User currentUser = null;
-        synchronized (sctx) {
-            for (User user : allUsers) {
-                if (user.getUsername().equals(username)) {
-                    currentUser = user;
-                    break;
-                }
-            }
-            currentUser.setNewPassword(hashedPassword);
-            currentUser = null;
-        }
-
-        socketOut.writeInt(Commands.DO_CHANGE_PASSWORD.getValue());
-        socketOut.writeUTF("Parool sai edukalt muudetud.");
-    }
-
-    private void saveNewUser(DataInputStream socketIn) throws IOException {
-        String json = socketIn.readUTF();
-        Gson gson = new Gson();
-        User newUser = gson.fromJson(json, User.class);
-
-        synchronized (sctx) {
-            allUsers.add(newUser);
-        }
-    }
-
-    private void verifyClient(DataInputStream socketIn, DataOutputStream socketOut) throws Exception {
-        String username = socketIn.readUTF();
-        String password = socketIn.readUTF();
-        boolean usernameExists = false;
-
-        synchronized (sctx) {
-            for (User user : allUsers) {
-                if (user.getUsername().equals(username)) {
-                    usernameExists = true;
-                    currentUser = user;
-                }
-            }
-        }
-
-        if (usernameExists) { // Kontrollib, kas sisse logides sisestatud pass on sama mis failis olev password.
-            if (argon2.verify(currentUser.getPassword(), password)) {
-                socketOut.writeInt(Commands.DO_CONFIRM_LOGIN.getValue()); // kui sisselogimine õnnestub
-                socketOut.writeUTF("Olete sisselogitud.");
-            } else {
-                usernameExists = false;
-                currentUser = null;
-                socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // kui sisselogimine ei õnnestu
-                socketOut.writeUTF("Sisestatud parool on vale. Proovige uuesti." + "\r\n");
-            }
-        } else {
-            socketOut.writeInt(Commands.DO_NOT_CONFIRM_LOGIN.getValue()); // sisselogimine ei õnnestunud
-            socketOut.writeUTF("Sellise kasutajanimega kasuajat ei leidu. Proovige uuesti." + "\r\n");
-        }
-    }
 }
