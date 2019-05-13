@@ -1,6 +1,5 @@
 package Server;
 
-import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 
@@ -17,6 +16,7 @@ public class ServerThread implements Runnable {
     public final ServerContext sctx;
     public User currentUser;
     private Argon2 argon2 = Argon2Factory.create();
+    private String verificationCode;
 
     public List<User> allUsers = new ArrayList<>();
 
@@ -58,6 +58,9 @@ public class ServerThread implements Runnable {
         int requestType = socketIn.readInt();
         if (requestType == Commands.DO_SAVE_NEW_USER.getValue()) {
             UserMethodsServer.saveNewUser(socketIn, sctx, allUsers);
+        }
+        if (requestType == Commands.DO_SEND_USER_CREATION_MAIL.getValue()) {
+           verificationCode = UserMethodsServer.doSendNewUserMail(socketIn, socketOut,"Verification code for your To-Do list account");
         }
         if (requestType == Commands.DO_VERIFY_CLIENT.getValue()) {
             currentUser = UserMethodsServer.verifyClient(socketIn, socketOut, sctx, currentUser, argon2, allUsers);
@@ -111,11 +114,14 @@ public class ServerThread implements Runnable {
         if (requestType == Commands.DO_CLOSE_TODO_LIST_1.getValue() || requestType == Commands.DO_CLOSE_TODO_LIST_2.getValue()) {
             return ServerThreadTaskCommands.closeTodoList(socketIn, socketOut);
         }
-        if (requestType == Commands.DO_TRY_CHANGE_PASSWORD.getValue()) {
-            UserMethodsServer.doTryChangePassword(socketIn, socketOut, this);
+        if (requestType == Commands.DO_SEND_PASSWORD_CHANGE_MAIL.getValue()) {
+            verificationCode = UserMethodsServer.doSendPasswordChangeMail(socketIn, socketOut, this, "Changing your To Do List account's password");
         }
         if (requestType == Commands.DO_CHANGE_PASSWORD.getValue()) {
             UserMethodsServer.doChangePassword(socketIn,socketOut,sctx,allUsers);
+        }
+        if (requestType == Commands.DO_CONFIRM_VERIFICATION_CODE.getValue()) {
+            UserMethodsServer.checkVerificationCode(socketOut, socketIn, verificationCode);
         }
         return false;
     }

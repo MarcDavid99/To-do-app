@@ -1,8 +1,6 @@
 package shared;
 
 import Server.SendMail;
-import Server.User;
-import com.google.gson.Gson;
 import de.mkammerer.argon2.Argon2;
 
 import java.io.DataInputStream;
@@ -10,11 +8,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.UUID;
 
 public class UserMethodsClient {
 
-    public static void userCreation(Argon2 argon2, DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
+    public static void userCreation(DataInputStream socketIn, DataOutputStream socketOut, Scanner scanner) throws Exception {
         String firstName;
         String lastName;
         String username;
@@ -58,39 +55,36 @@ public class UserMethodsClient {
             System.out.print("Salasõna: ");
             password = scanner.nextLine();
             System.out.println("Oodake mõned sekundid, kuni teie meiliaadressile tuleb kinnituskood.");
-            String hashedPassword = argon2.hash(10, 65536, 1, password);
+
             if (isRequiredPassword(password)) {
-                //genereeritakse suvaline täisarv
-                String verificationCode = generateVerificationCode();
-                //saadetakse kood sisestatud meilile
-                SendMail verificationmail = new SendMail();
-                if (verificationmail.sendMail(mailAddress,
-                        "Verification code for your To-Do list account",
-                        "Hello!" +
-                                "\r\n" + "\r\n" +
-                                "Your verification code is: " + verificationCode + "." +
-                                "\r\n" + "\r\n" +
-                                "Thank you for using our to-do app!")) {
+                socketOut.writeInt(Commands.DO_SEND_USER_CREATION_MAIL.getValue());
+                socketOut.writeUTF(mailAddress);
+
+                int messageType = socketIn.readInt();
+                if (messageType == Commands.ERROR_OCCURED.getValue()) {
+                    System.out.println(socketIn.readUTF());
+                }
+                else {
                     System.out.print("Meiliaadressile saadetud kinnituskood: ");
                     String inputCode = scanner.nextLine();
-                    if (inputCode.equals(verificationCode)) {
 
-                        String userID = UUID.randomUUID().toString();
-                        User newUser = new User(userID, firstName, lastName, username, mailAddress, hashedPassword);
+                    socketOut.writeInt(Commands.DO_CONFIRM_VERIFICATION_CODE.getValue());
+                    socketOut.writeUTF(inputCode);
 
-                        System.out.println("Kasutaja " + username + " on edukalt loodud!");
-                        System.out.println();
-
-                        socketOut.writeInt(Commands.DO_SAVE_NEW_USER.getValue());
-                        Gson gsonUser = new Gson();
-                        String jsonUser = gsonUser.toJson(newUser);
-                        socketOut.writeUTF(jsonUser);
-                        break;
-                    } else {
-                        System.out.println(TextColours.ANSI_YELLOW + "Sisestatud kood ei ole õige, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
+                    messageType = socketIn.readInt();
+                    if (messageType == Commands.ERROR_OCCURED.getValue()) {
+                        System.out.println(socketIn.readUTF());
                     }
-                } else {
-                    System.out.println(TextColours.ANSI_YELLOW + "Sisestatud meiliaadressile meili saatmine ebaõnnestus, palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
+                    else {
+                        socketOut.writeInt(Commands.DO_SAVE_NEW_USER.getValue());
+                        socketOut.writeUTF(firstName);
+                        socketOut.writeUTF(lastName);
+                        socketOut.writeUTF(username);
+                        socketOut.writeUTF(mailAddress);
+                        socketOut.writeUTF(password);
+                        System.out.println("Kasutaja " + username + " on edukalt loodud!" + "\r\n");
+                        break;
+                    }
                 }
             } else {
                 System.out.println(TextColours.ANSI_YELLOW + "Salasõna peab olema vähemalt 8 tähemärki pikk. Palun proovige uuesti registreerida." + TextColours.ANSI_RESET);
@@ -136,7 +130,7 @@ public class UserMethodsClient {
         String username = scanner.nextLine();
         System.out.print("Email: ");
         String email = scanner.nextLine();
-        socketOut.writeInt(Commands.DO_TRY_CHANGE_PASSWORD.getValue());
+        socketOut.writeInt(Commands.DO_SEND_PASSWORD_CHANGE_MAIL.getValue());
         socketOut.writeUTF(username);
         socketOut.writeUTF(email);
         int messageType = socketIn.readInt();
@@ -144,18 +138,24 @@ public class UserMethodsClient {
             System.out.println(socketIn.readUTF());
         }
         else {
-            String verificationCode = socketIn.readUTF();
             System.out.print("Meiliaadressile saadetud kinnituskood: ");
             String inputCode = scanner.nextLine();
-            if(inputCode.equals(verificationCode)){
+
+            socketOut.writeInt(Commands.DO_CONFIRM_VERIFICATION_CODE.getValue());
+            socketOut.writeUTF(inputCode);
+
+            messageType = socketIn.readInt();
+            if (messageType == Commands.ERROR_OCCURED.getValue()) {
+                System.out.println(socketIn.readUTF());
+            }
+            else {
                 while (true) {
                     System.out.print("Uus parool: ");
                     String newPassword = scanner.nextLine();
                     if (isRequiredPassword(newPassword)) {
-                        String hashedPassword = argon2.hash(10, 65536, 1, newPassword);
                         socketOut.writeInt(Commands.DO_CHANGE_PASSWORD.getValue());
                         socketOut.writeUTF(username);
-                        socketOut.writeUTF(hashedPassword);
+                        socketOut.writeUTF(newPassword);
                         messageType = socketIn.readInt();
                         System.out.println(socketIn.readUTF());
                         break;
@@ -163,9 +163,6 @@ public class UserMethodsClient {
                         System.out.println("Parool peab olema vähemalt 8 tähemärki pikk. Proovi uuesti.");
                     }
                 }
-            }
-            else {
-                System.out.println("Sisestasite vale kinnituskoodi.");
             }
         }
     }

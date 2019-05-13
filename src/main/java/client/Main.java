@@ -57,7 +57,7 @@ public class Main {
                     switch (initialCommand) {
                         case "1":
                             //Kasutaja loomise meetod
-                            UserMethodsClient.userCreation(argon2, socketIn, socketOut, scanner);
+                            UserMethodsClient.userCreation(socketIn, socketOut, scanner);
                             break;
                         case "2":
                             //Kasutaja tuvastamise meetod

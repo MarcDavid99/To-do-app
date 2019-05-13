@@ -2,9 +2,11 @@ package shared;
 
 public enum Commands {
     //https://stackoverflow.com/questions/3990319/storing-integer-values-as-constants-in-enum-manner-in-java
-    DO_TRY_CHANGE_PASSWORD(3),
+    DO_SEND_PASSWORD_CHANGE_MAIL(3),
     DO_CLOSE_TODO_LIST_1(4),
     DO_CHANGE_PASSWORD(5),
+    DO_CONFIRM_VERIFICATION_CODE(6),
+    DO_SEND_USER_CREATION_MAIL(7),
     DO_DISPLAY_TASK_CERTAIN(10),
     DO_ADD_TASK(11),
     DO_DISPLAY_TASK(12),
